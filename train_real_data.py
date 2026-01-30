@@ -63,6 +63,8 @@ check_dependencies()
 import pandas as pd
 import lightkurve as lk
 from astroquery.nasa_exoplanet_archive import NasaExoplanetArchive
+from src.model.spectral_cnn import SpectralCNN
+from src.augmentation import LightCurveAugmenter
 
 
 class RealDataFetcher:
@@ -256,10 +258,12 @@ class RealDataFetcher:
 class RealDataTrainer:
     """Train the TinyML model on real NASA data."""
     
-    def __init__(self, output_dir: str = "models/real"):
+    def __init__(self, output_dir: str = "models/real", augment_factor: int = 5):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.fetcher = RealDataFetcher()
+        self.augment_factor = augment_factor
+        self.augmenter = LightCurveAugmenter()
         
         # Model parameters
         self.input_size = 1024
@@ -438,8 +442,16 @@ class RealDataTrainer:
             X, y, test_size=0.2, random_state=42, stratify=y
         )
         
-        print(f"Training samples: {len(X_train)}")
+        print(f"Training samples (original): {len(X_train)}")
         print(f"Validation samples: {len(X_val)}")
+
+        # Augment training data
+        if self.augment_factor > 0:
+            print(f"Augmenting training data (factor={self.augment_factor})...")
+            X_train, y_train = self.augmenter.augment_batch(
+                X_train, y_train, factor=self.augment_factor
+            )
+            print(f"Training samples (augmented): {len(X_train)}")
         
         # Try to use TensorFlow if available
         try:
@@ -474,29 +486,14 @@ class RealDataTrainer:
         X_val = X_val.reshape(-1, self.input_size, 1)
         
         # Build model
-        from tensorflow.keras import models, layers
-        
-        # Hybrid CNN-LSTM Architecture
-        model = models.Sequential([
-            # 1. Feature Extraction (CNN)
-            layers.Conv1D(filters=32, kernel_size=16, activation='relu', input_shape=(self.input_size, 1)),
-            layers.MaxPooling1D(pool_size=4),
-            layers.BatchNormalization(),
-            
-            layers.Conv1D(filters=64, kernel_size=8, activation='relu'),
-            layers.MaxPooling1D(pool_size=4),
-            layers.BatchNormalization(),
-            
-            # 2. Sequence Learning (LSTM)
-            # Input to LSTM is (batch, steps, features)
-            layers.LSTM(64, return_sequences=False),
-            layers.Dropout(0.3),
-            
-            # 3. Classification
-            layers.Dense(64, activation='relu'),
-            layers.Dropout(0.2),
-            layers.Dense(self.num_classes, activation='softmax')
-        ])
+        # Build model using unified SpectralCNN
+        print("Building model via SpectralCNN...")
+        spectral_model = SpectralCNN(
+            input_shape=(self.input_size, 1),
+            num_classes=self.num_classes,
+            use_lstm=True
+        )
+        model = spectral_model.build_model()
         
         model.compile(
             optimizer='adam',
@@ -555,21 +552,39 @@ class RealDataTrainer:
         """Convert Keras model to TFLite for edge deployment."""
         import tensorflow as tf
         
-        # Standard conversion
+        # Standard conversion (Float32)
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
-        tflite_model = converter.convert()
         
-        tflite_path = self.output_dir / "astro_tinyml_real.tflite"
-        with open(tflite_path, 'wb') as f:
-            f.write(tflite_model)
-        print(f"TFLite model saved: {tflite_path} ({len(tflite_model)/1024:.1f} KB)")
-        
-        # Quantized conversion (INT8)
-        converter.optimizations = [tf.lite.Optimize.DEFAULT]
-        converter.target_spec.supported_types = [tf.int8]
+        # Enable Select TF Ops for LSTM support
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS
+        ]
+        converter._experimental_lower_tensor_list_ops = False
         
         try:
-            quantized_model = converter.convert()
+            tflite_model = converter.convert()
+            tflite_path = self.output_dir / "astro_tinyml_real.tflite"
+            with open(tflite_path, 'wb') as f:
+                f.write(tflite_model)
+            print(f"TFLite model saved: {tflite_path} ({len(tflite_model)/1024:.1f} KB)")
+        except Exception as e:
+            logger.warning(f"Standard TFLite conversion failed: {e}")
+        
+        # Quantized conversion (INT8)
+        converter_q = tf.lite.TFLiteConverter.from_keras_model(model)
+        converter_q.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter_q.target_spec.supported_types = [tf.int8]
+        
+        # Also need ops support for quantized version
+        converter_q.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS
+        ]
+        converter_q._experimental_lower_tensor_list_ops = False
+        
+        try:
+            quantized_model = converter_q.convert()
             quantized_path = self.output_dir / "astro_tinyml_real_int8.tflite"
             with open(quantized_path, 'wb') as f:
                 f.write(quantized_model)
@@ -606,10 +621,12 @@ def main():
                         help="Training epochs")
     parser.add_argument("--output", type=str, default="models/real",
                         help="Output directory")
+    parser.add_argument("--augment-factor", type=int, default=10,
+                        help="Data augmentation factor")
     args = parser.parse_args()
     
     # Initialize trainer
-    trainer = RealDataTrainer(output_dir=args.output)
+    trainer = RealDataTrainer(output_dir=args.output, augment_factor=args.augment_factor)
     
     # Prepare data
     X, y = trainer.prepare_training_data(

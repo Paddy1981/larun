@@ -690,6 +690,9 @@ def cmd_help(args):
 {Colors.CYAN}Analysis:{Colors.END}
   /bls <target>        Run BLS periodogram for transit detection
   /phase <target> <P>  Phase fold light curve at period P
+  /vet <target>        Vet transit candidate (false positive tests)
+  /ttv <target> --period <P>  TTV analysis for multi-planet detection
+  /fit <target> --period <P>  Fit transit model parameters
   /detect              Run detection on loaded data
 
 {Colors.CYAN}Data:{Colors.END}
@@ -1091,6 +1094,383 @@ def cmd_generate(args):
     print_banner()
 
 
+def cmd_vet(args):
+    """Run vetting tests on a transit candidate"""
+    print(f"\n{Colors.BOLD}Transit Vetting - False Positive Identification{Colors.END}")
+    print(f"{Colors.DIM}Test if a transit signal is a real planet or false positive{Colors.END}\n")
+
+    # Parse arguments
+    target = None
+    period = None
+    t0 = 0.0
+
+    i = 0
+    while i < len(args):
+        if args[i] == '--period' and i + 1 < len(args):
+            period = float(args[i + 1])
+            i += 2
+        elif args[i] == '--t0' and i + 1 < len(args):
+            t0 = float(args[i + 1])
+            i += 2
+        elif not args[i].startswith('--'):
+            target = args[i]
+            i += 1
+        else:
+            i += 1
+
+    if not target:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /vet <target>                     Vet a target (runs BLS first)
+  /vet <target> --period <P>        Vet at known period
+  /vet <target> --period <P> --t0 <epoch>
+
+{Colors.BOLD}Options:{Colors.END}
+  --period     Orbital period (days) - if not provided, runs BLS first
+  --t0         Mid-transit time (BJD)
+
+{Colors.BOLD}Examples:{Colors.END}
+  /vet TOI-700
+  /vet "TIC 307210830" --period 3.5
+  /vet "Kepler-10" --period 0.837 --t0 2454964.5
+""")
+        return
+
+    try:
+        import numpy as np
+        import lightkurve as lk
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from skills.vetting import TransitVetter
+        from skills.periodogram import BLSPeriodogram
+
+        print(f"{Colors.CYAN}Fetching light curve for {target}...{Colors.END}")
+
+        search = lk.search_lightcurve(target, mission=['TESS', 'Kepler'])
+        if len(search) == 0:
+            print_error(f"No light curves found for {target}")
+            return
+
+        print(f"{Colors.DIM}Found {len(search)} observations{Colors.END}")
+
+        lc = search[0].download()
+        lc = lc.remove_nans().normalize().remove_outliers(sigma=3)
+
+        time = lc.time.value
+        flux = lc.flux.value
+
+        print(f"{Colors.DIM}Light curve: {len(time)} points{Colors.END}")
+
+        # If no period provided, run BLS first
+        if period is None:
+            print(f"\n{Colors.CYAN}No period provided. Running BLS...{Colors.END}")
+            bls = BLSPeriodogram(min_period=0.5, max_period=20, n_periods=5000)
+            bls_result = bls.compute(time, flux, min_snr=5.0)
+            
+            if bls_result.candidates:
+                period = bls_result.best_period
+                t0 = bls_result.candidates[0].t0
+                print(f"{Colors.GREEN}Found period: {period:.4f} days{Colors.END}")
+            else:
+                print_warning("No significant transit found by BLS")
+                period = bls_result.best_period
+                t0 = time[0]
+
+        # Run vetting
+        print(f"\n{Colors.CYAN}Running vetting tests...{Colors.END}")
+        vetter = TransitVetter()
+        result = vetter.run_all(time, flux, period, t0, target_name=target)
+
+        # Display results
+        print(f"\n{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+        status_color = Colors.GREEN if result.is_likely_planet else Colors.YELLOW
+        status_text = "PLANET CANDIDATE" if result.is_likely_planet else "POSSIBLE FALSE POSITIVE"
+        print(f"{Colors.BOLD}Vetting Result: {status_color}{status_text}{Colors.END}")
+        print(f"{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+
+        print(f"\n{Colors.BOLD}Target:{Colors.END}     {target}")
+        print(f"{Colors.BOLD}Period:{Colors.END}     {period:.4f} days")
+        print(f"{Colors.BOLD}Confidence:{Colors.END} {result.confidence:.0%}")
+
+        print(f"\n{Colors.BOLD}Test Results:{Colors.END}")
+        for test in result.tests:
+            icon = f"{Colors.GREEN}✓{Colors.END}" if test.passed else f"{Colors.RED}✗{Colors.END}"
+            print(f"  {icon} {test.test_name}: {test.message}")
+
+        # Save results
+        output_file = f"output/vet_{target.replace(' ', '_')}.json"
+        Path("output").mkdir(exist_ok=True)
+
+        import json
+        with open(output_file, 'w') as f:
+            json.dump(result.to_dict(), f, indent=2, default=str)
+
+        print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+        print()
+
+    except ImportError as e:
+        print_error(f"Missing dependency: {e}")
+        print_info("Install with: pip install lightkurve astropy")
+    except Exception as e:
+        print_error(f"Vetting failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def cmd_ttv(args):
+    """Run TTV analysis for multi-planet detection"""
+    print(f"\n{Colors.BOLD}Transit Timing Variations (TTV) Analysis{Colors.END}")
+    print(f"{Colors.DIM}Detect additional planets through timing variations{Colors.END}\n")
+
+    # Parse arguments
+    target = None
+    period = None
+    t0 = 0.0
+
+    i = 0
+    while i < len(args):
+        if args[i] == '--period' and i + 1 < len(args):
+            period = float(args[i + 1])
+            i += 2
+        elif args[i] == '--t0' and i + 1 < len(args):
+            t0 = float(args[i + 1])
+            i += 2
+        elif not args[i].startswith('--'):
+            target = args[i]
+            i += 1
+        else:
+            i += 1
+
+    if not target or period is None:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /ttv <target> --period <P>           Analyze TTV at known period
+  /ttv <target> --period <P> --t0 <epoch>
+
+{Colors.BOLD}Options:{Colors.END}
+  --period     Orbital period (days) - REQUIRED
+  --t0         Mid-transit time (BJD)
+
+{Colors.BOLD}Examples:{Colors.END}
+  /ttv TOI-700 --period 9.97
+  /ttv "Kepler-9" --period 19.24
+""")
+        return
+
+    try:
+        import numpy as np
+        import lightkurve as lk
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from skills.ttv import TTVAnalyzer
+
+        print(f"{Colors.CYAN}Fetching light curve for {target}...{Colors.END}")
+
+        search = lk.search_lightcurve(target, mission=['TESS', 'Kepler'])
+        if len(search) == 0:
+            print_error(f"No light curves found for {target}")
+            return
+
+        # Try to get multiple sectors/quarters for TTV
+        print(f"{Colors.DIM}Found {len(search)} observations, downloading...{Colors.END}")
+        
+        all_time = []
+        all_flux = []
+        
+        for i, s in enumerate(search[:5]):  # Limit to 5 observations
+            try:
+                lc = s.download()
+                if lc is not None:
+                    lc = lc.remove_nans().normalize()
+                    all_time.extend(lc.time.value)
+                    all_flux.extend(lc.flux.value)
+            except:
+                continue
+        
+        if len(all_time) < 1000:
+            print_error("Insufficient data for TTV analysis")
+            return
+            
+        time = np.array(all_time)
+        flux = np.array(all_flux)
+        
+        # Sort by time
+        sort_idx = np.argsort(time)
+        time = time[sort_idx]
+        flux = flux[sort_idx]
+
+        print(f"{Colors.DIM}Combined: {len(time)} points, baseline: {time.max()-time.min():.1f} days{Colors.END}")
+
+        # Run TTV analysis
+        print(f"\n{Colors.CYAN}Analyzing transit timing variations...{Colors.END}")
+        analyzer = TTVAnalyzer()
+        result = analyzer.analyze(time, flux, period, t0)
+
+        # Display results
+        print(f"\n{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+        status_color = Colors.GREEN if result.has_ttv else Colors.YELLOW
+        status_text = "TTV DETECTED" if result.has_ttv else "No significant TTV"
+        print(f"{Colors.BOLD}TTV Result: {status_color}{status_text}{Colors.END}")
+        print(f"{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+
+        print(f"\n{Colors.BOLD}Target:{Colors.END}          {target}")
+        print(f"{Colors.BOLD}Period:{Colors.END}          {period:.4f} days")
+        print(f"{Colors.BOLD}Refined Period:{Colors.END}  {result.refined_period:.6f} days")
+        print(f"{Colors.BOLD}Transits Found:{Colors.END}  {len(result.transit_times)}")
+        print(f"{Colors.BOLD}TTV Amplitude:{Colors.END}   {result.amplitude_minutes:.2f} minutes")
+        print(f"{Colors.BOLD}Significance:{Colors.END}    {result.significance:.1f}σ")
+
+        if len(result.transit_times) > 0:
+            print(f"\n{Colors.BOLD}O-C Diagram (minutes):{Colors.END}")
+            for i, (tt, oc) in enumerate(zip(result.transit_times, result.oc_minutes)):
+                bar_len = int(abs(oc) / 2)
+                bar = "█" * min(bar_len, 20)
+                sign = "+" if oc >= 0 else "-"
+                print(f"  Transit {tt.transit_number:3d}: {sign}{abs(oc):5.1f} │{'─' * 20}│ {bar}")
+
+        if result.has_ttv:
+            print(f"\n{Colors.GREEN}⚠ Significant TTV detected!{Colors.END}")
+            print(f"{Colors.DIM}This may indicate gravitational perturbation from additional planets.{Colors.END}")
+
+        # Save results
+        output_file = f"output/ttv_{target.replace(' ', '_')}.json"
+        Path("output").mkdir(exist_ok=True)
+
+        import json
+        with open(output_file, 'w') as f:
+            json.dump(result.to_dict(), f, indent=2, default=str)
+
+        print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+        print()
+
+    except ImportError as e:
+        print_error(f"Missing dependency: {e}")
+        print_info("Install with: pip install lightkurve astropy")
+    except Exception as e:
+        print_error(f"TTV analysis failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def cmd_fit(args):
+    """Fit transit model to light curve"""
+    print(f"\n{Colors.BOLD}Transit Model Fitting{Colors.END}")
+    print(f"{Colors.DIM}Precise transit parameter estimation{Colors.END}\n")
+
+    # Parse arguments
+    target = None
+    period = None
+    t0 = None
+
+    i = 0
+    while i < len(args):
+        if args[i] == '--period' and i + 1 < len(args):
+            period = float(args[i + 1])
+            i += 2
+        elif args[i] == '--t0' and i + 1 < len(args):
+            t0 = float(args[i + 1])
+            i += 2
+        elif not args[i].startswith('--'):
+            target = args[i]
+            i += 1
+        else:
+            i += 1
+
+    if not target or period is None:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /fit <target> --period <P>           Fit transit at known period
+  /fit <target> --period <P> --t0 <epoch>
+
+{Colors.BOLD}Options:{Colors.END}
+  --period     Orbital period (days) - REQUIRED
+  --t0         Mid-transit time (BJD)
+
+{Colors.BOLD}Examples:{Colors.END}
+  /fit "Kepler-10" --period 0.837
+  /fit TOI-700 --period 9.97 --t0 2458742.0
+""")
+        return
+
+    try:
+        import numpy as np
+        import lightkurve as lk
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from skills.transit_fit import TransitFitter
+        from skills.periodogram import phase_fold, bin_phase_curve
+
+        print(f"{Colors.CYAN}Fetching light curve for {target}...{Colors.END}")
+
+        search = lk.search_lightcurve(target, mission=['TESS', 'Kepler'])
+        if len(search) == 0:
+            print_error(f"No light curves found for {target}")
+            return
+
+        lc = search[0].download()
+        lc = lc.remove_nans().normalize().remove_outliers(sigma=3)
+
+        time = lc.time.value
+        flux = lc.flux.value
+
+        print(f"{Colors.DIM}Light curve: {len(time)} points{Colors.END}")
+
+        # Set t0 if not provided
+        if t0 is None:
+            t0 = time.min()
+
+        # Phase fold and bin for fitting
+        print(f"\n{Colors.CYAN}Fitting transit model...{Colors.END}")
+        
+        fitter = TransitFitter()
+        result = fitter.fit(time, flux, period, t0)
+
+        # Display results
+        print(f"\n{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+        print(f"{Colors.BOLD}Transit Fit Results: {target}{Colors.END}")
+        print(f"{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+
+        depth_ppm = result.rp_rs**2 * 1e6
+        
+        print(f"\n{Colors.BOLD}Fitted Parameters:{Colors.END}")
+        print(f"  Rp/Rs:      {result.rp_rs:.4f} ± {result.rp_rs_err:.4f}")
+        print(f"  a/Rs:       {result.a_rs:.2f} ± {result.a_rs_err:.2f}")
+        print(f"  Inclination:{result.inc:.1f}° ± {result.inc_err:.1f}°")
+        print(f"  T0:         {result.t0:.5f} BJD")
+        print(f"  Depth:      {depth_ppm:.0f} ppm ({result.rp_rs**2*100:.3f}%)")
+
+        print(f"\n{Colors.BOLD}Fit Quality:{Colors.END}")
+        print(f"  χ² reduced: {result.chi2_reduced:.3f}")
+        print(f"  BIC:        {result.bic:.1f}")
+
+        # Estimate physical parameters
+        planet = result.planet_params(star_radius_solar=1.0)
+        print(f"\n{Colors.BOLD}Planet Estimates (Sun-like star):{Colors.END}")
+        print(f"  Radius:     {planet['radius_earth']:.2f} R⊕")
+        print(f"  Semi-major: {planet['semi_major_axis_au']:.4f} AU")
+        print(f"  Impact b:   {planet['impact_parameter']:.3f}")
+
+        # Save results
+        output_file = f"output/fit_{target.replace(' ', '_')}.json"
+        Path("output").mkdir(exist_ok=True)
+
+        import json
+        with open(output_file, 'w') as f:
+            json.dump({
+                'target': target,
+                'fit': result.to_dict(),
+                'planet_params': planet
+            }, f, indent=2, default=str)
+
+        print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+        print()
+
+    except ImportError as e:
+        print_error(f"Missing dependency: {e}")
+        print_info("Install with: pip install lightkurve scipy")
+    except Exception as e:
+        print_error(f"Transit fitting failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 def cmd_bls(args):
     """Run BLS periodogram for transit detection"""
     print(f"\n{Colors.BOLD}BLS Periodogram - Transit Detection{Colors.END}")
@@ -1394,6 +1774,9 @@ COMMANDS = {
     '/generate': cmd_generate,
     '/bls': cmd_bls,
     '/phase': cmd_phase,
+    '/vet': cmd_vet,
+    '/ttv': cmd_ttv,
+    '/fit': cmd_fit,
 }
 
 def main():

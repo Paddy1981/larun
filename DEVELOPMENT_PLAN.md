@@ -55,32 +55,34 @@ Timeline: Sprint 1
 **Reference**: `docs/research/EXOPLANET_DETECTION.md`
 
 ```
-Status: PLANNED
+Status: COMPLETE
 Complexity: Medium
 Timeline: Sprint 1-2
 ```
 
 **Tasks:**
-- [ ] Implement phase folding algorithm
-- [ ] Add binning for visualization
-- [ ] Integrate batman for transit model fitting
-- [ ] Fit: Rp/Rs, a/Rs, inclination, limb darkening
-- [ ] Create CLI command: `larun analyze phase-fold`
+- [x] Implement phase folding algorithm (src/skills/periodogram.py)
+- [x] Add binning for visualization
+- [x] Integrate batman for transit model fitting (src/skills/transit_fit.py)
+- [x] Fit: Rp/Rs, a/Rs, inclination, limb darkening
+- [x] Create CLI command: `/fit`, `/phase`
 
 ### 1.3 False Positive Identification
 **Reference**: `docs/research/EXOPLANET_DETECTION.md`
 
 ```
-Status: PLANNED
+Status: COMPLETE
 Complexity: High
 Timeline: Sprint 2
 ```
 
 **Tasks:**
-- [ ] Odd-even transit depth test
-- [ ] Centroid shift analysis
-- [ ] Secondary eclipse search
-- [ ] Grazing binary detection (V-shaped)
+- [x] Odd-even transit depth test (src/skills/vetting.py)
+- [x] Secondary eclipse search
+- [x] Grazing binary detection (V-shaped)
+- [x] Duration test
+- [x] Create CLI command: `/vet`
+- [ ] Centroid shift analysis (requires TPF data)
 - [ ] Create FPP (False Positive Probability) calculator
 
 ---
@@ -89,13 +91,14 @@ Timeline: Sprint 2
 
 ### 2.1 Increase Training Data
 ```
-Current: 50 planet + 50 non-planet samples
+Current: ~150 samples (mixed real + synthetic)
 Target: 500+ samples each class
+Next retraining: After Phase 1 complete
 ```
 
 **Tasks:**
-- [ ] Use distributed training system for larger dataset
-- [ ] Implement data augmentation (noise injection, time shifts)
+- [ ] Fetch 500+ confirmed exoplanets from NASA Archive
+- [x] Implement data augmentation (src/augmentation.py)
 - [ ] Add K-fold cross-validation
 - [ ] Target: 90%+ validation accuracy
 

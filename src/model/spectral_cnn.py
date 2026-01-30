@@ -36,10 +36,12 @@ class SpectralCNN:
         self,
         input_shape: Tuple[int, int] = (1024, 1),
         num_classes: int = 6,
+        use_lstm: bool = False,
         model_config: Optional[Dict[str, Any]] = None
     ):
         self.input_shape = input_shape
         self.num_classes = num_classes
+        self.use_lstm = use_lstm
         self.model_config = model_config or {}
         self.model: Optional[keras.Model] = None
         self.tflite_model: Optional[bytes] = None
@@ -54,6 +56,29 @@ class SpectralCNN:
         - Good accuracy on spectral classification
         """
         inputs = layers.Input(shape=self.input_shape, name="spectral_input")
+        
+        if self.use_lstm:
+            # Hybrid CNN-LSTM Architecture (from train_real_data.py)
+            x = layers.Conv1D(filters=32, kernel_size=16, activation='relu')(inputs)
+            x = layers.MaxPooling1D(pool_size=4)(x)
+            x = layers.BatchNormalization()(x)
+            
+            x = layers.Conv1D(filters=64, kernel_size=8, activation='relu')(x)
+            x = layers.MaxPooling1D(pool_size=4)(x)
+            x = layers.BatchNormalization()(x)
+            
+            x = layers.LSTM(64, return_sequences=False)(x)
+            x = layers.Dropout(0.3)(x)
+            
+            x = layers.Dense(64, activation='relu')(x)
+            x = layers.Dropout(0.2)(x)
+            
+            outputs = layers.Dense(self.num_classes, activation='softmax', name="classification")(x)
+            
+            self.model = keras.Model(inputs=inputs, outputs=outputs, name="SpectralHybrid")
+            
+            logger.info(f"Built hybrid model with {self.model.count_params():,} parameters")
+            return self.model
         
         # Initial convolution block
         x = layers.Conv1D(
@@ -318,6 +343,13 @@ class SpectralCNN:
         
         converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
         
+        # Enable Select TF Ops (needed for some LSTM operations)
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS
+        ]
+        converter._experimental_lower_tensor_list_ops = False
+        
         if quantize:
             converter.optimizations = [tf.lite.Optimize.DEFAULT]
             
@@ -535,6 +567,7 @@ def create_model(config: Dict[str, Any]) -> SpectralCNN:
     model = SpectralCNN(
         input_shape=tuple(config.get("input_shape", [1024, 1])),
         num_classes=len(config.get("output_classes", SpectralCNN.CLASSIFICATION_LABELS)),
+        use_lstm=config.get("use_lstm", False),
         model_config=config
     )
     model.build_model()
