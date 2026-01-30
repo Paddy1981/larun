@@ -1,0 +1,178 @@
+# LARUN TinyML - Developer Add-on Skills: Code Generation
+# These skills are for LARUN developers to create sophisticated tools
+# Not loaded by default - use: larun --load-addon codegen
+# Version: 1.0
+
+metadata:
+  addon_name: "Code Generation"
+  addon_id: "codegen"
+  version: "1.0.0"
+  description: "Generate Python scripts and ML models programmatically"
+  author: "Padmanaban Veeraragavalu (Larun Engineering)"
+  ai_assistance: "Claude (Anthropic)"
+  project: "LARUN TinyML × Astrodata"
+  min_core_version: "2.0.0"
+
+skills:
+  - id: "CODE-001"
+    name: "Python Script Generator"
+    category: "codegen"
+    tier: 8
+    status: "active"
+    description: "Generate Python scripts for astronomical analysis tasks"
+    command: "larun generate script"
+    dependencies: ["jinja2"]
+    inputs:
+      - name: "task"
+        type: "enum"
+        options: ["data_fetch", "lightcurve_analysis", "transit_search", "anomaly_detection", "report_generation"]
+        required: true
+      - name: "target"
+        type: "string"
+        description: "Target star or dataset"
+        required: false
+      - name: "output"
+        type: "filepath"
+        default: "./generated_script.py"
+    outputs:
+      - type: "python_script"
+        format: [".py"]
+
+  - id: "CODE-002"
+    name: "ML Model Generator"
+    category: "codegen"
+    tier: 8
+    status: "active"
+    description: "Generate custom ML model architectures for astronomical classification"
+    command: "larun generate model"
+    dependencies: ["tensorflow", "jinja2"]
+    inputs:
+      - name: "architecture"
+        type: "enum"
+        options: ["cnn_1d", "lstm", "transformer", "autoencoder", "hybrid"]
+        required: true
+      - name: "task"
+        type: "enum"
+        options: ["classification", "regression", "anomaly_detection", "time_series"]
+        required: true
+      - name: "input_shape"
+        type: "tuple"
+        description: "Input data shape (e.g., 200,1)"
+        required: true
+      - name: "num_classes"
+        type: "integer"
+        default: 6
+      - name: "output"
+        type: "filepath"
+        default: "./generated_model.py"
+    outputs:
+      - type: "python_script"
+        format: [".py"]
+    architectures:
+      cnn_1d:
+        description: "1D Convolutional network for spectral/light curve data"
+        layers: ["Conv1D", "MaxPooling1D", "Flatten", "Dense"]
+      lstm:
+        description: "LSTM for time-series analysis"
+        layers: ["LSTM", "Dense", "Dropout"]
+      transformer:
+        description: "Transformer for sequence modeling"
+        layers: ["MultiHeadAttention", "Dense", "LayerNormalization"]
+      autoencoder:
+        description: "Autoencoder for anomaly detection"
+        layers: ["Encoder", "Decoder", "LatentSpace"]
+      hybrid:
+        description: "CNN + LSTM hybrid architecture"
+        layers: ["Conv1D", "LSTM", "Dense"]
+
+  - id: "CODE-003"
+    name: "Data Pipeline Generator"
+    category: "codegen"
+    tier: 8
+    status: "active"
+    description: "Generate complete data processing pipelines"
+    command: "larun generate pipeline"
+    dependencies: ["jinja2"]
+    inputs:
+      - name: "source"
+        type: "enum"
+        options: ["tess", "kepler", "custom"]
+        required: true
+      - name: "steps"
+        type: "array"
+        options: ["fetch", "clean", "normalize", "detrend", "detect", "classify", "report"]
+        required: true
+      - name: "output"
+        type: "filepath"
+        default: "./generated_pipeline.py"
+    outputs:
+      - type: "python_script"
+        format: [".py"]
+
+  - id: "CODE-004"
+    name: "Training Script Generator"
+    category: "codegen"
+    tier: 8
+    status: "active"
+    description: "Generate model training scripts with best practices"
+    command: "larun generate training"
+    dependencies: ["tensorflow", "jinja2"]
+    inputs:
+      - name: "model_type"
+        type: "enum"
+        options: ["cnn", "lstm", "autoencoder", "custom"]
+        required: true
+      - name: "data_source"
+        type: "enum"
+        options: ["synthetic", "nasa", "custom"]
+        default: "synthetic"
+      - name: "features"
+        type: "array"
+        options: ["early_stopping", "checkpointing", "tensorboard", "lr_scheduler", "data_augmentation"]
+        default: ["early_stopping", "checkpointing"]
+      - name: "output"
+        type: "filepath"
+        default: "./generated_training.py"
+    outputs:
+      - type: "python_script"
+        format: [".py"]
+
+  - id: "CODE-005"
+    name: "Analysis Script Generator"
+    category: "codegen"
+    tier: 8
+    status: "active"
+    description: "Generate specialized analysis scripts"
+    command: "larun generate analysis"
+    dependencies: ["jinja2", "numpy", "scipy"]
+    inputs:
+      - name: "analysis_type"
+        type: "enum"
+        options: ["transit_analysis", "periodogram", "phase_folding", "stellar_characterization", "habitability"]
+        required: true
+      - name: "target"
+        type: "string"
+        required: false
+      - name: "output"
+        type: "filepath"
+        default: "./generated_analysis.py"
+    outputs:
+      - type: "python_script"
+        format: [".py"]
+
+# CLI extensions for this addon
+cli_extensions:
+  commands:
+    - name: "generate"
+      description: "Generate code and scripts"
+      subcommands:
+        - name: "script"
+          skills: ["CODE-001"]
+        - name: "model"
+          skills: ["CODE-002"]
+        - name: "pipeline"
+          skills: ["CODE-003"]
+        - name: "training"
+          skills: ["CODE-004"]
+        - name: "analysis"
+          skills: ["CODE-005"]

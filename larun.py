@@ -4,6 +4,8 @@ LARUN TinyML - Interactive CLI with Skills System
 ==================================================
 Interactive terminal interface for AstroTinyML with dynamic skill loading.
 
+TinyML-powered astronomical data analysis for exoplanet discovery.
+
 Usage:
     python larun.py              # Start interactive mode
     python larun.py --help       # Show help
@@ -13,7 +15,15 @@ Skills Commands:
     /skill <ID>     - Show skill details
     /run <ID>       - Execute a skill
 
-Larun. x Astrodata
+Developer Commands:
+    /addon          - List/load developer addons
+    /generate       - Generate Python scripts and ML models
+
+Created by: Padmanaban Veeraragavalu (Larun Engineering)
+With AI assistance from: Claude (Anthropic)
+
+Project: LARUN TinyML × Astrodata
+License: MIT
 """
 
 import sys
@@ -181,6 +191,83 @@ class SkillLoader:
 
 # Global skill loader
 skill_loader = SkillLoader()
+
+# ============================================================================
+# ADDON SYSTEM
+# ============================================================================
+
+ADDONS_PATH = Path("addons")
+ADDONS_SKILLS_PATH = Path("skills/addons")
+
+class AddonLoader:
+    """Loads optional addon modules for developers."""
+
+    def __init__(self):
+        self.loaded_addons: Dict[str, Any] = {}
+        self.addon_skills: Dict[str, Skill] = {}
+
+    def list_available(self) -> List[str]:
+        """List available addons."""
+        available = []
+
+        # Check Python modules in addons/
+        if ADDONS_PATH.exists():
+            for f in ADDONS_PATH.glob("*.py"):
+                if not f.name.startswith("_"):
+                    available.append(f.stem)
+
+        return available
+
+    def load(self, addon_name: str) -> bool:
+        """Load an addon by name."""
+        if addon_name in self.loaded_addons:
+            return True  # Already loaded
+
+        addon_path = ADDONS_PATH / f"{addon_name}.py"
+        if not addon_path.exists():
+            return False
+
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(addon_name, addon_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            self.loaded_addons[addon_name] = module
+
+            # Load addon skills if YAML exists
+            addon_skills_path = ADDONS_SKILLS_PATH / f"{addon_name}.yaml"
+            if addon_skills_path.exists() and YAML_AVAILABLE:
+                self._load_addon_skills(addon_skills_path)
+
+            return True
+        except Exception as e:
+            print(f"{Colors.RED}Error loading addon {addon_name}: {e}{Colors.END}")
+            return False
+
+    def _load_addon_skills(self, path: Path):
+        """Load skills from addon YAML."""
+        try:
+            with open(path) as f:
+                data = yaml.safe_load(f)
+
+            for skill_data in data.get('skills', []):
+                skill = Skill(skill_data)
+                self.addon_skills[skill.id] = skill
+        except Exception:
+            pass
+
+    def get_addon(self, name: str):
+        """Get loaded addon module."""
+        return self.loaded_addons.get(name)
+
+    def is_loaded(self, name: str) -> bool:
+        """Check if addon is loaded."""
+        return name in self.loaded_addons
+
+
+# Global addon loader
+addon_loader = AddonLoader()
 
 # ============================================================================
 # UTILITIES
@@ -880,6 +967,119 @@ def cmd_config(args):
 def cmd_clear(args):
     """Clear screen"""
     print('\033[2J\033[H', end='')
+
+
+def cmd_addon(args):
+    """Load or list addons"""
+    if not args:
+        print(f"\n{Colors.BOLD}Available Addons:{Colors.END}")
+        available = addon_loader.list_available()
+
+        if not available:
+            print(f"   {Colors.DIM}No addons found in {ADDONS_PATH}{Colors.END}")
+        else:
+            for addon in available:
+                loaded = addon_loader.is_loaded(addon)
+                status = f"{Colors.GREEN}●{Colors.END} loaded" if loaded else f"{Colors.DIM}○{Colors.END} available"
+                print(f"   {addon:20} [{status}]")
+
+        print(f"\n{Colors.DIM}Usage: /addon <name> to load an addon{Colors.END}\n")
+        return
+
+    addon_name = args[0].lower()
+
+    if addon_loader.is_loaded(addon_name):
+        print_info(f"Addon '{addon_name}' already loaded")
+        return
+
+    print_info(f"Loading addon: {addon_name}...")
+    if addon_loader.load(addon_name):
+        print_success(f"Addon '{addon_name}' loaded successfully")
+        skills_count = len(addon_loader.addon_skills)
+        if skills_count:
+            print_info(f"Added {skills_count} new skills")
+    else:
+        print_error(f"Failed to load addon '{addon_name}'")
+
+
+def cmd_generate(args):
+    """Generate code using codegen addon"""
+    # Auto-load codegen addon if not loaded
+    if not addon_loader.is_loaded('codegen'):
+        if 'codegen' in addon_loader.list_available():
+            print_info("Loading codegen addon...")
+            if not addon_loader.load('codegen'):
+                print_error("Failed to load codegen addon")
+                return
+        else:
+            print_error("Codegen addon not found. Please install it first.")
+            return
+
+    codegen = addon_loader.get_addon('codegen')
+    if not codegen:
+        print_error("Codegen module not available")
+        return
+
+    if not args:
+        print(f"""
+{Colors.BOLD}Code Generation{Colors.END}
+{Colors.DIM}Generate Python scripts and ML models{Colors.END}
+
+{Colors.BOLD}Usage:{Colors.END}
+  /generate script <type>      Generate a Python script
+  /generate model <arch>       Generate an ML model
+  /generate training <type>    Generate a training script
+  /generate pipeline <source>  Generate a data pipeline
+
+{Colors.BOLD}Script Types:{Colors.END}
+  data_fetch, lightcurve_analysis, transit_search,
+  anomaly_detection, report_generation
+
+{Colors.BOLD}Model Architectures:{Colors.END}
+  cnn_1d, lstm, transformer, autoencoder, hybrid
+
+{Colors.BOLD}Examples:{Colors.END}
+  /generate script data_fetch
+  /generate model cnn_1d
+  /generate training cnn
+  /generate pipeline tess
+""")
+        return
+
+    cmd = args[0].lower()
+    cmd_args = args[1:] if len(args) > 1 else []
+
+    generator = codegen.create_generator("./generated")
+
+    try:
+        if cmd == "script":
+            task = cmd_args[0] if cmd_args else "data_fetch"
+            target = cmd_args[1] if len(cmd_args) > 1 else "TIC 307210830"
+            path = generator.generate_script(task, target)
+            print_success(f"Generated script: {path}")
+
+        elif cmd == "model":
+            arch = cmd_args[0] if cmd_args else "cnn_1d"
+            input_shape = (200, 1)  # Default shape
+            path = generator.generate_ml_model(arch, input_shape, num_classes=6)
+            print_success(f"Generated model: {path}")
+
+        elif cmd == "training":
+            model_type = cmd_args[0] if cmd_args else "cnn"
+            path = generator.generate_training_script(model_type)
+            print_success(f"Generated training script: {path}")
+
+        elif cmd == "pipeline":
+            source = cmd_args[0] if cmd_args else "tess"
+            steps = ["fetch", "clean", "normalize", "detect", "report"]
+            path = generator.generate_pipeline(source, steps)
+            print_success(f"Generated pipeline: {path}")
+
+        else:
+            print_error(f"Unknown generate command: {cmd}")
+
+    except Exception as e:
+        print_error(f"Generation failed: {e}")
     print_banner()
 
 
@@ -916,6 +1116,8 @@ COMMANDS = {
     '/fetch': cmd_fetch,
     '/config': cmd_config,
     '/clear': cmd_clear,
+    '/addon': cmd_addon,
+    '/generate': cmd_generate,
 }
 
 def main():

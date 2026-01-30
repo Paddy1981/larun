@@ -6,7 +6,9 @@ metadata:
   name: "LARUN TinyML"
   version: "1.0.0"
   description: "TinyML-powered astronomical data analysis"
-  author: "Larun. × Astrodata"
+  author: "Padmanaban Veeraragavalu (Larun Engineering)"
+  ai_assistance: "Claude (Anthropic)"
+  project: "LARUN TinyML × Astrodata"
   license: "MIT"
 
 # =============================================================================
