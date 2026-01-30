@@ -687,18 +687,26 @@ def cmd_help(args):
   /skill <ID>          Show skill details
   /run <ID> [args]     Execute a skill
 
-{Colors.CYAN}Quick Commands:{Colors.END}
-  /train [opts]        Train model on NASA data
-  /detect              Run detection
-  /fetch <target>      Fetch star data
-  /status              Show system status
+{Colors.CYAN}Analysis:{Colors.END}
+  /bls <target>        Run BLS periodogram for transit detection
+  /phase <target> <P>  Phase fold light curve at period P
+  /detect              Run detection on loaded data
 
-{Colors.CYAN}Configuration:{Colors.END}
+{Colors.CYAN}Data:{Colors.END}
+  /train [opts]        Train model on NASA data
+  /fetch <target>      Fetch star data
+
+{Colors.CYAN}Developer:{Colors.END}
+  /addon               List/load developer addons
+  /generate            Generate Python scripts and ML models
+
+{Colors.CYAN}System:{Colors.END}
+  /status              Show system status
   /config [key] [val]  View/modify settings
   /clear               Clear screen
   /exit                Exit LARUN
 
-{Colors.DIM}Type naturally: "train the model", "detect exoplanets", etc.{Colors.END}
+{Colors.DIM}Type naturally: "run bls on TOI-700", "train the model", etc.{Colors.END}
 """)
 
 
@@ -1083,6 +1091,268 @@ def cmd_generate(args):
     print_banner()
 
 
+def cmd_bls(args):
+    """Run BLS periodogram for transit detection"""
+    print(f"\n{Colors.BOLD}BLS Periodogram - Transit Detection{Colors.END}")
+    print(f"{Colors.DIM}Box Least Squares algorithm for periodic transit signals{Colors.END}\n")
+
+    # Parse arguments
+    target = None
+    min_period = 0.5
+    max_period = 20.0
+
+    i = 0
+    while i < len(args):
+        if args[i] == '--target' and i + 1 < len(args):
+            target = args[i + 1]
+            i += 2
+        elif args[i] == '--min-period' and i + 1 < len(args):
+            min_period = float(args[i + 1])
+            i += 2
+        elif args[i] == '--max-period' and i + 1 < len(args):
+            max_period = float(args[i + 1])
+            i += 2
+        elif not args[i].startswith('--'):
+            target = args[i]
+            i += 1
+        else:
+            i += 1
+
+    if not target:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /bls <target>                    Run BLS on a target star
+  /bls --target "TIC 307210830"    Specify target by TIC ID
+  /bls <target> --min-period 1 --max-period 30
+
+{Colors.BOLD}Options:{Colors.END}
+  --target       Target name or TIC ID
+  --min-period   Minimum period to search (days, default: 0.5)
+  --max-period   Maximum period to search (days, default: 20)
+
+{Colors.BOLD}Examples:{Colors.END}
+  /bls TIC 307210830
+  /bls "Kepler-10" --min-period 0.5 --max-period 50
+  /bls TOI-700 --max-period 30
+""")
+        return
+
+    try:
+        # Import required modules
+        import numpy as np
+        import lightkurve as lk
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from skills.periodogram import BLSPeriodogram, phase_fold, bin_phase_curve
+
+        print(f"{Colors.CYAN}Fetching light curve for {target}...{Colors.END}")
+
+        # Search for light curve
+        search = lk.search_lightcurve(target, mission=['TESS', 'Kepler'])
+
+        if len(search) == 0:
+            print_error(f"No light curves found for {target}")
+            return
+
+        print(f"{Colors.DIM}Found {len(search)} observations{Colors.END}")
+
+        # Download first observation
+        lc = search[0].download()
+        lc = lc.remove_nans().normalize().remove_outliers(sigma=3)
+
+        time = lc.time.value
+        flux = lc.flux.value
+
+        print(f"{Colors.DIM}Light curve: {len(time)} points, baseline: {time.max()-time.min():.1f} days{Colors.END}")
+
+        # Run BLS
+        print(f"\n{Colors.CYAN}Running BLS periodogram...{Colors.END}")
+        print(f"{Colors.DIM}Period range: {min_period} - {max_period} days{Colors.END}")
+
+        bls = BLSPeriodogram(
+            min_period=min_period,
+            max_period=max_period,
+            n_periods=5000
+        )
+
+        result = bls.compute(time, flux, min_snr=7.0)
+
+        # Display results
+        print(f"\n{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+        print(f"{Colors.BOLD}BLS Results for {target}{Colors.END}")
+        print(f"{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+
+        print(f"\n{Colors.BOLD}Best Period:{Colors.END} {result.best_period:.6f} days")
+        print(f"{Colors.BOLD}BLS Power:{Colors.END}   {result.best_power:.4f}")
+        print(f"{Colors.BOLD}FAP:{Colors.END}         {result.fap:.2e}")
+
+        if result.candidates:
+            print(f"\n{Colors.BOLD}Transit Candidates:{Colors.END}")
+            for i, c in enumerate(result.candidates, 1):
+                print(f"\n  {Colors.CYAN}Candidate {i}:{Colors.END}")
+                print(f"    Period:   {c.period:.4f} days ({c.period*24:.2f} hours)")
+                print(f"    Depth:    {c.depth*1e6:.0f} ppm ({c.depth*100:.3f}%)")
+                print(f"    Duration: {c.duration*24:.2f} hours")
+                print(f"    SNR:      {c.snr:.1f}")
+                print(f"    T0:       {c.t0:.4f}")
+
+                # Estimate planet radius (assuming Sun-like star)
+                rp_rs = np.sqrt(c.depth)
+                rp_earth = rp_rs * 109.2  # Sun radius in Earth radii
+                print(f"    Est. Rp:  {rp_earth:.1f} R⊕ (Sun-like star)")
+        else:
+            print(f"\n{Colors.YELLOW}No significant transit candidates found (SNR < 7){Colors.END}")
+
+        # Save results
+        output_file = f"output/bls_{target.replace(' ', '_')}.json"
+        Path("output").mkdir(exist_ok=True)
+
+        import json
+        with open(output_file, 'w') as f:
+            json.dump(result.to_dict(), f, indent=2)
+
+        print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+        print()
+
+    except ImportError as e:
+        print_error(f"Missing dependency: {e}")
+        print_info("Install with: pip install lightkurve astropy")
+    except Exception as e:
+        print_error(f"BLS analysis failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def cmd_phase(args):
+    """Phase fold a light curve at a given period"""
+    print(f"\n{Colors.BOLD}Phase Folding{Colors.END}")
+    print(f"{Colors.DIM}Fold light curve at a given period{Colors.END}\n")
+
+    if len(args) < 2:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /phase <target> <period>         Phase fold at given period
+  /phase <target> <period> --t0 <epoch>
+
+{Colors.BOLD}Examples:{Colors.END}
+  /phase "TIC 307210830" 3.5
+  /phase "Kepler-10" 0.837 --t0 2454964.5
+""")
+        return
+
+    target = args[0]
+    period = float(args[1])
+    t0 = 0.0
+
+    # Parse optional t0
+    if '--t0' in args:
+        idx = args.index('--t0')
+        if idx + 1 < len(args):
+            t0 = float(args[idx + 1])
+
+    try:
+        import numpy as np
+        import lightkurve as lk
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from skills.periodogram import phase_fold, bin_phase_curve
+
+        print(f"{Colors.CYAN}Fetching light curve for {target}...{Colors.END}")
+
+        search = lk.search_lightcurve(target, mission=['TESS', 'Kepler'])
+        if len(search) == 0:
+            print_error(f"No light curves found for {target}")
+            return
+
+        lc = search[0].download()
+        lc = lc.remove_nans().normalize().remove_outliers(sigma=3)
+
+        time = lc.time.value
+        flux = lc.flux.value
+
+        # Phase fold
+        phase, flux_folded = phase_fold(time, flux, period, t0)
+
+        # Bin the data
+        bin_phase, bin_flux, bin_err = bin_phase_curve(phase, flux_folded, n_bins=100)
+
+        # Calculate transit depth from binned data
+        min_idx = np.nanargmin(bin_flux)
+        depth = 1.0 - bin_flux[min_idx]
+
+        print(f"\n{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+        print(f"{Colors.BOLD}Phase Folded: {target} at P={period:.4f}d{Colors.END}")
+        print(f"{Colors.GREEN}═══════════════════════════════════════════════════════════{Colors.END}")
+
+        print(f"\n{Colors.BOLD}Transit Depth:{Colors.END} {depth*1e6:.0f} ppm ({depth*100:.3f}%)")
+        print(f"{Colors.BOLD}Phase at min:{Colors.END}  {bin_phase[min_idx]:.3f}")
+
+        # ASCII phase curve visualization
+        print(f"\n{Colors.BOLD}Phase Curve:{Colors.END}")
+        print_ascii_phase_curve(bin_phase, bin_flux)
+
+        # Save results
+        output_file = f"output/phase_{target.replace(' ', '_')}.json"
+        Path("output").mkdir(exist_ok=True)
+
+        import json
+        with open(output_file, 'w') as f:
+            json.dump({
+                'target': target,
+                'period': period,
+                't0': t0,
+                'depth_ppm': float(depth * 1e6),
+                'phase': bin_phase.tolist(),
+                'flux': bin_flux.tolist(),
+                'flux_err': bin_err.tolist()
+            }, f, indent=2)
+
+        print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+
+    except Exception as e:
+        print_error(f"Phase folding failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def print_ascii_phase_curve(phase, flux, width=60, height=10):
+    """Print ASCII representation of phase curve"""
+    import numpy as np
+
+    # Normalize flux for display
+    flux_norm = flux - np.nanmin(flux)
+    flux_norm = flux_norm / np.nanmax(flux_norm) if np.nanmax(flux_norm) > 0 else flux_norm
+
+    # Create ASCII plot
+    for row in range(height, -1, -1):
+        line = ""
+        threshold = row / height
+
+        for i, (p, f) in enumerate(zip(phase, flux_norm)):
+            if np.isnan(f):
+                line += " "
+            elif f >= threshold:
+                if row == height:
+                    line += "─"
+                else:
+                    line += "█"
+            else:
+                line += " "
+
+        # Add axis label
+        if row == height:
+            print(f"  1.00 │{line}│")
+        elif row == height // 2:
+            y_val = np.nanmin(flux) + (np.nanmax(flux) - np.nanmin(flux)) * 0.5
+            print(f"  {y_val:.3f}│{line}│")
+        elif row == 0:
+            print(f"  {np.nanmin(flux):.3f}│{line}│")
+        else:
+            print(f"       │{line}│")
+
+    # X-axis
+    print(f"       └{'─' * len(phase)}┘")
+    print(f"       -0.5{' ' * (len(phase)//2 - 4)}0{' ' * (len(phase)//2 - 3)}0.5")
+
+
 def process_natural_language(query):
     """Process natural language queries"""
     query_lower = query.lower()
@@ -1091,6 +1361,10 @@ def process_natural_language(query):
         cmd_train([])
     elif any(w in query_lower for w in ['detect', 'classify', 'predict']):
         cmd_detect([])
+    elif any(w in query_lower for w in ['bls', 'periodogram', 'period']):
+        cmd_bls([])
+    elif any(w in query_lower for w in ['phase', 'fold']):
+        cmd_phase([])
     elif any(w in query_lower for w in ['skill', 'abilities', 'capabilities']):
         cmd_skills([])
     elif any(w in query_lower for w in ['status', 'info']):
@@ -1118,6 +1392,8 @@ COMMANDS = {
     '/clear': cmd_clear,
     '/addon': cmd_addon,
     '/generate': cmd_generate,
+    '/bls': cmd_bls,
+    '/phase': cmd_phase,
 }
 
 def main():

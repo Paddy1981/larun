@@ -1,0 +1,177 @@
+# LARUN Periodogram Skills
+# Skill definitions for period detection algorithms
+
+- id: "ANAL-001"
+  name: "BLS Periodogram"
+  category: "analysis"
+  tier: 2
+  status: "active"
+  description: |
+    Box Least Squares (BLS) periodogram for detecting periodic transit signals.
+    The gold standard algorithm for exoplanet transit detection.
+    Based on Kovács, Zucker, & Mazeh (2002).
+  command: "larun analyze bls"
+
+  dependencies:
+    python:
+      - numpy>=1.21
+      - astropy>=5.0  # Optional but recommended
+    skills:
+      - DATA-001  # Data ingestion
+
+  inputs:
+    - name: "input"
+      type: "filepath"
+      required: true
+      description: "Input light curve file (CSV, FITS, or NPZ)"
+    - name: "min_period"
+      type: "float"
+      default: 0.5
+      description: "Minimum period to search (days)"
+    - name: "max_period"
+      type: "float"
+      default: 50.0
+      description: "Maximum period to search (days)"
+    - name: "n_periods"
+      type: "int"
+      default: 10000
+      description: "Number of period samples"
+    - name: "min_snr"
+      type: "float"
+      default: 7.0
+      description: "Minimum SNR for candidate detection"
+    - name: "output"
+      type: "filepath"
+      default: "bls_result.json"
+      description: "Output file path"
+    - name: "format"
+      type: "enum"
+      values: ["json", "csv"]
+      default: "json"
+      description: "Output format"
+
+  outputs:
+    - type: "periodogram"
+      format: ["json", "csv"]
+      fields:
+        - "periods"
+        - "power"
+        - "best_period"
+        - "best_power"
+        - "fap"
+        - "candidates"
+
+  metrics:
+    - "best_period_days"
+    - "transit_depth_ppm"
+    - "transit_snr"
+    - "false_alarm_probability"
+
+  examples:
+    - "larun analyze bls --input lightcurve.csv"
+    - "larun analyze bls --input data.fits --min-period 1 --max-period 20"
+    - "larun analyze bls --input tess_data.npz --min-snr 10 --format json"
+
+  references:
+    - "Kovács, G., Zucker, S., & Mazeh, T. (2002). A&A, 391, 369"
+    - "docs/research/EXOPLANET_DETECTION.md"
+
+
+- id: "ANAL-010"
+  name: "Lomb-Scargle Periodogram"
+  category: "analysis"
+  tier: 2
+  status: "active"
+  description: |
+    Lomb-Scargle periodogram for detecting periodic variability in unevenly
+    sampled time series data. Best for sinusoidal signals like stellar
+    pulsations, rotation, and eclipsing binaries.
+  command: "larun analyze lomb-scargle"
+
+  dependencies:
+    python:
+      - numpy>=1.21
+      - scipy>=1.9
+      - astropy>=5.0  # Optional
+
+  inputs:
+    - name: "input"
+      type: "filepath"
+      required: true
+      description: "Input light curve file"
+    - name: "min_period"
+      type: "float"
+      default: 0.1
+      description: "Minimum period (days)"
+    - name: "max_period"
+      type: "float"
+      default: 100.0
+      description: "Maximum period (days)"
+    - name: "samples_per_peak"
+      type: "int"
+      default: 5
+      description: "Frequency resolution (oversampling)"
+    - name: "output"
+      type: "filepath"
+      default: "ls_result.json"
+      description: "Output file path"
+
+  outputs:
+    - type: "periodogram"
+      format: ["json", "csv"]
+      fields:
+        - "periods"
+        - "power"
+        - "best_period"
+        - "fap"
+
+  examples:
+    - "larun analyze lomb-scargle --input variable_star.csv"
+    - "larun analyze lomb-scargle --input data.fits --max-period 50"
+
+
+- id: "ANAL-002"
+  name: "Phase Folding"
+  category: "analysis"
+  tier: 1
+  status: "active"
+  description: |
+    Phase fold a light curve at a given period to stack multiple transits
+    and improve signal-to-noise ratio.
+  command: "larun analyze phase-fold"
+
+  dependencies:
+    python:
+      - numpy>=1.21
+
+  inputs:
+    - name: "input"
+      type: "filepath"
+      required: true
+      description: "Input light curve"
+    - name: "period"
+      type: "float"
+      required: true
+      description: "Period to fold at (days)"
+    - name: "t0"
+      type: "float"
+      default: 0.0
+      description: "Reference epoch (mid-transit time, BJD)"
+    - name: "n_bins"
+      type: "int"
+      default: 100
+      description: "Number of phase bins"
+
+  outputs:
+    - type: "phase_curve"
+      format: ["json", "csv", "png"]
+      fields:
+        - "phase"
+        - "flux"
+        - "flux_err"
+        - "bin_centers"
+        - "bin_flux"
+
+  examples:
+    - "larun analyze phase-fold --input lc.csv --period 3.5"
+    - "larun analyze phase-fold --input lc.csv --period 3.5 --t0 2458000.0 --n-bins 200"
