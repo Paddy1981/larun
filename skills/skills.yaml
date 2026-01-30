@@ -1,0 +1,687 @@
+# LARUN TinyML - Skills Definition
+# Each skill can be loaded and executed by the CLI
+# Version: 1.0
+
+metadata:
+  name: "LARUN TinyML"
+  version: "1.0.0"
+  description: "TinyML-powered astronomical data analysis"
+  author: "Larun. × Astrodata"
+  license: "MIT"
+
+# =============================================================================
+# TIER 1: CORE SKILLS (Foundation)
+# =============================================================================
+
+skills:
+  # ---------------------------------------------------------------------------
+  # DATA SKILLS
+  # ---------------------------------------------------------------------------
+  
+  - id: "DATA-001"
+    name: "NASA Data Ingestion"
+    category: "data"
+    tier: 1
+    status: "active"
+    description: "Fetch data from NASA archives (MAST, Exoplanet Archive)"
+    command: "larun fetch"
+    dependencies: ["lightkurve", "astroquery"]
+    inputs:
+      - name: "source"
+        type: "enum"
+        options: ["tess", "kepler", "k2", "exoplanet_archive"]
+        required: true
+      - name: "target"
+        type: "string"
+        description: "Target name or ID (e.g., TIC 12345678)"
+        required: true
+      - name: "limit"
+        type: "integer"
+        default: 100
+    outputs:
+      - type: "lightcurve"
+        format: ["fits", "csv", "npz"]
+    examples:
+      - "larun fetch --source tess --target 'TIC 307210830'"
+      - "larun fetch --source kepler --target 'Kepler-186'"
+      - "larun fetch --source exoplanet_archive --limit 500"
+
+  - id: "DATA-002"
+    name: "FITS File Parser"
+    category: "data"
+    tier: 1
+    status: "active"
+    description: "Read and write FITS files (standard astronomy format)"
+    command: "larun fits"
+    dependencies: ["astropy"]
+    inputs:
+      - name: "file"
+        type: "filepath"
+        extensions: [".fits", ".fit"]
+        required: true
+      - name: "extension"
+        type: "integer"
+        default: 1
+    outputs:
+      - type: "table"
+        format: ["csv", "json"]
+
+  - id: "DATA-003"
+    name: "Light Curve Processing"
+    category: "data"
+    tier: 1
+    status: "active"
+    description: "Normalize, detrend, and clean light curves"
+    command: "larun process"
+    dependencies: ["numpy", "scipy"]
+    inputs:
+      - name: "input"
+        type: "lightcurve"
+        required: true
+      - name: "normalize"
+        type: "boolean"
+        default: true
+      - name: "detrend"
+        type: "boolean"
+        default: true
+      - name: "remove_outliers"
+        type: "boolean"
+        default: true
+      - name: "sigma"
+        type: "float"
+        default: 3.0
+    outputs:
+      - type: "lightcurve"
+        format: ["npz", "csv"]
+
+  # ---------------------------------------------------------------------------
+  # MODEL SKILLS
+  # ---------------------------------------------------------------------------
+  
+  - id: "MODEL-001"
+    name: "Spectral CNN"
+    category: "model"
+    tier: 1
+    status: "active"
+    description: "1D Convolutional Neural Network for spectral classification"
+    command: "larun model train"
+    dependencies: ["tensorflow"]
+    inputs:
+      - name: "data"
+        type: "dataset"
+        required: true
+      - name: "epochs"
+        type: "integer"
+        default: 100
+      - name: "batch_size"
+        type: "integer"
+        default: 16
+      - name: "learning_rate"
+        type: "float"
+        default: 0.001
+    outputs:
+      - type: "model"
+        format: ["h5", "tflite"]
+    classes:
+      - "noise"
+      - "stellar_signal"
+      - "planetary_transit"
+      - "eclipsing_binary"
+      - "instrument_artifact"
+      - "unknown_anomaly"
+
+  - id: "MODEL-002"
+    name: "TFLite Export"
+    category: "model"
+    tier: 1
+    status: "active"
+    description: "Export models for edge deployment"
+    command: "larun model export"
+    dependencies: ["tensorflow"]
+    inputs:
+      - name: "model"
+        type: "filepath"
+        extensions: [".h5"]
+        required: true
+      - name: "quantize"
+        type: "boolean"
+        default: true
+      - name: "target"
+        type: "enum"
+        options: ["mobile", "microcontroller", "edge_tpu"]
+        default: "mobile"
+    outputs:
+      - type: "model"
+        format: ["tflite"]
+
+  # ---------------------------------------------------------------------------
+  # DETECTION SKILLS
+  # ---------------------------------------------------------------------------
+  
+  - id: "DETECT-001"
+    name: "Transit Detection"
+    category: "detection"
+    tier: 1
+    status: "active"
+    description: "Identify planetary transit signals in light curves"
+    command: "larun detect transit"
+    dependencies: ["numpy", "scipy"]
+    inputs:
+      - name: "lightcurve"
+        type: "lightcurve"
+        required: true
+      - name: "min_depth"
+        type: "float"
+        default: 0.0001
+        description: "Minimum transit depth (fraction)"
+      - name: "min_snr"
+        type: "float"
+        default: 7.0
+      - name: "min_duration"
+        type: "float"
+        default: 0.5
+        description: "Minimum duration (hours)"
+    outputs:
+      - type: "detections"
+        format: ["json", "csv"]
+    metrics:
+      - "depth"
+      - "duration"
+      - "snr"
+      - "period"
+      - "epoch"
+
+  - id: "DETECT-002"
+    name: "Anomaly Detection"
+    category: "detection"
+    tier: 1
+    status: "active"
+    description: "Flag unusual patterns in light curves"
+    command: "larun detect anomaly"
+    dependencies: ["numpy", "sklearn"]
+    inputs:
+      - name: "lightcurve"
+        type: "lightcurve"
+        required: true
+      - name: "sensitivity"
+        type: "float"
+        default: 0.95
+      - name: "method"
+        type: "enum"
+        options: ["isolation_forest", "autoencoder", "statistical"]
+        default: "statistical"
+    outputs:
+      - type: "anomalies"
+        format: ["json", "csv"]
+
+  # ---------------------------------------------------------------------------
+  # REPORT SKILLS
+  # ---------------------------------------------------------------------------
+  
+  - id: "REPORT-001"
+    name: "NASA Report Generator"
+    category: "report"
+    tier: 1
+    status: "active"
+    description: "Create NASA-compatible submission reports"
+    command: "larun report"
+    dependencies: ["jinja2"]
+    inputs:
+      - name: "detections"
+        type: "detections"
+        required: true
+      - name: "format"
+        type: "enum"
+        options: ["pdf", "html", "json", "csv", "fits"]
+        default: "html"
+      - name: "template"
+        type: "enum"
+        options: ["nasa", "exofop", "custom"]
+        default: "nasa"
+    outputs:
+      - type: "report"
+        format: ["pdf", "html", "json"]
+
+# =============================================================================
+# TIER 2: ADVANCED ANALYSIS SKILLS
+# =============================================================================
+
+  - id: "ANAL-001"
+    name: "BLS Periodogram"
+    category: "analysis"
+    tier: 2
+    status: "planned"
+    description: "Box Least Squares periodogram for transit search"
+    command: "larun analyze bls"
+    dependencies: ["astropy", "numpy"]
+    inputs:
+      - name: "lightcurve"
+        type: "lightcurve"
+        required: true
+      - name: "min_period"
+        type: "float"
+        default: 0.5
+        description: "Minimum period (days)"
+      - name: "max_period"
+        type: "float"
+        default: 50.0
+        description: "Maximum period (days)"
+      - name: "frequency_factor"
+        type: "float"
+        default: 1.0
+    outputs:
+      - type: "periodogram"
+        format: ["npz", "csv"]
+    metrics:
+      - "best_period"
+      - "best_power"
+      - "snr"
+
+  - id: "ANAL-002"
+    name: "Phase Folding"
+    category: "analysis"
+    tier: 2
+    status: "planned"
+    description: "Fold light curves on orbital period"
+    command: "larun analyze fold"
+    dependencies: ["numpy"]
+    inputs:
+      - name: "lightcurve"
+        type: "lightcurve"
+        required: true
+      - name: "period"
+        type: "float"
+        required: true
+      - name: "epoch"
+        type: "float"
+        required: true
+      - name: "bins"
+        type: "integer"
+        default: 100
+    outputs:
+      - type: "folded_lightcurve"
+        format: ["npz", "csv"]
+
+  - id: "ANAL-003"
+    name: "Transit Fitting"
+    category: "analysis"
+    tier: 2
+    status: "planned"
+    description: "Fit Mandel-Agol transit model"
+    command: "larun analyze fit"
+    dependencies: ["batman-package", "scipy"]
+    inputs:
+      - name: "lightcurve"
+        type: "lightcurve"
+        required: true
+      - name: "period"
+        type: "float"
+        required: true
+    outputs:
+      - type: "transit_params"
+        format: ["json"]
+    parameters:
+      - "rp_rs"  # Planet-to-star radius ratio
+      - "a_rs"   # Semi-major axis / stellar radius
+      - "inc"    # Inclination
+      - "ecc"    # Eccentricity
+      - "omega"  # Argument of periastron
+      - "u1"     # Limb darkening coefficient 1
+      - "u2"     # Limb darkening coefficient 2
+
+  - id: "ANAL-006"
+    name: "False Positive Probability"
+    category: "analysis"
+    tier: 2
+    status: "planned"
+    description: "Estimate false positive probability for candidates"
+    command: "larun analyze fpp"
+    dependencies: ["vespa"]
+    inputs:
+      - name: "candidate"
+        type: "candidate"
+        required: true
+      - name: "stellar_params"
+        type: "stellar"
+        required: true
+    outputs:
+      - type: "fpp_result"
+        format: ["json"]
+    metrics:
+      - "fpp"
+      - "scenario_probs"
+
+# =============================================================================
+# TIER 3: STELLAR CHARACTERIZATION SKILLS
+# =============================================================================
+
+  - id: "STAR-001"
+    name: "Stellar Classification"
+    category: "stellar"
+    tier: 3
+    status: "planned"
+    description: "Classify star types (OBAFGKM)"
+    command: "larun stellar classify"
+    dependencies: ["astroquery"]
+    inputs:
+      - name: "target"
+        type: "string"
+        required: true
+    outputs:
+      - type: "stellar_class"
+        format: ["json"]
+    classes:
+      - "O"
+      - "B"
+      - "A"
+      - "F"
+      - "G"
+      - "K"
+      - "M"
+
+  - id: "STAR-002"
+    name: "Effective Temperature"
+    category: "stellar"
+    tier: 3
+    status: "planned"
+    description: "Estimate stellar effective temperature"
+    command: "larun stellar teff"
+    dependencies: ["astroquery"]
+    inputs:
+      - name: "target"
+        type: "string"
+        required: true
+      - name: "photometry"
+        type: "photometry"
+        required: false
+    outputs:
+      - type: "temperature"
+        format: ["json"]
+    units: "K"
+
+  - id: "STAR-003"
+    name: "Stellar Radius"
+    category: "stellar"
+    tier: 3
+    status: "planned"
+    description: "Calculate stellar radius from luminosity"
+    command: "larun stellar radius"
+    dependencies: ["astropy"]
+    inputs:
+      - name: "target"
+        type: "string"
+        required: true
+      - name: "parallax"
+        type: "float"
+        required: false
+    outputs:
+      - type: "radius"
+        format: ["json"]
+    units: "R_sun"
+
+# =============================================================================
+# TIER 4: EXOPLANET CHARACTERIZATION SKILLS
+# =============================================================================
+
+  - id: "PLANET-001"
+    name: "Radius Estimation"
+    category: "planet"
+    tier: 4
+    status: "planned"
+    description: "Calculate planet radius from transit depth"
+    command: "larun planet radius"
+    dependencies: ["numpy"]
+    inputs:
+      - name: "depth"
+        type: "float"
+        required: true
+        description: "Transit depth (fraction)"
+      - name: "stellar_radius"
+        type: "float"
+        required: true
+        description: "Stellar radius (R_sun)"
+    outputs:
+      - type: "planet_radius"
+        format: ["json"]
+    units: "R_earth"
+    formula: "R_p = R_star * sqrt(depth)"
+
+  - id: "PLANET-005"
+    name: "Habitability Assessment"
+    category: "planet"
+    tier: 4
+    status: "planned"
+    description: "Check if planet is in habitable zone"
+    command: "larun planet habitable"
+    dependencies: ["astropy"]
+    inputs:
+      - name: "semi_major_axis"
+        type: "float"
+        required: true
+        description: "Orbital distance (AU)"
+      - name: "stellar_teff"
+        type: "float"
+        required: true
+        description: "Stellar temperature (K)"
+      - name: "stellar_luminosity"
+        type: "float"
+        required: true
+        description: "Stellar luminosity (L_sun)"
+    outputs:
+      - type: "habitability"
+        format: ["json"]
+    metrics:
+      - "in_hz"
+      - "hz_inner"
+      - "hz_outer"
+      - "earth_similarity_index"
+
+# =============================================================================
+# TIER 5: MULTI-MISSION SKILLS
+# =============================================================================
+
+  - id: "MISSION-001"
+    name: "TESS Integration"
+    category: "mission"
+    tier: 5
+    status: "active"
+    description: "Full TESS data pipeline"
+    command: "larun mission tess"
+    dependencies: ["lightkurve", "astroquery"]
+    data_source: "MAST"
+    coverage: "~85% of sky"
+    cadence: ["2-min", "30-min"]
+
+  - id: "MISSION-002"
+    name: "Kepler Integration"
+    category: "mission"
+    tier: 5
+    status: "active"
+    description: "Kepler/K2 data pipeline"
+    command: "larun mission kepler"
+    dependencies: ["lightkurve", "astroquery"]
+    data_source: "MAST"
+    missions: ["Kepler", "K2"]
+
+  - id: "MISSION-003"
+    name: "Gaia Integration"
+    category: "mission"
+    tier: 5
+    status: "planned"
+    description: "Query Gaia DR3 for stellar parameters"
+    command: "larun mission gaia"
+    dependencies: ["astroquery"]
+    data_source: "ESA"
+    parameters:
+      - "parallax"
+      - "proper_motion"
+      - "magnitudes"
+      - "teff"
+      - "logg"
+
+# =============================================================================
+# TIER 6: DISCOVERY SKILLS
+# =============================================================================
+
+  - id: "DISC-001"
+    name: "Multi-Planet Detection"
+    category: "discovery"
+    tier: 6
+    status: "planned"
+    description: "Find systems with multiple planets"
+    command: "larun discover multiplanet"
+    dependencies: ["numpy", "scipy"]
+    method: "iterative_bls"
+
+  - id: "DISC-005"
+    name: "Exomoon Search"
+    category: "discovery"
+    tier: 6
+    status: "research"
+    description: "Hunt for exomoons in transit light curves"
+    command: "larun discover exomoon"
+    dependencies: ["numpy", "scipy"]
+    complexity: "very_high"
+    references:
+      - "Kipping 2021"
+      - "Teachey & Kipping 2018"
+
+# =============================================================================
+# TIER 7: RESEARCH SKILLS
+# =============================================================================
+
+  - id: "RES-001"
+    name: "Literature Search"
+    category: "research"
+    tier: 7
+    status: "planned"
+    description: "Find relevant papers from ADS and arXiv"
+    command: "larun research search"
+    dependencies: ["ads", "arxiv"]
+    inputs:
+      - name: "query"
+        type: "string"
+        required: true
+      - name: "limit"
+        type: "integer"
+        default: 50
+      - name: "years"
+        type: "integer"
+        default: 5
+    outputs:
+      - type: "papers"
+        format: ["json", "bibtex"]
+
+  - id: "RES-003"
+    name: "Figure Generator"
+    category: "research"
+    tier: 7
+    status: "planned"
+    description: "Create publication-quality plots"
+    command: "larun research plot"
+    dependencies: ["matplotlib"]
+    plot_types:
+      - "lightcurve"
+      - "periodogram"
+      - "phase_folded"
+      - "transit_model"
+      - "corner_plot"
+      - "detection_summary"
+    outputs:
+      - type: "figure"
+        format: ["png", "pdf", "svg"]
+    style: "publication"
+
+# =============================================================================
+# CLI CONFIGURATION
+# =============================================================================
+
+cli:
+  name: "larun"
+  version: "1.0.0"
+  description: "LARUN TinyML - Astronomical Data Analysis CLI"
+  
+  global_options:
+    - name: "verbose"
+      short: "-v"
+      type: "boolean"
+      default: false
+    - name: "output"
+      short: "-o"
+      type: "filepath"
+      default: "./output"
+    - name: "config"
+      short: "-c"
+      type: "filepath"
+      default: "~/.larun/config.yaml"
+  
+  commands:
+    - name: "fetch"
+      description: "Fetch data from NASA archives"
+      skills: ["DATA-001"]
+    
+    - name: "process"
+      description: "Process light curves"
+      skills: ["DATA-003"]
+    
+    - name: "detect"
+      description: "Run detection algorithms"
+      subcommands:
+        - name: "transit"
+          skills: ["DETECT-001"]
+        - name: "anomaly"
+          skills: ["DETECT-002"]
+    
+    - name: "analyze"
+      description: "Advanced analysis"
+      subcommands:
+        - name: "bls"
+          skills: ["ANAL-001"]
+        - name: "fold"
+          skills: ["ANAL-002"]
+        - name: "fit"
+          skills: ["ANAL-003"]
+        - name: "fpp"
+          skills: ["ANAL-006"]
+    
+    - name: "stellar"
+      description: "Stellar characterization"
+      subcommands:
+        - name: "classify"
+          skills: ["STAR-001"]
+        - name: "teff"
+          skills: ["STAR-002"]
+        - name: "radius"
+          skills: ["STAR-003"]
+    
+    - name: "planet"
+      description: "Planet characterization"
+      subcommands:
+        - name: "radius"
+          skills: ["PLANET-001"]
+        - name: "habitable"
+          skills: ["PLANET-005"]
+    
+    - name: "model"
+      description: "Model operations"
+      subcommands:
+        - name: "train"
+          skills: ["MODEL-001"]
+        - name: "export"
+          skills: ["MODEL-002"]
+    
+    - name: "report"
+      description: "Generate reports"
+      skills: ["REPORT-001"]
+    
+    - name: "research"
+      description: "Research assistance"
+      subcommands:
+        - name: "search"
+          skills: ["RES-001"]
+        - name: "plot"
+          skills: ["RES-003"]
+    
+    - name: "pipeline"
+      description: "Run complete pipeline"
+      skills: ["DATA-001", "DATA-003", "MODEL-001", "DETECT-001", "REPORT-001"]
