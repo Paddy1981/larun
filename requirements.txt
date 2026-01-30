@@ -1,6 +1,6 @@
 # Core ML Framework
 tensorflow>=2.13.0
-tensorflow-lite-support>=0.4.4
+# tensorflow-lite-support>=0.4.4  # Not available on macOS ARM
 
 # Astronomical Data Processing
 astropy>=5.3
