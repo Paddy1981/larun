@@ -35,6 +35,7 @@
 ## Features
 
 - **Interactive CLI**: Claude-like terminal interface for astronomical analysis
+- **Chat Interface**: Natural language conversational AI for astronomy
 - **Skills System**: 24+ specialized skills for data analysis, detection, and reporting
 - **TinyML Model**: Lightweight neural network (<100KB) for edge deployment
 - **NASA Data Pipeline**: Direct ingestion from MAST, TESS, Kepler archives
@@ -48,6 +49,9 @@
 ```bash
 # Start the LARUN CLI
 python larun.py
+
+# Or start Chat Mode (natural language)
+python larun_chat.py
 ```
 
 ### Available Commands
@@ -103,8 +107,9 @@ python run_pipeline.py --num-stars 50 --epochs 100
 ## Project Structure
 
 ```
-larun-tinyml/
+larun/
 ├── larun.py              # Main interactive CLI
+├── larun_chat.py         # Chat interface (natural language)
 ├── run_pipeline.py       # Automated pipeline
 ├── train_real_data.py    # NASA data training
 ├── src/
@@ -169,8 +174,8 @@ Load developer addons for advanced code generation:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Paddy1981/astro-tinyml.git
-cd astro-tinyml
+git clone https://github.com/Paddy1981/larun.git
+cd larun
 
 # Create virtual environment
 python -m venv venv
