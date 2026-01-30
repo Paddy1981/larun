@@ -8,11 +8,11 @@ Uses confirmed exoplanets and known phenomena for continuous model improvement.
 import os
 import json
 import logging
+import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any, Tuple
-from dataclasses import dataclass, field
-import pickle
+from dataclasses import dataclass, field, asdict
 
 import numpy as np
 import pandas as pd
@@ -20,6 +20,29 @@ from sklearn.metrics import classification_report, confusion_matrix
 from scipy import stats
 
 logger = logging.getLogger(__name__)
+
+
+class CalibrationJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder for calibration data types."""
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return {"__numpy__": True, "data": obj.tolist(), "dtype": str(obj.dtype)}
+        if isinstance(obj, datetime):
+            return {"__datetime__": True, "iso": obj.isoformat()}
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.integer):
+            return int(obj)
+        return super().default(obj)
+
+
+def calibration_json_decoder(obj: Dict) -> Any:
+    """Custom JSON decoder for calibration data types."""
+    if "__numpy__" in obj:
+        return np.array(obj["data"], dtype=obj["dtype"])
+    if "__datetime__" in obj:
+        return datetime.fromisoformat(obj["iso"])
+    return obj
 
 
 @dataclass
@@ -55,34 +78,48 @@ class CalibrationDatabase:
     Uses confirmed discoveries as ground truth for calibration.
     """
     
-    def __init__(self, db_path: str = "data/calibration/calibration_db.pkl"):
+    def __init__(self, db_path: str = "data/calibration/calibration_db.json"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         self.references: Dict[str, CalibrationReference] = {}
         self.metrics_history: List[CalibrationMetrics] = []
-        
+
         self._load()
-    
+
     def _load(self):
-        """Load database from disk."""
+        """Load database from disk using safe JSON deserialization."""
         if self.db_path.exists():
             try:
-                with open(self.db_path, "rb") as f:
-                    data = pickle.load(f)
-                    self.references = data.get("references", {})
-                    self.metrics_history = data.get("metrics_history", [])
+                with open(self.db_path, "r") as f:
+                    data = json.load(f, object_hook=calibration_json_decoder)
+
+                    # Reconstruct CalibrationReference objects
+                    refs = data.get("references", {})
+                    self.references = {
+                        k: CalibrationReference(**v) for k, v in refs.items()
+                    }
+
+                    # Reconstruct CalibrationMetrics objects
+                    metrics = data.get("metrics_history", [])
+                    self.metrics_history = [
+                        CalibrationMetrics(**m) for m in metrics
+                    ]
+
                 logger.info(f"Loaded {len(self.references)} calibration references")
-            except Exception as e:
-                logger.error(f"Error loading calibration database: {e}")
-    
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON in calibration database: {e}")
+            except (KeyError, TypeError) as e:
+                logger.error(f"Error reconstructing calibration data: {e}")
+
     def _save(self):
-        """Save database to disk."""
-        with open(self.db_path, "wb") as f:
-            pickle.dump({
-                "references": self.references,
-                "metrics_history": self.metrics_history
-            }, f)
+        """Save database to disk using safe JSON serialization."""
+        data = {
+            "references": {k: asdict(v) for k, v in self.references.items()},
+            "metrics_history": [asdict(m) for m in self.metrics_history]
+        }
+        with open(self.db_path, "w") as f:
+            json.dump(data, f, cls=CalibrationJSONEncoder, indent=2)
     
     def add_reference(self, ref: CalibrationReference):
         """Add a calibration reference."""
@@ -244,16 +281,26 @@ class AutoCalibrator:
     def run_calibration(self) -> CalibrationMetrics:
         """
         Run a full calibration cycle.
-        
+
         Steps:
         1. Get training data from verified references
         2. Evaluate model on calibration set
         3. Compute metrics and detect drift
         4. Generate recommendations
-        
+
         Returns:
             CalibrationMetrics with results
+
+        Raises:
+            ValueError: If model is not built/trained
         """
+        # Verify model is ready for inference
+        if not hasattr(self.model, 'model') or self.model.model is None:
+            raise ValueError(
+                "Model must be built and trained before calibration. "
+                "Call model.build_model() and model.train() first."
+            )
+
         logger.info("Starting calibration run...")
         
         # Get calibration data

@@ -24,7 +24,8 @@ import json
 
 import numpy as np
 
-# Set up logging
+# Set up logging - ensure logs directory exists first
+os.makedirs('logs', exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -211,7 +212,8 @@ class AstroTinyMLPipeline:
                 X_train, y_train, test_size=0.2, random_state=42
             )
         
-        logger.info(f"Training with {len(X_train)} samples, validating with {len(X_val) if X_val is not None else 0}")
+        val_count = len(X_val) if X_val is not None and len(X_val) > 0 else 0
+        logger.info(f"Training with {len(X_train)} samples, validating with {val_count}")
         
         history = self.model.train(
             X_train, y_train,
@@ -542,7 +544,11 @@ Examples:
         if not args.input:
             print("Error: --input required for detect mode")
             sys.exit(1)
-        batch, files = pipeline.run_detection(args.input, args.output)
+        result = pipeline.run_detection(args.input, args.output)
+        if result is None:
+            print("Error: No data loaded for detection. Check input path.")
+            sys.exit(1)
+        batch, files = result
         print(f"\nDetection complete!")
         print(f"Processed: {len(batch.detections)} items")
         print(f"Significant: {len(batch.significant_detections)}")

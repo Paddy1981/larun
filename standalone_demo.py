@@ -553,8 +553,21 @@ class AutoCalibrator:
                 "correct": is_correct
             })
         
-        accuracy = correct / total if total > 0 else 0
-        
+        if total == 0:
+            self.metrics = {
+                "timestamp": datetime.now().isoformat(),
+                "accuracy": None,
+                "total_references": 0,
+                "correct": 0,
+                "drift_detected": None,  # Cannot determine drift without data
+                "results": results,
+                "error": "No calibration data available"
+            }
+            print("No calibration data available - cannot assess drift")
+            return self.metrics
+
+        accuracy = correct / total
+
         self.metrics = {
             "timestamp": datetime.now().isoformat(),
             "accuracy": accuracy,
@@ -563,9 +576,9 @@ class AutoCalibrator:
             "drift_detected": accuracy < 0.8,
             "results": results
         }
-        
+
         print(f"Calibration accuracy: {accuracy:.1%} ({correct}/{total})")
-        
+
         if self.metrics["drift_detected"]:
             print("WARNING: Model drift detected! Consider retraining.")
         
@@ -1080,7 +1093,7 @@ def main():
     
     # Setup
     np.random.seed(42)
-    output_dir = Path("/home/claude/astro-tinyml/output")
+    output_dir = Path(__file__).parent / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # =========================================================================

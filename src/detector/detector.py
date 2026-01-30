@@ -58,7 +58,7 @@ class Detection:
             "period": self.period,
             "snr": self.snr,
             "is_significant": self.is_significant,
-            "metadata": self.metadata
+            "metadata": self.metadata.copy()  # Return copy to prevent mutation
         }
 
 
@@ -280,8 +280,8 @@ class SpectralDetector:
         # Find mid-transit
         if len(transit_indices) > 0:
             mid_idx = transit_indices[len(transit_indices) // 2]
-            if time is not None:
-                detection.transit_midpoint = time[mid_idx] if mid_idx < len(time) else None
+            if time is not None and len(time) > mid_idx:
+                detection.transit_midpoint = time[mid_idx]
         
         # Try to find period using BLS
         if time is not None and len(time) > 0:

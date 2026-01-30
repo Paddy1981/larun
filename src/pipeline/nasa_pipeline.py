@@ -421,8 +421,8 @@ class NASADataPipeline:
                 if isinstance(value, (str, int, float)):
                     try:
                         table.header[key[:8]] = value
-                    except:
-                        pass
+                    except (ValueError, TypeError, KeyError) as e:
+                        logger.debug(f"Could not set FITS header '{key}': {e}")
             
             hdul = fits.HDUList([primary, table])
             hdul.writeto(str(output_path), overwrite=True)
@@ -502,13 +502,14 @@ class DataPreprocessor:
     def _remove_continuum(self, flux: np.ndarray) -> np.ndarray:
         """Remove continuum using polynomial fit."""
         x = np.arange(len(flux))
-        
+
         # Fit a low-order polynomial
         try:
             coeffs = np.polyfit(x, flux, deg=3)
             continuum = np.polyval(coeffs, x)
             return flux - continuum + np.median(flux)
-        except:
+        except (np.linalg.LinAlgError, ValueError, FloatingPointError) as e:
+            logger.debug(f"Continuum removal failed, returning original flux: {e}")
             return flux
     
     def _sigma_clip(self, flux: np.ndarray, sigma: float) -> np.ndarray:

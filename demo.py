@@ -180,7 +180,7 @@ def main():
     
     from src.model.spectral_cnn import SpectralCNN
     
-    model = SpectralCNN(input_shape=(1024, 1), num_classes=6)
+    model = SpectralCNN(input_shape=(1024, 1), num_classes=4)  # Match training data classes
     model.build_model()
     model.compile(learning_rate=0.001)
     
