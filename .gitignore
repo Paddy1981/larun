@@ -20,7 +20,9 @@ Thumbs.db
 # Project - generated outputs
 data/demo/
 data/raw/
+data/real/
 models/demo/
+models/real/
 models/checkpoints/
 reports/demo/
 output/*.csv
@@ -34,3 +36,4 @@ logs/
 # Testing
 TestResults.xml
 .pytest_cache/
+test_output.txt

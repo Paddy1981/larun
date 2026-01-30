@@ -122,15 +122,26 @@ class RealDataFetcher:
     
     def fetch_light_curve(self, target: str, mission: str = "TESS") -> Optional[np.ndarray]:
         """
-        Fetch light curve for a specific target.
-        
-        Args:
-            target: Star name or TIC/KIC ID
-            mission: 'TESS' or 'Kepler'
-            
-        Returns:
-            Normalized flux array or None if failed
+        Fetch light curve for a specific target with disk caching.
         """
+        import hashlib
+        
+        # Create cache directory
+        cache_dir = self.data_dir / "cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate cache filename based on target and mission
+        cache_key = f"{target}_{mission}".replace(" ", "_").replace("+", "p").replace("-", "m")
+        cache_path = cache_dir / f"{cache_key}.npy"
+        
+        # Check cache first
+        if cache_path.exists():
+            try:
+                # logger.info(f"Loading cached {target}...")
+                return np.load(cache_path)
+            except Exception as e:
+                logger.warning(f"Failed to load cache for {target}: {e}")
+        
         try:
             logger.info(f"Fetching light curve for {target} ({mission})...")
             
@@ -155,6 +166,9 @@ class RealDataFetcher:
             
             # Resample to fixed size (1024 points)
             flux_resampled = self._resample_flux(flux, target_length=1024)
+            
+            # Save to cache
+            np.save(cache_path, flux_resampled)
             
             return flux_resampled
             
@@ -181,26 +195,60 @@ class RealDataFetcher:
         """
         logger.info(f"Fetching non-planet stars ({count} samples)...")
         
-        # Use random TIC IDs that are not known planet hosts
-        # These are stars observed by TESS without confirmed planets
         non_planet_curves = []
         
-        # Start with high TIC numbers (less likely to be planet hosts)
-        tic_start = 400000000
-        attempts = 0
-        max_attempts = count * 3
-        
-        while len(non_planet_curves) < count and attempts < max_attempts:
-            tic_id = f"TIC {tic_start + attempts * 1000}"
-            attempts += 1
+        try:
+            # Optimize: Search for any available light curves in a specific sector
+            # This avoids "guessing" TIC IDs that don't exist
+            logger.info("  Searching for available TESS targets in Sector 1...")
+            # We request more than needed because some might fail to download or be too short
+            search_results = lk.search_lightcurve(
+                mission=mission, 
+                sector=1, 
+                limit=count * 3
+            )
             
-            try:
-                flux = self.fetch_light_curve(tic_id, mission="TESS")
-                if flux is not None:
-                    non_planet_curves.append(flux)
-                    logger.info(f"  Collected {len(non_planet_curves)}/{count} non-planet stars")
-            except:
-                continue
+            if len(search_results) == 0:
+                logger.warning("  No targets found in Sector 1 search.")
+                return []
+
+            logger.info(f"  Found {len(search_results)} candidate targets. Downloading...")
+
+            # Select random subset to avoid bias (though we limited search)
+            # But search_result is already a collection, let's iterate
+            import random
+            indices = list(range(len(search_results)))
+            # Shuffle to get random selection if we found many
+            random.shuffle(indices)
+
+            for idx in indices:
+                if len(non_planet_curves) >= count:
+                    break
+
+                try:
+                    sr = search_results[idx]
+                    target_name = sr.target_name
+                    
+                    # Basic check: skip likely planet hosts (if we had a list, we'd check against it)
+                    # For this demo, we assume random field stars are mostly non-planets
+                    
+                    lc = sr.download()
+                    if lc is None:
+                        continue
+                        
+                    lc = lc.remove_nans().normalize()
+                    flux = lc.flux.value
+                    flux_resampled = self._resample_flux(flux, target_length=1024)
+                    
+                    non_planet_curves.append(flux_resampled)
+                    logger.info(f"  ✓ Collected {target_name} ({len(non_planet_curves)}/{count})")
+                    
+                except Exception as e:
+                    # logger.warning(f"Failed to process target: {e}")
+                    continue
+
+        except Exception as e:
+            logger.error(f"Error fetching non-planet stars: {e}")
         
         return non_planet_curves
 
@@ -405,21 +453,49 @@ class RealDataTrainer:
         """Train using TensorFlow/Keras."""
         import tensorflow as tf
         
+        # Check GPU Availability
+        gpus = tf.config.list_physical_devices('GPU')
+        if gpus:
+            print(f"\n✅ GPU DETECTED: {len(gpus)} device(s)")
+            for gpu in gpus:
+                print(f"  - {gpu.name}")
+                try:
+                    # Currently, memory growth needs to be the same across GPUs
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                except RuntimeError as e:
+                    # Memory growth must be set before GPUs have been initialized
+                    print(f"  Note: {e}")
+        else:
+            print("\n⚠️  NO GPU DETECTED. Training will proceed on CPU (which may be slower).")
+            print("To enable GPU, ensure CUDA and cuDNN are installed correctly.")
+        
         # Reshape for 1D CNN
         X_train = X_train.reshape(-1, self.input_size, 1)
         X_val = X_val.reshape(-1, self.input_size, 1)
         
         # Build model
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv1D(16, 7, activation='relu', input_shape=(self.input_size, 1)),
-            tf.keras.layers.MaxPooling1D(4),
-            tf.keras.layers.Conv1D(32, 5, activation='relu'),
-            tf.keras.layers.MaxPooling1D(4),
-            tf.keras.layers.Conv1D(64, 3, activation='relu'),
-            tf.keras.layers.GlobalAveragePooling1D(),
-            tf.keras.layers.Dense(32, activation='relu'),
-            tf.keras.layers.Dropout(0.3),
-            tf.keras.layers.Dense(self.num_classes, activation='softmax')
+        from tensorflow.keras import models, layers
+        
+        # Hybrid CNN-LSTM Architecture
+        model = models.Sequential([
+            # 1. Feature Extraction (CNN)
+            layers.Conv1D(filters=32, kernel_size=16, activation='relu', input_shape=(self.input_size, 1)),
+            layers.MaxPooling1D(pool_size=4),
+            layers.BatchNormalization(),
+            
+            layers.Conv1D(filters=64, kernel_size=8, activation='relu'),
+            layers.MaxPooling1D(pool_size=4),
+            layers.BatchNormalization(),
+            
+            # 2. Sequence Learning (LSTM)
+            # Input to LSTM is (batch, steps, features)
+            layers.LSTM(64, return_sequences=False),
+            layers.Dropout(0.3),
+            
+            # 3. Classification
+            layers.Dense(64, activation='relu'),
+            layers.Dropout(0.2),
+            layers.Dense(self.num_classes, activation='softmax')
         ])
         
         model.compile(
@@ -460,16 +536,18 @@ class RealDataTrainer:
     def _train_with_numpy(self, X_train, y_train, X_val, y_val, epochs):
         """Fallback NumPy-based training."""
         # Import the numpy model from our codebase
-        from src.model.numpy_cnn import NumpySpectralCNN
+        # Import the numpy model from our codebase
+        from src.model.numpy_cnn import NumpyCNN
         
-        model = NumpySpectralCNN(input_size=self.input_size, num_classes=self.num_classes)
+        model = NumpyCNN(input_shape=(self.input_size, 1), num_classes=self.num_classes)
         
         print("\nTraining with NumPy backend...")
-        history = model.train(X_train, y_train, X_val, y_val, epochs=epochs)
+        # NumpyCNN uses .fit(), not .train(), and handles validation internally via validation_split
+        history = model.fit(X_train, y_train, epochs=epochs)
         
         # Save weights
-        model.save_weights(str(self.output_dir / "model_weights_real.json"))
-        model.export_c_header(str(self.output_dir / "astro_tinyml_real.h"))
+        model.save(str(self.output_dir / "model_weights_real.json"))
+        model.export_to_c_header(str(self.output_dir / "astro_tinyml_real.h"))
         
         return model, history
     
