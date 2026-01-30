@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
 """
-LARUN TinyML - Interactive CLI
-==============================
-Interactive terminal interface for AstroTinyML, similar to Claude Code.
+LARUN TinyML - Interactive CLI with Skills System
+==================================================
+Interactive terminal interface for AstroTinyML with dynamic skill loading.
 
 Usage:
     python larun.py              # Start interactive mode
     python larun.py --help       # Show help
 
-Commands:
-    /train      - Train model on NASA data
-    /detect     - Run detection on data
-    /report     - Generate reports
-    /status     - Show current status
-    /config     - View/edit configuration
-    /help       - Show available commands
-    /exit       - Exit the CLI
+Skills Commands:
+    /skills         - List all available skills
+    /skill <ID>     - Show skill details
+    /run <ID>       - Execute a skill
 
 Larun. x Astrodata
 """
@@ -26,16 +22,24 @@ import time
 import readline  # For command history
 from pathlib import Path
 from datetime import datetime
+from typing import Dict, List, Any, Optional
 import warnings
 warnings.filterwarnings('ignore')
+
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 MODEL_PATH = Path("models/real/astro_tinyml.h5")
 DATA_PATH = Path("data/real/training_data.npz")
+SKILLS_PATH = Path("skills/skills.yaml")
 
 CONFIG = {
     "num_planets": 50,
@@ -56,9 +60,127 @@ class Colors:
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
     RED = '\033[91m'
+    MAGENTA = '\033[35m'
     BOLD = '\033[1m'
     DIM = '\033[2m'
     END = '\033[0m'
+
+# ============================================================================
+# SKILL LOADER
+# ============================================================================
+
+class Skill:
+    """Represents a single skill from skills.yaml"""
+    def __init__(self, data: Dict[str, Any]):
+        self.id = data.get('id', 'UNKNOWN')
+        self.name = data.get('name', 'Unknown Skill')
+        self.category = data.get('category', 'misc')
+        self.tier = data.get('tier', 1)
+        self.status = data.get('status', 'planned')
+        self.description = data.get('description', '')
+        self.command = data.get('command', '')
+        self.dependencies = data.get('dependencies', [])
+        self.inputs = data.get('inputs', [])
+        self.outputs = data.get('outputs', [])
+        self.examples = data.get('examples', [])
+        self.metrics = data.get('metrics', [])
+
+    @property
+    def is_active(self) -> bool:
+        return self.status == 'active'
+
+    @property
+    def status_icon(self) -> str:
+        icons = {
+            'active': f'{Colors.GREEN}●{Colors.END}',
+            'partial': f'{Colors.YELLOW}◐{Colors.END}',
+            'planned': f'{Colors.DIM}○{Colors.END}',
+            'deprecated': f'{Colors.RED}✗{Colors.END}'
+        }
+        return icons.get(self.status, '?')
+
+    @property
+    def tier_color(self) -> str:
+        colors = {
+            1: Colors.RED,
+            2: Colors.YELLOW,
+            3: Colors.GREEN,
+            4: Colors.BLUE,
+            5: Colors.MAGENTA,
+            6: Colors.CYAN,
+            7: Colors.HEADER
+        }
+        return colors.get(self.tier, Colors.DIM)
+
+
+class SkillLoader:
+    """Loads and manages skills from skills.yaml"""
+
+    def __init__(self, skills_path: Path = SKILLS_PATH):
+        self.skills_path = skills_path
+        self.skills: Dict[str, Skill] = {}
+        self.metadata: Dict[str, Any] = {}
+        self.loaded = False
+        self._load()
+
+    def _load(self):
+        """Load skills from YAML file"""
+        if not YAML_AVAILABLE:
+            return
+
+        if not self.skills_path.exists():
+            return
+
+        try:
+            with open(self.skills_path) as f:
+                data = yaml.safe_load(f)
+
+            self.metadata = data.get('metadata', {})
+
+            for skill_data in data.get('skills', []):
+                skill = Skill(skill_data)
+                self.skills[skill.id] = skill
+
+            self.loaded = True
+        except Exception as e:
+            print(f"{Colors.RED}Error loading skills: {e}{Colors.END}")
+
+    def get(self, skill_id: str) -> Optional[Skill]:
+        """Get skill by ID"""
+        return self.skills.get(skill_id.upper())
+
+    def list_by_category(self, category: str = None) -> List[Skill]:
+        """List skills, optionally filtered by category"""
+        skills = list(self.skills.values())
+        if category:
+            skills = [s for s in skills if s.category == category]
+        return sorted(skills, key=lambda s: (s.tier, s.id))
+
+    def list_by_tier(self, tier: int) -> List[Skill]:
+        """List skills by tier"""
+        return [s for s in self.skills.values() if s.tier == tier]
+
+    def list_active(self) -> List[Skill]:
+        """List only active skills"""
+        return [s for s in self.skills.values() if s.is_active]
+
+    def categories(self) -> List[str]:
+        """Get unique categories"""
+        return sorted(set(s.category for s in self.skills.values()))
+
+    def check_dependencies(self, skill: Skill) -> List[str]:
+        """Check which dependencies are missing"""
+        missing = []
+        for dep in skill.dependencies:
+            try:
+                __import__(dep)
+            except ImportError:
+                missing.append(dep)
+        return missing
+
+
+# Global skill loader
+skill_loader = SkillLoader()
 
 # ============================================================================
 # UTILITIES
@@ -75,15 +197,12 @@ def print_banner():
 ║     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝                      ║
 ║                                                                      ║
 ║     {Colors.CYAN}TinyML for Astronomical Data Analysis{Colors.BOLD}                         ║
-║     {Colors.DIM}v{VERSION}{Colors.BOLD}                                                           ║
+║     {Colors.DIM}v{VERSION} • {len(skill_loader.skills)} skills loaded{Colors.BOLD}                                    ║
 ╚══════════════════════════════════════════════════════════════════════╝{Colors.END}
 """)
 
 def print_prompt():
     return f"{Colors.GREEN}larun{Colors.END} {Colors.DIM}>{Colors.END} "
-
-def print_thinking(message):
-    print(f"{Colors.DIM}⠋ {message}...{Colors.END}", end='\r')
 
 def print_success(message):
     print(f"{Colors.GREEN}✓{Colors.END} {message}")
@@ -107,7 +226,6 @@ class LarunState:
         self.data = None
         self.history = []
         self.last_results = None
-        self.loaded = False
 
     def load_model(self):
         if MODEL_PATH.exists():
@@ -126,49 +244,395 @@ class LarunState:
 state = LarunState()
 
 # ============================================================================
-# COMMANDS
+# SKILL COMMANDS
+# ============================================================================
+
+def cmd_skills(args):
+    """List all available skills"""
+    if not skill_loader.loaded:
+        print_error("Skills not loaded. Make sure skills/skills.yaml exists.")
+        print_info("Install PyYAML: pip install pyyaml")
+        return
+
+    # Parse arguments
+    category_filter = None
+    tier_filter = None
+    show_all = '--all' in args
+
+    for i, arg in enumerate(args):
+        if arg == '--category' and i + 1 < len(args):
+            category_filter = args[i + 1]
+        if arg == '--tier' and i + 1 < len(args):
+            try:
+                tier_filter = int(args[i + 1])
+            except:
+                pass
+
+    print(f"\n{Colors.BOLD}LARUN Skills{Colors.END}")
+    print(f"{'─' * 60}")
+
+    # Group by category
+    categories = skill_loader.categories()
+
+    for category in categories:
+        if category_filter and category != category_filter:
+            continue
+
+        skills = skill_loader.list_by_category(category)
+        if tier_filter:
+            skills = [s for s in skills if s.tier == tier_filter]
+        if not show_all:
+            skills = [s for s in skills if s.is_active or s.status == 'partial']
+
+        if not skills:
+            continue
+
+        print(f"\n{Colors.BOLD}{category.upper()}{Colors.END}")
+
+        for skill in skills:
+            tier_badge = f"{skill.tier_color}T{skill.tier}{Colors.END}"
+            print(f"  {skill.status_icon} {tier_badge} {Colors.CYAN}{skill.id:12}{Colors.END} {skill.name}")
+
+    # Legend
+    print(f"\n{Colors.DIM}Legend: ● active  ◐ partial  ○ planned{Colors.END}")
+    print(f"{Colors.DIM}Use /skill <ID> for details, /run <ID> to execute{Colors.END}")
+    print(f"{Colors.DIM}Use /skills --all to show planned skills{Colors.END}\n")
+
+
+def cmd_skill(args):
+    """Show details for a specific skill"""
+    if not args:
+        print_error("Usage: /skill <SKILL_ID>")
+        print_info("Example: /skill DATA-001")
+        return
+
+    skill_id = args[0].upper()
+    skill = skill_loader.get(skill_id)
+
+    if not skill:
+        print_error(f"Skill not found: {skill_id}")
+        print_info("Use /skills to list available skills")
+        return
+
+    # Header
+    print(f"\n{Colors.BOLD}{'═' * 60}{Colors.END}")
+    print(f"{Colors.BOLD}{skill.name}{Colors.END}")
+    print(f"{Colors.DIM}{skill.id} • Tier {skill.tier} • {skill.status}{Colors.END}")
+    print(f"{'═' * 60}")
+
+    # Description
+    print(f"\n{skill.description}")
+
+    # Command
+    if skill.command:
+        print(f"\n{Colors.BOLD}Command:{Colors.END}")
+        print(f"  {Colors.CYAN}{skill.command}{Colors.END}")
+
+    # Inputs
+    if skill.inputs:
+        print(f"\n{Colors.BOLD}Inputs:{Colors.END}")
+        for inp in skill.inputs:
+            name = inp.get('name', '?')
+            inp_type = inp.get('type', 'any')
+            default = inp.get('default', '')
+            required = inp.get('required', False)
+            desc = inp.get('description', '')
+
+            req_badge = f"{Colors.RED}*{Colors.END}" if required else " "
+            default_str = f" = {default}" if default else ""
+
+            print(f"  {req_badge} {Colors.GREEN}{name}{Colors.END}: {inp_type}{default_str}")
+            if desc:
+                print(f"      {Colors.DIM}{desc}{Colors.END}")
+
+    # Outputs
+    if skill.outputs:
+        print(f"\n{Colors.BOLD}Outputs:{Colors.END}")
+        for out in skill.outputs:
+            out_type = out.get('type', 'any')
+            formats = out.get('format', [])
+            print(f"  → {out_type} [{', '.join(formats)}]")
+
+    # Dependencies
+    if skill.dependencies:
+        print(f"\n{Colors.BOLD}Dependencies:{Colors.END}")
+        missing = skill_loader.check_dependencies(skill)
+        for dep in skill.dependencies:
+            if dep in missing:
+                print(f"  {Colors.RED}✗{Colors.END} {dep} (not installed)")
+            else:
+                print(f"  {Colors.GREEN}✓{Colors.END} {dep}")
+
+    # Examples
+    if skill.examples:
+        print(f"\n{Colors.BOLD}Examples:{Colors.END}")
+        for ex in skill.examples:
+            print(f"  {Colors.DIM}${Colors.END} {ex}")
+
+    print()
+
+
+def cmd_run(args):
+    """Execute a skill"""
+    if not args:
+        print_error("Usage: /run <SKILL_ID> [--arg value ...]")
+        print_info("Example: /run DATA-001 --source tess --target 'Kepler-186'")
+        return
+
+    skill_id = args[0].upper()
+    skill = skill_loader.get(skill_id)
+
+    if not skill:
+        print_error(f"Skill not found: {skill_id}")
+        return
+
+    if not skill.is_active:
+        print_warning(f"Skill {skill_id} is not active (status: {skill.status})")
+        print_info("This skill is planned for future implementation")
+        return
+
+    # Check dependencies
+    missing = skill_loader.check_dependencies(skill)
+    if missing:
+        print_error(f"Missing dependencies: {', '.join(missing)}")
+        print_info(f"Install with: pip install {' '.join(missing)}")
+        return
+
+    # Parse skill arguments
+    skill_args = args[1:]
+
+    print(f"\n{Colors.BOLD}Executing: {skill.name}{Colors.END}")
+    print(f"{'─' * 40}")
+
+    # Route to appropriate handler
+    handlers = {
+        'DATA-001': execute_data_001,
+        'DATA-002': execute_data_002,
+        'DATA-003': execute_data_003,
+        'MODEL-001': execute_model_001,
+        'MODEL-002': execute_model_002,
+        'DETECT-001': execute_detect_001,
+        'DETECT-002': execute_detect_002,
+        'REPORT-001': execute_report_001,
+    }
+
+    handler = handlers.get(skill_id)
+    if handler:
+        try:
+            handler(skill_args, skill)
+        except Exception as e:
+            print_error(f"Execution failed: {e}")
+    else:
+        print_warning(f"No handler implemented for {skill_id}")
+        print_info("This skill exists but execution is not yet implemented")
+
+    print()
+
+
+# ============================================================================
+# SKILL HANDLERS
+# ============================================================================
+
+def parse_skill_args(args: List[str], skill: Skill) -> Dict[str, Any]:
+    """Parse command line arguments into skill inputs"""
+    parsed = {}
+
+    # Set defaults
+    for inp in skill.inputs:
+        if 'default' in inp:
+            parsed[inp['name']] = inp['default']
+
+    # Parse provided arguments
+    i = 0
+    while i < len(args):
+        if args[i].startswith('--'):
+            key = args[i][2:]
+            if i + 1 < len(args) and not args[i + 1].startswith('--'):
+                parsed[key] = args[i + 1]
+                i += 2
+            else:
+                parsed[key] = True
+                i += 1
+        else:
+            i += 1
+
+    return parsed
+
+
+def execute_data_001(args: List[str], skill: Skill):
+    """NASA Data Ingestion"""
+    params = parse_skill_args(args, skill)
+
+    source = params.get('source', 'tess')
+    target = params.get('target', '')
+    limit = int(params.get('limit', 100))
+
+    if not target:
+        print_error("Target required. Use --target <name>")
+        return
+
+    print_info(f"Source: {source.upper()}")
+    print_info(f"Target: {target}")
+
+    import lightkurve as lk
+
+    print_info("Searching...")
+    search = lk.search_lightcurve(target, mission=source.upper() if source != 'exoplanet_archive' else None)
+
+    if len(search) == 0:
+        print_error(f"No data found for {target}")
+        return
+
+    print_success(f"Found {len(search)} observations")
+
+    for i, result in enumerate(search[:5]):
+        print(f"  [{i+1}] {result.mission} - {result.exptime}")
+
+    if len(search) > 5:
+        print(f"  ... and {len(search) - 5} more")
+
+    # Download first
+    print_info("Downloading first observation...")
+    lc = search[0].download()
+    lc = lc.remove_nans().normalize()
+
+    print_success(f"Downloaded {len(lc.flux)} data points")
+    print_info(f"Time span: {lc.time.value[-1] - lc.time.value[0]:.1f} days")
+
+
+def execute_data_002(args: List[str], skill: Skill):
+    """FITS File Parser"""
+    params = parse_skill_args(args, skill)
+
+    filepath = params.get('file', '')
+    if not filepath:
+        print_error("File path required. Use --file <path>")
+        return
+
+    from astropy.io import fits
+
+    print_info(f"Reading: {filepath}")
+
+    with fits.open(filepath) as hdul:
+        print_success(f"Opened FITS file with {len(hdul)} extensions")
+        for i, hdu in enumerate(hdul):
+            print(f"  [{i}] {hdu.name}: {type(hdu).__name__}")
+
+
+def execute_data_003(args: List[str], skill: Skill):
+    """Light Curve Processing"""
+    params = parse_skill_args(args, skill)
+    print_info("Processing light curve...")
+    print_warning("Use /run DATA-001 first to fetch data")
+
+
+def execute_model_001(args: List[str], skill: Skill):
+    """Spectral CNN Training"""
+    params = parse_skill_args(args, skill)
+    epochs = int(params.get('epochs', 100))
+
+    print_info(f"Training for {epochs} epochs")
+    cmd_train(['--epochs', str(epochs)])
+
+
+def execute_model_002(args: List[str], skill: Skill):
+    """TFLite Export"""
+    params = parse_skill_args(args, skill)
+
+    if not MODEL_PATH.exists():
+        print_error("No model found. Run /run MODEL-001 first")
+        return
+
+    import tensorflow as tf
+
+    print_info("Loading model...")
+    model = tf.keras.models.load_model(str(MODEL_PATH))
+
+    print_info("Converting to TFLite...")
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+
+    if params.get('quantize', True):
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        print_info("Applying INT8 quantization")
+
+    tflite_model = converter.convert()
+
+    output_path = Path("models/real/astro_tinyml.tflite")
+    with open(output_path, 'wb') as f:
+        f.write(tflite_model)
+
+    size_kb = len(tflite_model) / 1024
+    print_success(f"Exported to {output_path} ({size_kb:.1f} KB)")
+
+
+def execute_detect_001(args: List[str], skill: Skill):
+    """Transit Detection"""
+    params = parse_skill_args(args, skill)
+    cmd_detect(args)
+
+
+def execute_detect_002(args: List[str], skill: Skill):
+    """Anomaly Detection"""
+    params = parse_skill_args(args, skill)
+    print_info("Running anomaly detection...")
+    cmd_detect(['--mode', 'anomaly'])
+
+
+def execute_report_001(args: List[str], skill: Skill):
+    """NASA Report Generator"""
+    params = parse_skill_args(args, skill)
+    fmt = params.get('format', 'html')
+    print_info(f"Generating {fmt.upper()} report...")
+    print_warning("Report generation requires detection results")
+
+
+# ============================================================================
+# CORE COMMANDS
 # ============================================================================
 
 def cmd_help(args):
     """Show available commands"""
     print(f"""
-{Colors.BOLD}Available Commands:{Colors.END}
+{Colors.BOLD}LARUN Commands{Colors.END}
 
-  {Colors.CYAN}/train{Colors.END} [--planets N] [--epochs N]
-      Train model on real NASA data from TESS/Kepler
+{Colors.CYAN}Skills System:{Colors.END}
+  /skills              List all available skills
+  /skill <ID>          Show skill details
+  /run <ID> [args]     Execute a skill
 
-  {Colors.CYAN}/detect{Colors.END} [--file PATH] [--target NAME]
-      Run detection on data or specific target
+{Colors.CYAN}Quick Commands:{Colors.END}
+  /train [opts]        Train model on NASA data
+  /detect              Run detection
+  /fetch <target>      Fetch star data
+  /status              Show system status
 
-  {Colors.CYAN}/fetch{Colors.END} [TARGET_NAME]
-      Fetch light curve for a specific star
+{Colors.CYAN}Configuration:{Colors.END}
+  /config [key] [val]  View/modify settings
+  /clear               Clear screen
+  /exit                Exit LARUN
 
-  {Colors.CYAN}/status{Colors.END}
-      Show current model and data status
-
-  {Colors.CYAN}/config{Colors.END} [key] [value]
-      View or modify configuration
-
-  {Colors.CYAN}/clear{Colors.END}
-      Clear the screen
-
-  {Colors.CYAN}/exit{Colors.END} or {Colors.CYAN}/quit{Colors.END}
-      Exit LARUN
-
-{Colors.DIM}Type any question or command to interact with the system.{Colors.END}
+{Colors.DIM}Type naturally: "train the model", "detect exoplanets", etc.{Colors.END}
 """)
+
 
 def cmd_status(args):
     """Show current status"""
     print(f"\n{Colors.BOLD}LARUN Status{Colors.END}")
     print(f"{'─' * 40}")
 
+    # Skills status
+    if skill_loader.loaded:
+        active = len(skill_loader.list_active())
+        total = len(skill_loader.skills)
+        print_success(f"Skills loaded: {active} active / {total} total")
+    else:
+        print_warning("Skills not loaded")
+
     # Model status
     if state.model:
         print_success(f"Model loaded: {MODEL_PATH}")
-        print(f"   Parameters: {state.model.count_params():,}")
     elif MODEL_PATH.exists():
-        print_warning(f"Model available but not loaded")
+        print_warning("Model available but not loaded")
     else:
         print_error("No trained model found")
 
@@ -180,11 +644,8 @@ def cmd_status(args):
     else:
         print_warning("No training data cached")
 
-    # Config
-    print(f"\n{Colors.BOLD}Configuration:{Colors.END}")
-    for k, v in CONFIG.items():
-        print(f"   {k}: {v}")
     print()
+
 
 def cmd_train(args):
     """Train the model"""
@@ -198,20 +659,14 @@ def cmd_train(args):
     print(f"\n{Colors.BOLD}Training Pipeline{Colors.END}")
     print(f"{'─' * 40}")
     print_info(f"Planets: {opts.planets}, Epochs: {opts.epochs}")
-    print()
 
-    # Import dependencies
-    print_thinking("Loading dependencies")
     import numpy as np
     import tensorflow as tf
     from sklearn.model_selection import train_test_split
-    print_success("Dependencies loaded")
 
     # Fetch data
     X, y = fetch_data(opts.planets, opts.skip_fetch)
 
-    # Train
-    print(f"\n{Colors.BOLD}Training Model{Colors.END}")
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
     X_train = X_train.reshape(-1, CONFIG["input_size"], 1)
     X_val = X_val.reshape(-1, CONFIG["input_size"], 1)
@@ -244,13 +699,13 @@ def cmd_train(args):
     print()
     print_success(f"Training complete! Accuracy: {val_acc*100:.1f}%")
 
-    # Save
     Path("models/real").mkdir(parents=True, exist_ok=True)
     model.save(str(MODEL_PATH))
     print_success(f"Model saved to {MODEL_PATH}")
 
     state.model = model
     print()
+
 
 def fetch_data(num_planets, skip=False):
     """Fetch NASA data"""
@@ -272,7 +727,7 @@ def fetch_data(num_planets, skip=False):
     X, y = [], []
     size = CONFIG["input_size"]
 
-    print_thinking("Querying NASA Exoplanet Archive")
+    print_info("Querying NASA Exoplanet Archive...")
     try:
         planets = NasaExoplanetArchive.query_criteria(
             table="pscomppars",
@@ -304,27 +759,24 @@ def fetch_data(num_planets, skip=False):
                                            np.linspace(0,1,len(lc.flux.value)),
                                            lc.flux.value)
                             X.append(flux.astype(np.float32))
-                            y.append(2)  # planetary_transit
+                            y.append(2)
                             count += 1
                             print(f"   {Colors.GREEN}✓{Colors.END} [{count}/{num_planets}] {host}")
                             break
             except:
                 continue
 
-    # Add synthetic samples
-    print_info("Adding synthetic samples for class balance...")
-
-    for _ in range(30):  # Noise
+    # Synthetic samples
+    print_info("Adding synthetic samples...")
+    for _ in range(30):
         X.append(np.random.normal(1, 0.01, size).astype(np.float32))
         y.append(0)
-
-    for _ in range(30):  # Stellar
+    for _ in range(30):
         t = np.linspace(0, 10, size)
         flux = 1 + 0.02*np.sin(2*np.pi*t/np.random.uniform(0.5,2))
         X.append(flux.astype(np.float32))
         y.append(1)
-
-    for _ in range(30):  # Binary
+    for _ in range(30):
         t = np.linspace(0, 10, size)
         p = np.random.uniform(0.5, 3)
         flux = np.ones(size)
@@ -332,8 +784,7 @@ def fetch_data(num_planets, skip=False):
         flux[np.abs(phase) < 0.05] -= np.random.uniform(0.1, 0.4)
         X.append(flux.astype(np.float32))
         y.append(3)
-
-    for _ in range(30):  # Artifact
+    for _ in range(30):
         flux = np.ones(size)
         for _ in range(np.random.randint(1,5)):
             flux[np.random.randint(size):] += np.random.uniform(-0.1, 0.1)
@@ -345,17 +796,17 @@ def fetch_data(num_planets, skip=False):
     X = (X - X.mean(1, keepdims=True)) / (X.std(1, keepdims=True) + 1e-8)
 
     np.savez(str(DATA_PATH), X=X, y=y)
-    print_success(f"Saved {len(X)} samples to {DATA_PATH}")
+    print_success(f"Saved {len(X)} samples")
 
     return X, y
+
 
 def cmd_detect(args):
     """Run detection"""
     if not state.model:
         if MODEL_PATH.exists():
-            print_thinking("Loading model")
+            print_info("Loading model...")
             state.load_model()
-            print_success("Model loaded")
         else:
             print_error("No model found. Run /train first.")
             return
@@ -383,7 +834,6 @@ def cmd_detect(args):
     print_success(f"Processed {len(X)} samples")
     print_success(f"Accuracy: {acc*100:.1f}%")
 
-    # Show breakdown
     print(f"\n{Colors.BOLD}Results by Class:{Colors.END}")
     for i, name in enumerate(CLASS_NAMES):
         mask = y == i
@@ -391,71 +841,22 @@ def cmd_detect(args):
             class_acc = np.sum(pred_classes[mask] == i) / np.sum(mask)
             print(f"   {name:15} {np.sum(mask):3} samples, {class_acc*100:.0f}% correct")
 
-    # Transit candidates
     transit_mask = (pred_classes == 2) & (confidences > 0.7)
     print(f"\n{Colors.CYAN}Transit candidates:{Colors.END} {np.sum(transit_mask)}")
     print()
+
 
 def cmd_fetch(args):
     """Fetch light curve for a specific target"""
     if not args:
         print_error("Usage: /fetch <target_name>")
-        print_info("Example: /fetch Kepler-186")
         return
 
     target = ' '.join(args)
-    print(f"\n{Colors.BOLD}Fetching: {target}{Colors.END}")
 
-    import lightkurve as lk
-    import numpy as np
+    # Use DATA-001 skill
+    execute_data_001(['--target', target], skill_loader.get('DATA-001') or Skill({}))
 
-    print_thinking(f"Searching for {target}")
-
-    try:
-        search = lk.search_lightcurve(target)
-        if len(search) == 0:
-            print_error(f"No light curves found for {target}")
-            return
-
-        print_success(f"Found {len(search)} observations")
-        print()
-
-        # Show available observations
-        for i, result in enumerate(search[:5]):
-            print(f"   [{i+1}] {result.mission} - {result.exptime}")
-
-        if len(search) > 5:
-            print(f"   ... and {len(search)-5} more")
-
-        # Download first one
-        print()
-        print_thinking("Downloading light curve")
-        lc = search[0].download()
-        lc = lc.remove_nans().normalize()
-
-        print_success(f"Downloaded {len(lc.flux)} data points")
-        print_info(f"Time span: {lc.time.value[-1] - lc.time.value[0]:.1f} days")
-        print_info(f"Mean flux: {np.mean(lc.flux.value):.4f}")
-
-        # Quick classification if model loaded
-        if state.model:
-            flux = np.interp(np.linspace(0,1,CONFIG["input_size"]),
-                           np.linspace(0,1,len(lc.flux.value)),
-                           lc.flux.value).astype(np.float32)
-            flux = (flux - flux.mean()) / (flux.std() + 1e-8)
-            flux = flux.reshape(1, -1, 1)
-
-            pred = state.model.predict(flux, verbose=0)[0]
-            pred_class = np.argmax(pred)
-            conf = pred[pred_class]
-
-            print()
-            print(f"{Colors.BOLD}Classification:{Colors.END} {CLASS_NAMES[pred_class]} ({conf*100:.1f}%)")
-
-        print()
-
-    except Exception as e:
-        print_error(f"Failed: {e}")
 
 def cmd_config(args):
     """View or modify configuration"""
@@ -466,13 +867,7 @@ def cmd_config(args):
         print()
         return
 
-    if len(args) == 1:
-        key = args[0]
-        if key in CONFIG:
-            print(f"   {key}: {CONFIG[key]}")
-        else:
-            print_error(f"Unknown config key: {key}")
-    elif len(args) >= 2:
+    if len(args) >= 2:
         key, value = args[0], args[1]
         if key in CONFIG:
             try:
@@ -480,42 +875,31 @@ def cmd_config(args):
                 print_success(f"Set {key} = {value}")
             except:
                 print_error(f"Invalid value for {key}")
-        else:
-            print_error(f"Unknown config key: {key}")
+
 
 def cmd_clear(args):
     """Clear screen"""
-    print('\033[2J\033[H', end='')  # ANSI escape codes to clear screen
+    print('\033[2J\033[H', end='')
     print_banner()
+
 
 def process_natural_language(query):
     """Process natural language queries"""
     query_lower = query.lower()
 
     if any(w in query_lower for w in ['train', 'learn', 'fit']):
-        print_info("I'll start training. Use /train for more options.")
         cmd_train([])
-    elif any(w in query_lower for w in ['detect', 'classify', 'predict', 'analyze']):
-        print_info("Running detection...")
+    elif any(w in query_lower for w in ['detect', 'classify', 'predict']):
         cmd_detect([])
-    elif any(w in query_lower for w in ['status', 'info', 'loaded']):
+    elif any(w in query_lower for w in ['skill', 'abilities', 'capabilities']):
+        cmd_skills([])
+    elif any(w in query_lower for w in ['status', 'info']):
         cmd_status([])
-    elif any(w in query_lower for w in ['fetch', 'download', 'get']) and any(w in query_lower for w in ['kepler', 'tess', 'star', 'planet']):
-        words = query.split()
-        for i, w in enumerate(words):
-            if w.lower() in ['kepler', 'tess', 'hd', 'tic', 'kic']:
-                target = ' '.join(words[i:i+2]) if i+1 < len(words) else w
-                cmd_fetch([target])
-                return
-        print_info("Which target? Try: /fetch Kepler-186")
-    elif any(w in query_lower for w in ['help', 'command', 'how']):
+    elif any(w in query_lower for w in ['help', 'command']):
         cmd_help([])
-    elif 'exoplanet' in query_lower or 'planet' in query_lower:
-        print_info("LARUN detects exoplanets using TinyML on spectral data from NASA's TESS and Kepler missions.")
-        print_info("Try /train to train on real NASA data, then /detect to classify light curves.")
     else:
-        print(f"\n{Colors.DIM}I'm not sure how to help with that.{Colors.END}")
-        print(f"{Colors.DIM}Try /help to see available commands, or ask about training, detection, or fetching data.{Colors.END}\n")
+        print(f"\n{Colors.DIM}Try /help for commands or /skills to see capabilities{Colors.END}\n")
+
 
 # ============================================================================
 # MAIN LOOP
@@ -524,6 +908,9 @@ def process_natural_language(query):
 COMMANDS = {
     '/help': cmd_help,
     '/status': cmd_status,
+    '/skills': cmd_skills,
+    '/skill': cmd_skill,
+    '/run': cmd_run,
     '/train': cmd_train,
     '/detect': cmd_detect,
     '/fetch': cmd_fetch,
@@ -532,14 +919,22 @@ COMMANDS = {
 }
 
 def main():
+    # Install yaml if needed
+    if not YAML_AVAILABLE:
+        print_warning("PyYAML not installed. Installing...")
+        import subprocess
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyyaml', '-q'])
+        print_success("Installed PyYAML. Please restart larun.")
+        return
+
     print_banner()
 
-    # Try to load existing model
+    if skill_loader.loaded:
+        active = len(skill_loader.list_active())
+        print_info(f"Loaded {active} active skills. Type /skills to see all.\n")
+
     if MODEL_PATH.exists():
-        print_info(f"Found trained model at {MODEL_PATH}")
-        print_info("Type /status to see details or /help for commands\n")
-    else:
-        print_info("No trained model found. Type /train to get started.\n")
+        print_info(f"Found trained model. Type /status for details.\n")
 
     while True:
         try:
@@ -548,12 +943,10 @@ def main():
             if not user_input:
                 continue
 
-            # Handle exit
             if user_input.lower() in ['/exit', '/quit', 'exit', 'quit']:
                 print(f"\n{Colors.DIM}Goodbye!{Colors.END}\n")
                 break
 
-            # Handle commands
             if user_input.startswith('/'):
                 parts = user_input.split()
                 cmd = parts[0].lower()
@@ -563,15 +956,13 @@ def main():
                     COMMANDS[cmd](args)
                 else:
                     print_error(f"Unknown command: {cmd}")
-                    print_info("Type /help to see available commands")
+                    print_info("Type /help for available commands")
             else:
-                # Natural language processing
                 process_natural_language(user_input)
 
         except KeyboardInterrupt:
             print(f"\n\n{Colors.DIM}Use /exit to quit{Colors.END}\n")
         except EOFError:
-            print(f"\n{Colors.DIM}Goodbye!{Colors.END}\n")
             break
         except Exception as e:
             print_error(f"Error: {e}")
