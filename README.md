@@ -1,6 +1,6 @@
 # AstroTinyML
 
-Tiny Machine Learning applications for space and astronomy.
+TinyML-powered spectral data analysis for astronomical research. Process NASA data, detect exoplanets, and generate submission-ready reports.
 
 ## Overview
 
@@ -9,6 +9,7 @@ AstroTinyML explores the intersection of embedded machine learning (TinyML) and 
 - Satellite anomaly detection
 - Space sensor data processing
 - Astronomical event classification
+- Exoplanet detection from spectral data
 - Low-power embedded inference for space missions
 
 ## Getting Started
