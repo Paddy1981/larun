@@ -315,11 +315,16 @@ def report(results, acc, val_acc, total_samples):
     significant = sum(1 for r in results if r["sig"])
     
     # JSON
+    # Convert numpy types to Python native types for JSON
+    clean_results = []
+    for r in results:
+        clean_results.append({k: (int(v) if hasattr(v, 'item') else v) for k, v in r.items()})
+
     data = {
         "metadata": {"generated": datetime.now().isoformat(), "author": "Larun. × Astrodata"},
-        "summary": {"total": len(results), "accuracy": acc, "val_accuracy": val_acc,
-                   "significant": sum(r["sig"] for r in results)},
-        "detections": results
+        "summary": {"total": len(results), "accuracy": float(acc), "val_accuracy": float(val_acc),
+                   "significant": int(sum(r["sig"] for r in results))},
+        "detections": clean_results
     }
     with open(f"{CONFIG['output_dir']}/report_{ts}.json", 'w') as f:
         json.dump(data, f, indent=2)
