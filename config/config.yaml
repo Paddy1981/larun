@@ -1,0 +1,139 @@
+# AstroTinyML Configuration
+# =========================
+
+# NASA Data Sources
+nasa:
+  mast:
+    base_url: "https://mast.stsci.edu/api/v0"
+    missions:
+      - kepler
+      - tess
+      - hubble
+    auth_token: ${MAST_API_TOKEN}
+  
+  exoplanet_archive:
+    base_url: "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
+    tables:
+      - pscomppars  # Planetary Systems Composite Parameters
+      - ps          # Planetary Systems
+  
+  irsa:
+    base_url: "https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query"
+
+# Spectral Analysis Settings
+spectral:
+  wavelength_range:
+    min: 300   # nm
+    max: 1100  # nm
+  resolution: 0.1  # nm
+  bin_count: 1024  # Number of spectral bins for model input
+  
+  # Preprocessing
+  preprocessing:
+    normalize: true
+    remove_continuum: true
+    sigma_clip: 3.0
+    interpolate_gaps: true
+
+# TinyML Model Configuration
+model:
+  architecture: "spectral_cnn_v2"
+  input_shape: [1024, 1]
+  output_classes:
+    - noise
+    - stellar_signal
+    - planetary_transit
+    - eclipsing_binary
+    - instrument_artifact
+    - unknown_anomaly
+  
+  # Quantization for TinyML
+  quantization:
+    enabled: true
+    type: "int8"
+    representative_dataset_size: 1000
+  
+  # Training parameters
+  training:
+    epochs: 100
+    batch_size: 32
+    learning_rate: 0.001
+    early_stopping_patience: 10
+    validation_split: 0.2
+
+# Auto-Calibration Settings
+calibration:
+  # Reference data sources
+  reference_sources:
+    - confirmed_exoplanets
+    - known_eclipsing_binaries
+    - instrument_artifacts_catalog
+  
+  # Calibration update frequency
+  update_interval_hours: 24
+  
+  # Confidence thresholds
+  confidence:
+    high: 0.95
+    medium: 0.80
+    low: 0.60
+  
+  # Adaptive learning
+  adaptive:
+    enabled: true
+    learning_rate: 0.0001
+    max_drift: 0.1  # Maximum allowed model drift
+
+# Detection Pipeline
+detection:
+  batch_size: 100
+  parallel_workers: 4
+  
+  # Anomaly detection thresholds
+  thresholds:
+    transit_depth_min: 0.0001  # 0.01% flux drop
+    duration_min_hours: 0.5
+    snr_min: 7.0
+  
+  # Post-processing
+  postprocessing:
+    detrend: true
+    fold_period: true
+    phase_bin: true
+
+# Report Generation
+reporting:
+  formats:
+    - pdf
+    - json
+    - fits
+    - csv
+  
+  # NASA submission format
+  nasa_format:
+    template: "nasa_discovery_report_v2"
+    include_plots: true
+    include_raw_data: false
+    
+  output_dir: "reports"
+  
+  # Metadata
+  metadata:
+    observatory: "AstroTinyML Automated System"
+    contact_email: ${RESEARCHER_EMAIL}
+    institution: ${INSTITUTION_NAME}
+
+# Logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/astro_tinyml.log"
+  rotate_mb: 100
+  backup_count: 5
+
+# Edge Deployment Settings
+edge:
+  target_platform: "cortex-m4"
+  max_model_size_kb: 100
+  max_inference_ms: 10
+  optimize_for: "latency"  # or "size"

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AstroTinyML Spectral Analysis Report</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-dark: #0a0a0a;
+            --primary-accent: #6366f1;
+            --secondary-accent: #8b5cf6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f9fafb;
+            --border-color: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        
+        body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        .brand-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .larun-logo { height: 35px; }
+        
+        .brand-divider {
+            width: 1px;
+            height: 25px;
+            background: var(--border-color);
+        }
+        
+        .astrodata-brand {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .astrodata-brand span { font-weight: 300; }
+        
+        .header-section {
+            text-align: center;
+            padding: 40px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        
+        .header-section .report-type {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 10px;
+        }
+        
+        .header-section h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 600;
+        }
+        
+        .header-section .meta {
+            margin-top: 15px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .header-section .powered-by {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+        }
+        
+        h2 { color: var(--text-primary); margin-top: 35px; font-size: 18px; font-weight: 600; }
+        
+        .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 25px 0; }
+        .summary-box { 
+            background: var(--bg-light); 
+            color: var(--text-primary); 
+            padding: 25px; 
+            border-radius: 12px; 
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .summary-box.accent { 
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); 
+            color: white;
+            border: none;
+        }
+        .summary-box h3 { margin: 0 0 8px 0; font-size: 12px; font-weight: 500; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .summary-box .value { font-size: 32px; font-weight: 700; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background: var(--primary-dark); color: white; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        tr:hover { background: var(--bg-light); }
+        .significant { background: rgba(16, 185, 129, 0.1); }
+        
+        .confidence { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .confidence.high { background: rgba(16, 185, 129, 0.15); color: #059669; }
+        .confidence.medium { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+        .confidence.low { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+        
+        .calibration { 
+            background: var(--bg-light); 
+            padding: 25px; 
+            border-radius: 12px; 
+            margin: 25px 0;
+            border-left: 4px solid var(--primary-accent);
+        }
+        .calibration p { margin: 8px 0; font-size: 14px; }
+        
+        .footer { 
+            margin-top: 50px; 
+            padding: 30px; 
+            background: var(--primary-dark);
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .footer-brands {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-brands img { height: 25px; }
+        .footer-brands .astrodata-footer { font-size: 16px; font-weight: 600; color: white; }
+        .footer-brands .divider { color: rgba(255,255,255,0.3); }
+        
+        .footer p { color: rgba(255,255,255,0.6); font-size: 12px; margin: 5px 0; }
+        .footer .copyright { margin-top: 15px; color: rgba(255,255,255,0.4); font-size: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="brand-header">
+            <div class="brand-left">
+                <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAD6AZADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AIyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//9k=" alt="Larun." class="larun-logo" onerror="this.outerHTML='<span style=font-weight:bold;font-size:20px>Larun.</span>'">
+                <div class="brand-divider"></div>
+                <div class="astrodata-brand">Astro<span>data</span></div>
+            </div>
+        </div>
+        
+        <div class="header-section">
+            <div class="report-type">NASA Exoplanet Discovery Report</div>
+            <h1>🔭 AstroTinyML Spectral Analysis Report</h1>
+            <div class="meta">
+                <strong>Generated:</strong> 2026-01-30 15:46:45 UTC | 
+                <strong>Mission:</strong> Synthetic Demo Data
+            </div>
+            <div class="powered-by">Powered by Larun. × Astrodata</div>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-box">
+                <h3>Total Processed</h3>
+                <div class="value">10</div>
+            </div>
+            <div class="summary-box accent">
+                <h3>Significant Detections</h3>
+                <div class="value">2</div>
+            </div>
+            <div class="summary-box accent">
+                <h3>Transit Candidates</h3>
+                <div class="value">0</div>
+            </div>
+            <div class="summary-box">
+                <h3>Calibration Accuracy</h3>
+                <div class="value">100%</div>
+            </div>
+        </div>
+        
+        <h2>📊 Detection Results</h2>
+        <table>
+            <tr>
+                <th>Object ID</th>
+                <th>Classification</th>
+                <th>Confidence</th>
+                <th>SNR</th>
+                <th>Transit Depth</th>
+                <th>Significant</th>
+            </tr>
+            <tr class="">
+                <td>TIC-12345678</td>
+                <td>planetary_transit</td>
+                <td><span class="confidence low">46.8%</span></td>
+                <td>5.6</td>
+                <td>0.0128</td>
+                <td>No</td>
+            </tr>
+            <tr class="significant">
+                <td>TIC-23456789</td>
+                <td>eclipsing_binary</td>
+                <td><span class="confidence high">95.0%</span></td>
+                <td>44.4</td>
+                <td>0.1571</td>
+                <td>✓ Yes</td>
+            </tr>
+            <tr class="">
+                <td>TIC-34567890</td>
+                <td>noise</td>
+                <td><span class="confidence low">37.1%</span></td>
+                <td>3.6</td>
+                <td>0.0112</td>
+                <td>No</td>
+            </tr>
+            <tr class="">
+                <td>TIC-45678901</td>
+                <td>planetary_transit</td>
+                <td><span class="confidence low">46.7%</span></td>
+                <td>7.3</td>
+                <td>0.0163</td>
+                <td>No</td>
+            </tr>
+            <tr class="">
+                <td>TIC-56789012</td>
+                <td>stellar_signal</td>
+                <td><span class="confidence low">58.7%</span></td>
+                <td>1.6</td>
+                <td>0.0307</td>
+                <td>No</td>
+            </tr>
+            <tr class="">
+                <td>KIC-9876543</td>
+                <td>planetary_transit</td>
+                <td><span class="confidence medium">62.8%</span></td>
+                <td>3.7</td>
+                <td>0.0083</td>
+                <td>No</td>
+            </tr>
+            <tr class="">
+                <td>KIC-8765432</td>
+                <td>planetary_transit</td>
+                <td><span class="confidence low">46.5%</span></td>
+                <td>8.6</td>
+                <td>0.0189</td>
+                <td>No</td>
+            </tr>
+            <tr class="significant">
+                <td>KIC-7654321</td>
+                <td>eclipsing_binary</td>
+                <td><span class="confidence high">94.2%</span></td>
+                <td>42.9</td>
+                <td>0.1561</td>
+                <td>✓ Yes</td>
+            </tr>
+            <tr class="">
+                <td>KIC-6543210</td>
+                <td>noise</td>
+                <td><span class="confidence low">48.4%</span></td>
+                <td>3.3</td>
+                <td>0.0095</td>
+                <td>No</td>
+            </tr>
+            <tr class="">
+                <td>KIC-5432109</td>
+                <td>planetary_transit</td>
+                <td><span class="confidence low">47.9%</span></td>
+                <td>3.4</td>
+                <td>0.0073</td>
+                <td>No</td>
+            </tr>
+        </table>
+        
+        <h2>🎯 Calibration Status</h2>
+        <div class="calibration">
+            <p><strong>Last Calibration:</strong> 2026-01-30T15:46:45.838792</p>
+            <p><strong>Accuracy:</strong> 100.0%</p>
+            <p><strong>Reference Count:</strong> 8</p>
+            <p><strong>Drift Detected:</strong> No ✓</p>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-brands">
+                <img src="data:image/png;base64,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" alt="Larun." onerror="this.outerHTML='<span style=color:white;font-weight:bold;font-size:18px>Larun.</span>'">
+                <span class="divider">×</span>
+                <span class="astrodata-footer">Astrodata</span>
+            </div>
+            <p>Generated by AstroTinyML v1.0 | NASA-Compatible Report Format</p>
+            <p>This report is suitable for submission to NASA archives and exoplanet catalogs.</p>
+            <p class="copyright">© 2026 Larun. × Astrodata | TinyML for Space Science</p>
+        </div>
+    </div>
+</body>
+</html>

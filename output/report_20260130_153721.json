@@ -1,0 +1,192 @@
+{
+  "metadata": {
+    "title": "AstroTinyML Spectral Analysis Report",
+    "generated": "2026-01-30T15:37:21.669195",
+    "version": "1.0",
+    "institution": "AstroTinyML Demo"
+  },
+  "summary": {
+    "total_processed": 10,
+    "significant": 2,
+    "transit_candidates": 0
+  },
+  "calibration": {
+    "timestamp": "2026-01-30T15:37:21.645390",
+    "accuracy": 1.0,
+    "total_references": 8,
+    "correct": 8,
+    "drift_detected": false,
+    "results": [
+      {
+        "reference": "Kepler-186f",
+        "predicted": "planetary_transit",
+        "confidence": 0.5186433296135687,
+        "correct": true
+      },
+      {
+        "reference": "Kepler-452b",
+        "predicted": "planetary_transit",
+        "confidence": 0.5528447952980923,
+        "correct": true
+      },
+      {
+        "reference": "TRAPPIST-1b",
+        "predicted": "planetary_transit",
+        "confidence": 0.5675587202163138,
+        "correct": true
+      },
+      {
+        "reference": "TRAPPIST-1e",
+        "predicted": "planetary_transit",
+        "confidence": 0.5254678371866964,
+        "correct": true
+      },
+      {
+        "reference": "Proxima Cen b",
+        "predicted": "planetary_transit",
+        "confidence": 0.5839032773594588,
+        "correct": true
+      },
+      {
+        "reference": "K2-18b",
+        "predicted": "planetary_transit",
+        "confidence": 0.6100902977479686,
+        "correct": true
+      },
+      {
+        "reference": "TOI-700d",
+        "predicted": "planetary_transit",
+        "confidence": 0.5717662656146988,
+        "correct": true
+      },
+      {
+        "reference": "HD 219134b",
+        "predicted": "planetary_transit",
+        "confidence": 0.48107260682170294,
+        "correct": true
+      }
+    ]
+  },
+  "detections": [
+    {
+      "detection_id": "DET_20260130153721_TIC-1234",
+      "object_id": "TIC-12345678",
+      "classification": "planetary_transit",
+      "confidence": 0.46839155497924706,
+      "timestamp": "2026-01-30T15:37:21.652868",
+      "transit_depth": 0.01280218581137793,
+      "transit_duration": 8.173828125,
+      "period": 0.0,
+      "snr": 5.599732151126584,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_TIC-2345",
+      "object_id": "TIC-23456789",
+      "classification": "eclipsing_binary",
+      "confidence": 0.9495167118522663,
+      "timestamp": "2026-01-30T15:37:21.654151",
+      "transit_depth": 0.15711688885897368,
+      "transit_duration": 9.140625,
+      "period": 0.0,
+      "snr": 44.41859258377435,
+      "is_significant": true
+    },
+    {
+      "detection_id": "DET_20260130153721_TIC-3456",
+      "object_id": "TIC-34567890",
+      "classification": "noise",
+      "confidence": 0.37072917954692447,
+      "timestamp": "2026-01-30T15:37:21.656838",
+      "transit_depth": 0.011246853911211052,
+      "transit_duration": 9.6875,
+      "period": 0.0,
+      "snr": 3.579801338924383,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_TIC-4567",
+      "object_id": "TIC-45678901",
+      "classification": "planetary_transit",
+      "confidence": 0.4666183844508367,
+      "timestamp": "2026-01-30T15:37:21.658317",
+      "transit_depth": 0.016266440411181082,
+      "transit_duration": 4.8046875,
+      "period": 0.0,
+      "snr": 7.333333284151793,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_TIC-5678",
+      "object_id": "TIC-56789012",
+      "classification": "stellar_signal",
+      "confidence": 0.5874462176140911,
+      "timestamp": "2026-01-30T15:37:21.659813",
+      "transit_depth": 0.030667767470217044,
+      "transit_duration": 0.0,
+      "period": 0.0,
+      "snr": 1.6035725869428636,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_KIC-9876",
+      "object_id": "KIC-9876543",
+      "classification": "planetary_transit",
+      "confidence": 0.6278946506692441,
+      "timestamp": "2026-01-30T15:37:21.661307",
+      "transit_depth": 0.00834039685553134,
+      "transit_duration": 7.8515625,
+      "period": 0.0,
+      "snr": 3.6537209148973324,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_KIC-8765",
+      "object_id": "KIC-8765432",
+      "classification": "planetary_transit",
+      "confidence": 0.46549775901027396,
+      "timestamp": "2026-01-30T15:37:21.662724",
+      "transit_depth": 0.01885049622100954,
+      "transit_duration": 0.2734375,
+      "period": 0.0,
+      "snr": 8.605426079176981,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_KIC-7654",
+      "object_id": "KIC-7654321",
+      "classification": "eclipsing_binary",
+      "confidence": 0.9418545506032889,
+      "timestamp": "2026-01-30T15:37:21.663991",
+      "transit_depth": 0.15612548340735055,
+      "transit_duration": 9.140625,
+      "period": 0.0,
+      "snr": 42.87240031501076,
+      "is_significant": true
+    },
+    {
+      "detection_id": "DET_20260130153721_KIC-6543",
+      "object_id": "KIC-6543210",
+      "classification": "noise",
+      "confidence": 0.4835105197468443,
+      "timestamp": "2026-01-30T15:37:21.665400",
+      "transit_depth": 0.009473943559402898,
+      "transit_duration": 8.90625,
+      "period": 0.0,
+      "snr": 3.2542881019773886,
+      "is_significant": false
+    },
+    {
+      "detection_id": "DET_20260130153721_KIC-5432",
+      "object_id": "KIC-5432109",
+      "classification": "planetary_transit",
+      "confidence": 0.4792846868476805,
+      "timestamp": "2026-01-30T15:37:21.667237",
+      "transit_depth": 0.007329543204903088,
+      "transit_duration": 8.92578125,
+      "period": 0.0,
+      "snr": 3.38022965457722,
+      "is_significant": false
+    }
+  ]
+}
