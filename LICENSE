@@ -1,21 +1,38 @@
-MIT License
+Business Source License 1.1
 
-Copyright (c) 2026 Paddy1981
+Parameters
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Licensor: Padmanaban Veeraragavalu (Larun Engineering)
+Software: Larun
+Change Date: 2030-01-31
+Change License: MIT License
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Terms
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make non-production use of the Licensor’s Software. The Licensor claims no rights in the Software you create because of this License. The Licensor grants you the unconditional right to use the Software for non-production purposes.
+
+You may not use the Software for production purposes.
+
+You may make an Additional Use of the Software if the Licensor has provided an Additional Use Grant.
+
+If your use of the Software is consistent with an Additional Use Grant, such use is also non-production use.
+
+On the Change Date, the Licensor will make the Software available under the Change License.
+
+The Licensor may update the Change Date to an earlier date by providing Notice.
+
+Definitions
+
+"Additional Use Grant" means a grant of rights to use the Software for a specific purpose which is not a non-production use.
+
+"Change Date" means the date provided in Parameters.
+
+"Change License" means the license provided in Parameters.
+
+"Licensor" means the party provided in Parameters.
+
+"Software" means the software provided by the Licensor.
+
+"Notice" means updating the file where this License is included or by prominently posting the update on the Licensor’s website.
+
+"production use" means any use of the Software that is not (a) use for personal, non-commercial purposes, or (b) use for testing, development, or evaluation purposes.
