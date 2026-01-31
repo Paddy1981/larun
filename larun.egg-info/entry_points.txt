@@ -1,0 +1,3 @@
+[console_scripts]
+larun = larun:main
+larun-chat = larun_chat:main

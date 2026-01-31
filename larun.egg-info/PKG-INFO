@@ -1,0 +1,298 @@
+Metadata-Version: 2.4
+Name: larun
+Version: 2.0.0
+Summary: TinyML-powered astronomical data analysis for exoplanet discovery
+Author-email: Padmanaban Veeraragavalu <larun@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/Paddy1981/larun
+Project-URL: Repository, https://github.com/Paddy1981/larun
+Project-URL: Documentation, https://github.com/Paddy1981/larun#readme
+Project-URL: Bug Tracker, https://github.com/Paddy1981/larun/issues
+Keywords: astronomy,exoplanet,tinyml,machine-learning,nasa,tess,kepler,transit-detection
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Astronomy
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: tensorflow>=2.13.0
+Requires-Dist: astropy>=5.3
+Requires-Dist: astroquery>=0.4.6
+Requires-Dist: lightkurve>=2.4.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: scipy>=1.11.0
+Requires-Dist: scikit-learn>=1.3.0
+Requires-Dist: specutils>=1.11.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: plotly>=5.15.0
+Requires-Dist: tqdm>=4.62.0
+Requires-Dist: reportlab>=4.0.0
+Requires-Dist: jinja2>=3.1.0
+Requires-Dist: requests>=2.31.0
+Requires-Dist: aiohttp>=3.8.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: structlog>=23.1.0
+Requires-Dist: tensorflow-model-optimization>=0.7.5
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: flake8; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Provides-Extra: cloud
+Requires-Dist: boto3>=1.28.0; extra == "cloud"
+Provides-Extra: all
+Requires-Dist: larun[cloud,dev]; extra == "all"
+Dynamic: license-file
+
+# LARUN TinyML - Astronomical Data Analysis System
+
+<p align="center">
+  <strong>LARUN</strong> × <strong>Astrodata</strong>
+</p>
+
+<p align="center">
+  <em>TinyML-powered astronomical data processing for exoplanet discovery</em>
+</p>
+
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║     ██╗      █████╗ ██████╗ ██╗   ██╗███╗   ██╗                          ║
+║     ██║     ██╔══██╗██╔══██╗██║   ██║████╗  ██║                          ║
+║     ██║     ███████║██████╔╝██║   ██║██╔██╗ ██║                          ║
+║     ██║     ██╔══██║██╔══██╗██║   ██║██║╚██╗██║                          ║
+║     ███████╗██║  ██║██║  ██║╚██████╔╝██║ ╚████║                          ║
+║     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝                          ║
+║                                                                          ║
+║     TinyML for Space Science                                             ║
+║     LARUN × Astrodata                                                    ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## Created By
+
+**Padmanaban Veeraragavalu** (Larun Engineering)
+
+*With AI assistance from Claude (Anthropic)*
+
+---
+
+## Features
+
+- **Interactive CLI**: Claude-like terminal interface for astronomical analysis
+- **Chat Interface**: Natural language conversational AI for astronomy
+- **Skills System**: 24+ specialized skills for data analysis, detection, and reporting
+- **TinyML Model**: Lightweight neural network (<100KB) for edge deployment
+- **NASA Data Pipeline**: Direct ingestion from MAST, TESS, Kepler archives
+- **Transit Detection**: Automated exoplanet transit signal identification
+- **Report Generator**: NASA-compatible reports in standard formats
+- **Developer Addons**: Extensible code generation tools for researchers
+
+## Quick Start
+
+### Interactive Mode (Recommended)
+```bash
+# Start the LARUN CLI
+python larun.py
+
+# Or start Chat Mode (natural language)
+python larun_chat.py
+```
+
+### Available Commands
+```
+/help           - Show help
+/skills         - List available skills
+/skill <ID>     - Show skill details
+/run <ID>       - Execute a skill
+/train          - Train the TinyML model
+/detect         - Run detection on data
+/fetch <target> - Fetch NASA data for a target
+/addon          - Load developer addons
+/generate       - Generate Python scripts (requires codegen addon)
+```
+
+### Train with Real NASA Data
+```bash
+python train_real_data.py --planets 100 --non-planets 100 --epochs 100
+```
+
+### Run Complete Pipeline
+```bash
+python run_pipeline.py --num-stars 50 --epochs 100
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    LARUN TinyML System                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
+│  │   NASA Data  │───►│  Preprocessor│───►│   TinyML     │      │
+│  │   Pipeline   │    │  & Calibrator│    │   Detector   │      │
+│  └──────────────┘    └──────────────┘    └──────────────┘      │
+│         │                   │                   │               │
+│         ▼                   ▼                   ▼               │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
+│  │ MAST/TESS/   │    │ Calibration  │    │  Detection   │      │
+│  │ Kepler Data  │    │ Database     │    │  Results     │      │
+│  └──────────────┘    └──────────────┘    └──────────────┘      │
+│                                                 │               │
+│                                                 ▼               │
+│                                          ┌──────────────┐      │
+│                                          │ NASA Report  │      │
+│                                          │ Generator    │      │
+│                                          └──────────────┘      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Project Structure
+
+```
+larun/
+├── larun.py              # Main interactive CLI
+├── larun_chat.py         # Chat interface (natural language)
+├── run_pipeline.py       # Automated pipeline
+├── train_real_data.py    # NASA data training
+├── src/
+│   ├── pipeline/         # NASA data ingestion
+│   ├── model/            # TinyML model definition
+│   ├── calibration/      # Auto-calibration system
+│   ├── detector/         # Transit/anomaly detection
+│   └── reporter/         # NASA report generation
+├── skills/
+│   ├── skills.yaml       # Core skills definition
+│   └── addons/           # Developer addon skills
+├── addons/
+│   └── codegen.py        # Code generation addon
+├── data/                 # Training and processed data
+├── models/               # Saved models (H5, TFLite)
+└── output/               # Generated reports
+```
+
+## Skills System
+
+LARUN includes 24+ skills organized in tiers:
+
+| Tier | Category | Skills |
+|------|----------|--------|
+| 1 | Core | Data Ingestion, Light Curve Processing, CNN Model, Transit Detection |
+| 2 | Analysis | BLS Periodogram, Phase Folding, Transit Fitting |
+| 3 | Stellar | Classification, Temperature, Radius estimation |
+| 4 | Planet | Radius, Period, Habitability assessment |
+| 5 | Multi-Mission | TESS, Kepler, Gaia integration |
+| 6 | Discovery | Multi-planet, Exomoon search |
+| 7 | Research | Literature search, Figure generation |
+
+## Developer Addons
+
+Load developer addons for advanced code generation:
+
+```bash
+# In larun CLI:
+/addon codegen
+/generate script transit_search
+/generate model cnn_1d
+/generate pipeline tess
+```
+
+## Data Sources
+
+| Source | Data Type | API |
+|--------|-----------|-----|
+| NASA Exoplanet Archive | Confirmed exoplanets | TAP/REST |
+| MAST (STScI) | TESS light curves | lightkurve |
+| MAST (STScI) | Kepler light curves | lightkurve |
+| Gaia DR3 | Stellar parameters | astroquery |
+
+## Model Specifications
+
+- **Input**: 1D light curve data (128-2048 points)
+- **Model Size**: < 100KB (TinyML optimized)
+- **Inference Time**: < 10ms on edge devices
+- **Output Classes**: noise, stellar, transit, binary, artifact, unknown
+
+## Installation
+
+### Prerequisites
+
+- **Python 3.8+** - [Download Python](https://www.python.org/downloads/)
+- **pip** - Included with Python
+
+Verify with:
+```bash
+python --version  # Should be 3.8 or higher
+pip --version
+```
+
+### Quick Install
+
+**One-liner (Windows PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/Paddy1981/larun/main/install.ps1 | iex
+```
+
+**One-liner (Linux/macOS):
+```bash
+curl -fsSL https://raw.githubusercontent.com/Paddy1981/larun/main/install.sh | bash
+```
+
+**Using pip:**
+```bash
+pip install larun
+```
+
+### Install from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/Paddy1981/larun.git
+cd larun
+
+# Install
+pip install .
+
+# OR install in development mode
+pip install -e ".[dev]"
+```
+
+### Verify Installation
+
+```bash
+# Start LARUN CLI
+larun
+
+# OR start Chat Interface
+larun-chat
+```
+
+For detailed instructions, troubleshooting, and platform-specific notes, see [INSTALL.md](INSTALL.md).
+
+## License
+
+MIT License - Open for scientific research and education
+
+---
+
+**LARUN TinyML** - *Democratizing astronomical discovery through edge AI*
+
+Created by **Padmanaban Veeraragavalu** (Larun Engineering)
+
+With AI assistance from Claude (Anthropic)
