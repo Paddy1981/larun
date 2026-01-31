@@ -1,0 +1,41 @@
+# LARUN Node Manifest - Galaxy Morphology Classifier
+# Version: 1.0.0
+
+node_id: GALAXY-001
+name: Galaxy Morphology Classifier
+version: 1.0.0
+description: >
+  Classifies galaxy morphology from image cutouts using CNN.
+  Identifies spiral, elliptical, irregular, and merging galaxies.
+
+category: galactic
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+model_size_kb: 88
+input_shape: (64, 64, 3)
+output_classes:
+  - elliptical
+  - spiral
+  - barred_spiral
+  - irregular
+  - merger
+  - edge_on
+  - unknown
+
+model:
+  primary: classifier.tflite
+  fallback: weights.npz
+  quantization: int8
+
+tags:
+  - galaxy
+  - morphology
+  - image-classification
+  - SDSS
+  - DECaLS
+
+metrics:
+  accuracy: 0.83
+  inference_time_ms: 15

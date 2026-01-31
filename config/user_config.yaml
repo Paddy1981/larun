@@ -1,0 +1,21 @@
+aggregation:
+  consensus_threshold: 0.7
+  include_failed: true
+  strategy: weighted
+analysis:
+  max_parallel_nodes: 4
+  min_confidence: 0.5
+  verbose_reports: true
+data:
+  cache_enabled: true
+  data_dir: data/
+  max_cache_mb: 1000
+enabled_nodes:
+- EXOPLANET-001
+- FLARE-001
+- VSTAR-001
+last_updated: '1769885513.4440897'
+output:
+  auto_plot: true
+  output_dir: output/
+  save_intermediates: false

@@ -1,0 +1,73 @@
+# LARUN Node Manifest - Exoplanet Transit Detector
+# Version: 1.0.0
+
+node_id: EXOPLANET-001
+name: Exoplanet Transit Detector
+version: 1.0.0
+description: >
+  Detects exoplanet transits in stellar light curves using a convolutional
+  neural network optimized for TinyML deployment. Identifies periodic
+  flux dips characteristic of planetary transits and distinguishes them
+  from eclipsing binaries and stellar variability.
+
+category: exoplanet
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+# Model specifications
+model_size_kb: 48
+input_shape: (1024, 1)
+output_classes:
+  - noise
+  - stellar_signal
+  - planetary_transit
+  - eclipsing_binary
+  - instrument_artifact
+  - unknown_anomaly
+
+# Model files
+model:
+  primary: detector.tflite
+  fallback: weights.npz
+  quantization: int8
+
+# Dependencies
+dependencies: []
+
+# Tags for discovery
+tags:
+  - exoplanet
+  - transit
+  - TESS
+  - Kepler
+  - light-curve
+  - CNN
+
+# Performance metrics (from validation)
+metrics:
+  accuracy: 0.82
+  precision: 0.79
+  recall: 0.85
+  f1_score: 0.82
+  inference_time_ms: 8
+
+# Input preprocessing
+preprocessing:
+  normalize: true
+  normalize_method: minmax  # or 'zscore'
+  interpolate_gaps: true
+  target_length: 1024
+
+# Output postprocessing
+postprocessing:
+  confidence_threshold: 0.5
+  nms_threshold: 0.3  # Non-maximum suppression for overlapping detections
+
+# Supported data sources
+data_sources:
+  - TESS
+  - Kepler
+  - K2
+  - CHEOPS
+  - generic_lightcurve

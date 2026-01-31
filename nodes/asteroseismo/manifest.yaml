@@ -1,0 +1,41 @@
+# LARUN Node Manifest - Asteroseismology Analyzer
+# Version: 1.0.0
+
+node_id: ASTERO-001
+name: Asteroseismology Analyzer
+version: 1.0.0
+description: >
+  Analyzes stellar oscillations from power spectra. Detects solar-like
+  oscillations and estimates global seismic parameters (nu_max, delta_nu).
+  Useful for stellar characterization and age determination.
+
+category: stellar
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+model_size_kb: 60
+input_shape: (512, 1)
+output_classes:
+  - no_oscillation
+  - solar_like
+  - red_giant
+  - delta_scuti
+  - gamma_dor
+  - hybrid
+
+model:
+  primary: analyzer.tflite
+  fallback: weights.npz
+  quantization: int8
+
+tags:
+  - asteroseismology
+  - stellar-oscillations
+  - power-spectrum
+  - nu_max
+  - delta_nu
+
+metrics:
+  accuracy: 0.82
+  inference_time_ms: 12

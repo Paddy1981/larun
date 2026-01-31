@@ -1,0 +1,40 @@
+# LARUN Node Manifest - Microlensing Event Detector
+# Version: 1.0.0
+
+node_id: MICROLENS-001
+name: Microlensing Event Detector
+version: 1.0.0
+description: >
+  Detects gravitational microlensing events from long-baseline light curves.
+  Identifies characteristic Paczynski curve shapes and estimates event parameters.
+
+category: transient
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+model_size_kb: 72
+input_shape: (512, 1)
+output_classes:
+  - no_event
+  - single_lens
+  - binary_lens
+  - planetary
+  - parallax
+  - unclear
+
+model:
+  primary: detector.tflite
+  fallback: weights.npz
+  quantization: int8
+
+tags:
+  - microlensing
+  - gravitational-lens
+  - OGLE
+  - MOA
+  - exoplanet
+
+metrics:
+  accuracy: 0.79
+  inference_time_ms: 10

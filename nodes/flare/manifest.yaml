@@ -1,0 +1,69 @@
+# LARUN Node Manifest - Stellar Flare Detector
+# Version: 1.0.0
+
+node_id: FLARE-001
+name: Stellar Flare Detector
+version: 1.0.0
+description: >
+  Detects stellar flares in short time windows using a causal convolutional
+  network. Optimized for real-time detection of rapid brightening events.
+  Characterizes flare energy, duration, and morphology.
+
+category: stellar
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+# Model specifications
+model_size_kb: 32
+input_shape: (256, 1)
+output_classes:
+  - no_flare
+  - weak_flare
+  - moderate_flare
+  - strong_flare
+  - superflare
+
+# Model files
+model:
+  primary: detector.tflite
+  fallback: weights.npz
+  quantization: int8
+
+# Dependencies
+dependencies: []
+
+# Tags
+tags:
+  - flare
+  - stellar-activity
+  - transient
+  - real-time
+  - M-dwarf
+
+# Performance metrics
+metrics:
+  accuracy: 0.88
+  precision: 0.85
+  recall: 0.91
+  f1_score: 0.88
+  inference_time_ms: 5
+
+# Input preprocessing
+preprocessing:
+  normalize: true
+  normalize_method: robust
+  detrend: true
+  target_length: 256
+
+# Output postprocessing
+postprocessing:
+  confidence_threshold: 0.5
+  min_flare_snr: 3.0
+
+# Flare energy classification thresholds (relative units)
+energy_thresholds:
+  weak: 0.001
+  moderate: 0.01
+  strong: 0.1
+  superflare: 1.0

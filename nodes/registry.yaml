@@ -1,0 +1,98 @@
+version: '1.0'
+nodes:
+  EXOPLANET-001:
+    node_id: EXOPLANET-001
+    name: Exoplanet Transit Detector
+    version: 1.0.0
+    category: exoplanet
+    status: enabled
+    path: nodes/exoplanet
+    model_size_kb: 48
+    description: Detects exoplanet transits in light curves using CNN
+    install_date: null
+    checksum: null
+    source_url: null
+  VSTAR-001:
+    node_id: VSTAR-001
+    name: Variable Star Classifier
+    version: 1.0.0
+    category: stellar
+    status: enabled
+    path: nodes/variable_star
+    model_size_kb: 72
+    description: Classifies variable stars from phase-folded light curves
+    install_date: null
+    checksum: null
+    source_url: null
+  FLARE-001:
+    node_id: FLARE-001
+    name: Stellar Flare Detector
+    version: 1.0.0
+    category: stellar
+    status: enabled
+    path: nodes/flare
+    model_size_kb: 32
+    description: Detects stellar flares in short time windows
+    install_date: null
+    checksum: null
+    source_url: null
+  ASTERO-001:
+    node_id: ASTERO-001
+    name: Asteroseismology Analyzer
+    version: 1.0.0
+    category: stellar
+    status: installed
+    path: nodes/asteroseismo
+    model_size_kb: 60
+    description: Analyzes stellar oscillations from power spectra
+    install_date: null
+    checksum: null
+    source_url: null
+  SUPERNOVA-001:
+    node_id: SUPERNOVA-001
+    name: Supernova/Transient Detector
+    version: 1.0.0
+    category: transient
+    status: installed
+    path: nodes/supernova
+    model_size_kb: 80
+    description: Detects supernovae and transient events
+    install_date: null
+    checksum: null
+    source_url: null
+  GALAXY-001:
+    node_id: GALAXY-001
+    name: Galaxy Morphology Classifier
+    version: 1.0.0
+    category: galactic
+    status: installed
+    path: nodes/galaxy
+    model_size_kb: 88
+    description: Classifies galaxy morphology from image cutouts
+    install_date: null
+    checksum: null
+    source_url: null
+  SPECTYPE-001:
+    node_id: SPECTYPE-001
+    name: Spectral Type Classifier
+    version: 1.0.0
+    category: spectroscopy
+    status: installed
+    path: nodes/spectral_type
+    model_size_kb: 40
+    description: Classifies stellar spectral types from photometry
+    install_date: null
+    checksum: null
+    source_url: null
+  MICROLENS-001:
+    node_id: MICROLENS-001
+    name: Microlensing Event Detector
+    version: 1.0.0
+    category: transient
+    status: installed
+    path: nodes/microlensing
+    model_size_kb: 72
+    description: Detects gravitational microlensing events
+    install_date: null
+    checksum: null
+    source_url: null

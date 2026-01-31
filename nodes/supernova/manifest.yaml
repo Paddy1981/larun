@@ -1,0 +1,41 @@
+# LARUN Node Manifest - Supernova/Transient Detector
+# Version: 1.0.0
+
+node_id: SUPERNOVA-001
+name: Supernova/Transient Detector
+version: 1.0.0
+description: >
+  Detects supernovae and transient events from multi-band light curves.
+  Classifies transient type and estimates peak magnitude and decline rate.
+
+category: transient
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+model_size_kb: 80
+input_shape: (128, 1)
+output_classes:
+  - no_transient
+  - sn_ia
+  - sn_ii
+  - sn_ibc
+  - kilonova
+  - tde
+  - other_transient
+
+model:
+  primary: detector.tflite
+  fallback: weights.npz
+  quantization: int8
+
+tags:
+  - supernova
+  - transient
+  - time-domain
+  - ZTF
+  - LSST
+
+metrics:
+  accuracy: 0.80
+  inference_time_ms: 8

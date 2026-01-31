@@ -1,0 +1,42 @@
+# LARUN Node Manifest - Spectral Type Classifier
+# Version: 1.0.0
+
+node_id: SPECTYPE-001
+name: Spectral Type Classifier
+version: 1.0.0
+description: >
+  Classifies stellar spectral types from photometric colors.
+  Uses Gaia, 2MASS, and WISE photometry to estimate spectral class.
+  Fast classification without spectroscopy.
+
+category: spectroscopy
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+model_size_kb: 40
+input_shape: (8,)
+output_classes:
+  - O
+  - B
+  - A
+  - F
+  - G
+  - K
+  - M
+  - L
+
+model:
+  primary: classifier.tflite
+  fallback: weights.npz
+  quantization: int8
+
+tags:
+  - spectral-type
+  - photometry
+  - Gaia
+  - stellar-classification
+
+metrics:
+  accuracy: 0.78
+  inference_time_ms: 3
