@@ -1,4 +1,4 @@
-# LARUN Framework Architecture
+# LARUN.SPACE Framework Architecture
 
 ## The Vinveli-Vinoli-Vidhai Framework
 
@@ -233,6 +233,6 @@ When users experience delays during heavy processing, they understand:
 
 ---
 
-**LARUN** × Built on the Vinveli-Vinoli-Vidhai Framework
+**LARUN.SPACE** × Federation of TinyML for Space Science × Built on the Vinveli-Vinoli-Vidhai Framework
 
 **Website**: [larun.space](https://larun.space)

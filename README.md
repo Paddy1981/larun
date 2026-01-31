@@ -1,7 +1,7 @@
-# LARUN - Democratizing Space Discovery
+# LARUN.SPACE - Democratizing Space Discovery
 
 <p align="center">
-  <strong>LARUN</strong> × <strong>Astrodata</strong>
+  <strong>LARUN.SPACE</strong> × <strong>Astrodata</strong>
 </p>
 
 <p align="center">
@@ -31,7 +31,7 @@
 ║     ███████╗██║  ██║██║  ██║╚██████╔╝██║ ╚████║                          ║
 ║     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝                          ║
 ║                                                                          ║
-║     TinyML for Space Science • Source Available • For Everyone           ║
+║     LARUN.SPACE • Federation of TinyML for Space Science • For Everyone  ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -297,11 +297,11 @@ Join discovery campaigns and earn recognition! Community features coming soon.
 
 ### Copyright
 
-**© 2024-2026 Padmanaban Veeraragavalu (Larun Engineering). All Rights Reserved.**
+**© 2024-2026 Padmanaban Veeraragavalu (LARUN.SPACE). All Rights Reserved.**
 
 ### Software License
 
-The LARUN software is released under the **Business Source License 1.1 (BSL-1.1)**:
+The LARUN.SPACE software is released under the **Business Source License 1.1 (BSL-1.1)**:
 
 | Use Case | License |
 |----------|---------|
@@ -314,10 +314,10 @@ After 4 years, each version converts to Apache 2.0.
 
 ### Research & Publications
 
-If you use LARUN in your research, please cite:
+If you use LARUN.SPACE in your research, please cite:
 ```
-Veeraragavalu, P. (2026). LARUN: TinyML-Powered Astronomical Data Analysis
-for Democratized Exoplanet Discovery. Larun Engineering.
+Veeraragavalu, P. (2026). LARUN.SPACE: TinyML-Powered Astronomical Data Analysis
+for Democratized Exoplanet Discovery.
 https://larun.space
 ```
 
@@ -342,11 +342,11 @@ Core detection algorithms and CLI tools will **always remain free for research a
 ---
 
 <p align="center">
-  <strong>LARUN TinyML</strong> - <em>Democratizing astronomical discovery through edge AI</em>
+  <strong>LARUN.SPACE</strong> - <em>Democratizing astronomical discovery through edge AI</em>
 </p>
 
 <p align="center">
-  Created by <strong>Padmanaban Veeraragavalu</strong> (Larun Engineering)<br/>
+  Created by <strong>Padmanaban Veeraragavalu</strong><br/>
   With AI assistance from Claude (Anthropic) and Gemini (Google DeepMind)
 </p>
 
