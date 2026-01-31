@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.env
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+TestResults.xml
+test_output*.txt
+htmlcov/
+.coverage
+
+# Documentation build
+docs/_build/
+
+# Large data files (mount as volume instead)
+data/raw/
+data/expanded/cache/
+models/*.h5
+models/*.tflite
+
+# Logs
+logs/
+*.log
+
+# Output
+output/*.pdf
+output/*.html
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Coordination (internal)
+.coordination/
+.agent/

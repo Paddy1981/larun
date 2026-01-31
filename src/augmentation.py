@@ -515,7 +515,7 @@ def augment_transit_depth(
     """
     # Find transit (minimum flux region)
     threshold = np.percentile(flux, 10)
-    in_transit = flux < threshold
+    in_transit = flux <= threshold
 
     if not np.any(in_transit):
         return flux

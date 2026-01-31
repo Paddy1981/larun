@@ -54,10 +54,8 @@ from .planet import (
 
 from .transit_fit import (
     TransitFitter,
-    TransitModel,
     TransitFitResult,
     fit_transit,
-    get_limb_darkening_coeffs,
 )
 
 from .figures import (
@@ -112,10 +110,8 @@ __all__ = [
     'PLANET_CLASSES',
     # Transit Fitting
     'TransitFitter',
-    'TransitModel',
     'TransitFitResult',
     'fit_transit',
-    'get_limb_darkening_coeffs',
     # Figures
     'FigureGenerator',
     'create_lightcurve_plot',
