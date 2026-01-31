@@ -252,7 +252,7 @@ skills:
     name: "BLS Periodogram"
     category: "analysis"
     tier: 2
-    status: "planned"
+    status: "active"
     description: "Box Least Squares periodogram for transit search"
     command: "larun analyze bls"
     dependencies: ["astropy", "numpy"]
@@ -283,7 +283,7 @@ skills:
     name: "Phase Folding"
     category: "analysis"
     tier: 2
-    status: "planned"
+    status: "active"
     description: "Fold light curves on orbital period"
     command: "larun analyze fold"
     dependencies: ["numpy"]

@@ -1216,6 +1216,234 @@ def cmd_vet(args):
         traceback.print_exc()
 
 
+def cmd_fpp(args):
+    """Calculate False Positive Probability for a transit candidate"""
+    print(f"\n{Colors.BOLD}False Positive Probability (FPP) Calculator{Colors.END}")
+    print(f"{Colors.DIM}Bayesian calculation of planet vs false positive scenarios{Colors.END}\n")
+
+    # Parse arguments
+    target = None
+    period = None
+    depth = None
+    t0 = 0.0
+
+    i = 0
+    while i < len(args):
+        if args[i] == '--period' and i + 1 < len(args):
+            period = float(args[i + 1])
+            i += 2
+        elif args[i] == '--depth' and i + 1 < len(args):
+            depth = float(args[i + 1])
+            i += 2
+        elif args[i] == '--t0' and i + 1 < len(args):
+            t0 = float(args[i + 1])
+            i += 2
+        elif not args[i].startswith('--'):
+            target = args[i]
+            i += 1
+        else:
+            i += 1
+
+    if not target:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /fpp <target>                      Calculate FPP (runs vetting first)
+  /fpp <target> --period <P>         FPP at known period
+  /fpp <target> --period <P> --depth <ppm>
+
+{Colors.BOLD}Options:{Colors.END}
+  --period     Orbital period (days) - runs BLS if not provided
+  --depth      Transit depth (ppm) - calculated if not provided
+  --t0         Mid-transit time (BJD)
+
+{Colors.BOLD}Examples:{Colors.END}
+  /fpp TOI-700
+  /fpp "TIC 307210830" --period 3.5 --depth 1200
+  /fpp "Kepler-10" --period 0.837
+""")
+        return
+
+    try:
+        import numpy as np
+        import lightkurve as lk
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from skills.vetting import TransitVetter
+        from skills.fpp import FPPCalculator, StellarParams
+        from skills.periodogram import BLSPeriodogram
+
+        print(f"{Colors.CYAN}Fetching light curve for {target}...{Colors.END}")
+
+        search = lk.search_lightcurve(target, mission=['TESS', 'Kepler'])
+        if len(search) == 0:
+            print_error(f"No light curves found for {target}")
+            return
+
+        print(f"{Colors.DIM}Found {len(search)} observations{Colors.END}")
+
+        lc = search[0].download()
+        lc = lc.remove_nans().normalize().remove_outliers(sigma=3)
+
+        time = lc.time.value
+        flux = lc.flux.value
+
+        print(f"{Colors.DIM}Light curve: {len(time)} points{Colors.END}")
+
+        # If no period provided, run BLS first
+        if period is None:
+            print(f"\n{Colors.CYAN}No period provided. Running BLS...{Colors.END}")
+            bls = BLSPeriodogram(min_period=0.5, max_period=20, n_periods=5000)
+            bls_result = bls.compute(time, flux, min_snr=5.0)
+            
+            if bls_result.candidates:
+                period = bls_result.best_period
+                t0 = bls_result.candidates[0].t0
+                if depth is None:
+                    depth = bls_result.candidates[0].depth * 1e6  # Convert to ppm
+                print(f"{Colors.GREEN}Found period: {period:.4f} days, depth: {depth:.0f} ppm{Colors.END}")
+            else:
+                print_warning("No significant transit found by BLS")
+                return
+
+        # Run vetting tests first
+        print(f"\n{Colors.CYAN}Running vetting tests...{Colors.END}")
+        vetter = TransitVetter()
+        vetting_result = vetter.run_all(time, flux, period, t0, target_name=target)
+
+        # Calculate depth if not provided
+        if depth is None:
+            # Estimate from phase-folded curve
+            phase = ((time - t0) % period) / period
+            phase[phase > 0.5] -= 1.0
+            in_transit = np.abs(phase) < 0.05
+            out_transit = np.abs(phase) > 0.15
+            baseline = np.median(flux[out_transit]) if np.sum(out_transit) > 0 else 1.0
+            transit_depth = baseline - np.median(flux[in_transit]) if np.sum(in_transit) > 0 else 0.001
+            depth = transit_depth * 1e6  # ppm
+            print(f"{Colors.DIM}Estimated depth: {depth:.0f} ppm{Colors.END}")
+
+        # Calculate FPP
+        print(f"\n{Colors.CYAN}Calculating False Positive Probability...{Colors.END}")
+        
+        # Use default stellar parameters (could be enhanced with Gaia later)
+        stellar = StellarParams()
+        
+        calc = FPPCalculator()
+        fpp_result = calc.calculate(
+            vetting_result=vetting_result,
+            stellar_params=stellar,
+            period=period,
+            depth_ppm=depth,
+            target_name=target
+        )
+
+        # Display results
+        print(fpp_result.summary())
+
+        # Vetting summary
+        print(f"\n{Colors.BOLD}Vetting Tests:{Colors.END}")
+        for test in vetting_result.tests:
+            icon = f"{Colors.GREEN}✓{Colors.END}" if test.passed else f"{Colors.RED}✗{Colors.END}"
+            print(f"  {icon} {test.test_name}: {test.message}")
+
+        # Save results
+        output_file = f"output/fpp_{target.replace(' ', '_')}.json"
+        Path("output").mkdir(exist_ok=True)
+
+        import json
+        with open(output_file, 'w') as f:
+            json.dump({
+                'fpp': fpp_result.to_dict(),
+                'vetting': vetting_result.to_dict()
+            }, f, indent=2, default=str)
+
+        print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+        print()
+
+    except ImportError as e:
+        print_error(f"Missing dependency: {e}")
+        print_info("Install with: pip install lightkurve astropy")
+    except Exception as e:
+        print_error(f"FPP calculation failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+def cmd_gaia(args):
+    """Query stellar parameters from Gaia DR3"""
+    print(f"\n{Colors.BOLD}Gaia DR3 Stellar Parameters{Colors.END}")
+    print(f"{Colors.DIM}Query stellar properties from ESA Gaia Data Release 3{Colors.END}\n")
+
+    if not args:
+        print(f"""
+{Colors.BOLD}Usage:{Colors.END}
+  /gaia <target>              Query by target name or TIC ID
+  /gaia <ra> <dec>            Query by coordinates (degrees)
+
+{Colors.BOLD}Examples:{Colors.END}
+  /gaia TOI-700
+  /gaia "TIC 261136679"
+  /gaia 101.28715 -65.57776
+
+{Colors.BOLD}Retrieved Parameters:{Colors.END}
+  • Effective temperature (Teff)
+  • Surface gravity (log g)
+  • Stellar radius and luminosity
+  • Spectral type classification
+  • Distance from parallax
+""")
+        return
+
+    try:
+        sys.path.insert(0, str(Path(__file__).parent / 'src'))
+        from integrations.gaia import GaiaClient, get_stellar_params
+
+        target = ' '.join(args)
+        
+        # Check if coordinates
+        if len(args) >= 2:
+            try:
+                ra = float(args[0])
+                dec = float(args[1])
+                print(f"{Colors.CYAN}Querying Gaia for coordinates: ({ra:.5f}, {dec:.5f})...{Colors.END}")
+                client = GaiaClient()
+                result = client.query_by_coords(ra, dec)
+            except ValueError:
+                # Not coordinates, use as target name
+                print(f"{Colors.CYAN}Querying Gaia for {target}...{Colors.END}")
+                result = get_stellar_params(target)
+        else:
+            print(f"{Colors.CYAN}Querying Gaia for {target}...{Colors.END}")
+            result = get_stellar_params(target)
+
+        if result.success and result.params:
+            print(result.params.summary())
+            
+            # Additional info
+            print(f"\n{Colors.BOLD}Classification:{Colors.END}")
+            print(f"  Spectral Type: {result.params.spectral_type()}{result.params.luminosity_class()}")
+            
+            # Save results
+            output_file = f"output/gaia_{target.replace(' ', '_')}.json"
+            Path("output").mkdir(exist_ok=True)
+
+            import json
+            with open(output_file, 'w') as f:
+                json.dump(result.to_dict(), f, indent=2, default=str)
+
+            print(f"\n{Colors.DIM}Results saved to: {output_file}{Colors.END}")
+        else:
+            print_error(f"Gaia query failed: {result.error}")
+        
+        print()
+
+    except ImportError as e:
+        print_error(f"Missing dependency: {e}")
+        print_info("Install with: pip install astroquery")
+    except Exception as e:
+        print_error(f"Gaia query failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 def cmd_ttv(args):
     """Run TTV analysis for multi-planet detection"""
     print(f"\n{Colors.BOLD}Transit Timing Variations (TTV) Analysis{Colors.END}")
@@ -1777,6 +2005,8 @@ COMMANDS = {
     '/vet': cmd_vet,
     '/ttv': cmd_ttv,
     '/fit': cmd_fit,
+    '/fpp': cmd_fpp,
+    '/gaia': cmd_gaia,
 }
 
 def main():

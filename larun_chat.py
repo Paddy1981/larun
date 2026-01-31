@@ -1120,3 +1120,9 @@ if __name__ == "__main__":
         print("API server mode not yet implemented. Running chat mode instead.")
 
     run_chat()
+
+
+def main():
+    """Entry point for CLI."""
+    run_chat()
+

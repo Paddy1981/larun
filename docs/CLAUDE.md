@@ -18,6 +18,57 @@
 
 LARUN is a specialized AI assistant for astronomical data analysis, designed to work like Claude Code but focused exclusively on space science. This document guides Claude Code on how to extend, integrate, and develop LARUN capabilities.
 
+---
+
+## 🔴 CRITICAL: Multi-AI Coordination
+
+> **IMPORTANT**: LARUN is developed by both **Claude Code** and **Antigravity (Gemini)**. 
+> Before doing ANY work, follow the coordination protocol!
+
+### Session Start Checklist
+
+1. ✅ **Check `.coordination/TASK_LOG.md`**
+   - Is another AI currently active?
+   - If yes, notify user before proceeding
+
+2. ✅ **Check `.coordination/FILE_LOCKS.md`**
+   - Which files are currently locked?
+   - Do NOT edit locked files
+
+3. ✅ **Read `.coordination/HANDOFF_NOTES.md`**
+   - What did the last session accomplish?
+   - What context do you need?
+
+4. ✅ **Log your session in `TASK_LOG.md`**
+   ```markdown
+   | Claude | [timestamp] | 🟢 Active | [what you're working on] |
+   ```
+
+5. ✅ **Check `.coordination/WORK_ORDERS.md`**
+   - Pick up assigned or open tasks
+   - Move task to "In Progress"
+
+### Before Editing Files
+
+```markdown
+# Add to FILE_LOCKS.md:
+| `path/to/file.py` | Claude | [timestamp] | [task description] |
+```
+
+### Session End Checklist
+
+1. ✅ Update `HANDOFF_NOTES.md` with context for next session
+2. ✅ Update `WORK_ORDERS.md` (complete tasks, add new ones)
+3. ✅ Remove your entries from `FILE_LOCKS.md`
+4. ✅ Move your `TASK_LOG.md` entry to history
+
+### Workflow Reference
+
+For detailed step-by-step coordination protocol, see:
+`.agent/workflows/coordination.md`
+
+---
+
 ## Project Structure
 
 ```

@@ -46,15 +46,16 @@ class LightCurveAugmenter:
         >>> print(f"Augmented: {len(X_train)} -> {len(X_aug)} samples")
     """
 
-    def __init__(self, config: Optional[AugmentationConfig] = None):
+    def __init__(self, config: Optional[AugmentationConfig] = None, seed: Optional[int] = None):
         """
         Initialize augmenter with configuration.
 
         Args:
             config: AugmentationConfig or None for defaults
+            seed: Random seed for reproducibility
         """
         self.config = config or AugmentationConfig()
-        self.rng = np.random.default_rng()
+        self.rng = np.random.default_rng(seed)
 
     def add_gaussian_noise(
         self,
@@ -557,7 +558,18 @@ def augment_transit_duration(
     # For now, we just apply a time stretch around the transit
 
     # Find transit center
-    min_idx = np.argmin(flux)
+    min_val = np.min(flux)
+    median_val = np.median(flux)
+    # Use half-depth threshold to safely catch transit
+    threshold = (min_val + median_val) / 2
+    transit_indices = np.where(flux < threshold)[0]
+    
+    if len(transit_indices) == 0:
+        center_idx = np.argmin(flux)
+    else:
+        # Use mean of transit indices as center
+        center_idx = int(np.mean(transit_indices))
+
     n = len(flux)
 
     # Apply local time stretch
@@ -565,10 +577,10 @@ def augment_transit_duration(
 
     # Simple approach: interpolate around transit
     indices = np.arange(n)
-    stretched_indices = min_idx + (indices - min_idx) / factor
+    stretched_indices = center_idx + (indices - center_idx) / factor
     stretched_indices = np.clip(stretched_indices, 0, n - 1)
 
-    return np.interp(indices, stretched_indices, flux)
+    return np.interp(stretched_indices, indices, flux)
 
 
 if __name__ == '__main__':

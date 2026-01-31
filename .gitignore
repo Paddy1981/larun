@@ -37,3 +37,5 @@ logs/
 TestResults.xml
 .pytest_cache/
 test_output.txt
+
+debug*.txt

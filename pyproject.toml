@@ -1,0 +1,103 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "larun"
+version = "2.0.0"
+description = "TinyML-powered astronomical data analysis for exoplanet discovery"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "Padmanaban Veeraragavalu", email = "larun@example.com"},
+    {name = "Gemini (Google DeepMind)", email = "gemini-dev@google.com"}
+]
+keywords = [
+    "astronomy",
+    "exoplanet",
+    "tinyml",
+    "machine-learning",
+    "nasa",
+    "tess",
+    "kepler",
+    "transit-detection"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "tensorflow>=2.13.0",
+    "astropy>=5.3",
+    "astroquery>=0.4.6",
+    "lightkurve>=2.4.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scipy>=1.11.0",
+    "scikit-learn>=1.3.0",
+    "specutils>=1.11.0",
+    "matplotlib>=3.7.0",
+    "plotly>=5.15.0",
+    "tqdm>=4.62.0",
+    "reportlab>=4.0.0",
+    "jinja2>=3.1.0",
+    "requests>=2.31.0",
+    "aiohttp>=3.8.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "structlog>=23.1.0",
+    "tensorflow-model-optimization>=0.7.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black",
+    "flake8",
+    "mypy",
+]
+cloud = [
+    "boto3>=1.28.0",
+]
+all = [
+    "larun[dev,cloud]",
+]
+
+[project.scripts]
+larun = "larun:main"
+larun-chat = "larun_chat:main"
+
+[project.urls]
+Homepage = "https://github.com/Paddy1981/larun"
+Repository = "https://github.com/Paddy1981/larun"
+Documentation = "https://github.com/Paddy1981/larun#readme"
+"Bug Tracker" = "https://github.com/Paddy1981/larun/issues"
+
+[tool.setuptools]
+py-modules = ["larun", "larun_chat", "main", "demo", "run_pipeline", "train_real_data"]
+packages = ["src", "src.model", "src.pipeline", "src.detector", "src.calibration", "src.reporter", "src.skills"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.json", "*.h5", "*.tflite"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"

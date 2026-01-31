@@ -33,17 +33,17 @@
 **Reference**: `docs/research/EXOPLANET_DETECTION.md`
 
 ```
-Status: PLANNED
+Status: COMPLETE
 Complexity: Medium
 Timeline: Sprint 1
 ```
 
 **Tasks:**
-- [ ] Implement Box Least Squares algorithm in `src/skills/periodogram.py`
-- [ ] Add period grid optimization for efficiency
-- [ ] Integrate with astropy.timeseries.BoxLeastSquares
-- [ ] Create CLI command: `larun analyze bls`
-- [ ] Add unit tests with synthetic transit data
+- [x] Implement Box Least Squares algorithm in `src/skills/periodogram.py`
+- [x] Add period grid optimization for efficiency
+- [x] Integrate with astropy.timeseries.BoxLeastSquares
+- [x] Create CLI command: `larun analyze bls` (also `/bls`)
+- [x] Add unit tests with synthetic transit data
 - [ ] Benchmark against published Kepler results
 
 **Expected Outcome:**

@@ -662,6 +662,14 @@ SKILL_INFO = {
         'class': BLSPeriodogram,
         'description': 'Box Least Squares periodogram for transit detection'
     },
+    'ANAL-002': {
+        'id': 'ANAL-002',
+        'name': 'Phase Folding',
+        'command': 'analyze fold',
+        'function': phase_fold,
+        'bin_function': bin_phase_curve,
+        'description': 'Phase fold light curves on orbital period'
+    },
     'ANAL-010': {
         'id': 'ANAL-010',
         'name': 'Lomb-Scargle Periodogram',
@@ -688,6 +696,43 @@ def run_lomb_scargle(time: np.ndarray, flux: np.ndarray, **kwargs) -> Periodogra
     lsp = LombScarglePeriodogram(**{k: v for k, v in kwargs.items()
                                    if k in ['min_period', 'max_period', 'samples_per_peak']})
     return lsp.compute(time, flux)
+
+
+def run_phase_fold(time: np.ndarray, flux: np.ndarray, period: float, 
+                   t0: float = 0.0, n_bins: int = 100) -> dict:
+    """
+    Run phase folding analysis (convenience function).
+    
+    Args:
+        time: Time array (days)
+        flux: Flux array
+        period: Orbital period (days)
+        t0: Reference epoch (mid-transit time)
+        n_bins: Number of bins for binned output
+        
+    Returns:
+        Dictionary with phase, flux, binned data, and statistics
+    """
+    phase, flux_folded = phase_fold(time, flux, period, t0)
+    bin_phase, bin_flux, bin_err = bin_phase_curve(phase, flux_folded, n_bins)
+    
+    # Calculate depth from binned data
+    import numpy as np
+    min_idx = np.nanargmin(bin_flux)
+    depth = 1.0 - bin_flux[min_idx]
+    
+    return {
+        'phase': phase,
+        'flux': flux_folded,
+        'bin_phase': bin_phase,
+        'bin_flux': bin_flux,
+        'bin_err': bin_err,
+        'depth': depth,
+        'depth_ppm': depth * 1e6,
+        'period': period,
+        't0': t0,
+        'min_phase': bin_phase[min_idx]
+    }
 
 
 if __name__ == '__main__':
