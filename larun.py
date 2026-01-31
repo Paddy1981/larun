@@ -682,6 +682,14 @@ def cmd_help(args):
     print(f"""
 {Colors.BOLD}LARUN Commands{Colors.END}
 
+{Colors.CYAN}🔭 Analysis Nodes (NEW!):{Colors.END}
+  /nodes               List all TinyML analysis nodes
+  /nodes enable <ID>   Enable a node (e.g., VSTAR-001)
+  /nodes disable <ID>  Disable a node
+  /nodes info <ID>     Show node details & training status
+  /nodes run <target>  Run all enabled nodes on target
+  /nodes stats         Show node statistics
+
 {Colors.CYAN}Skills System:{Colors.END}
   /skills              List all available skills
   /skill <ID>          Show skill details
@@ -1984,6 +1992,354 @@ def process_natural_language(query):
 
 
 # ============================================================================
+# NODE COMMANDS (Federated Multi-Model System)
+# ============================================================================
+
+def cmd_nodes(args):
+    """List and manage TinyML analysis nodes.
+
+    Usage:
+        /nodes              - List all available nodes
+        /nodes enable <id>  - Enable a node
+        /nodes disable <id> - Disable a node
+        /nodes info <id>    - Show node details
+        /nodes run <target> - Run enabled nodes on target
+    """
+    try:
+        from src.nodes.registry import NodeRegistry
+        from src.nodes.loader import NodeLoader
+        from src.nodes.aggregator import NodeAggregator
+    except ImportError:
+        print_error("Node system not available. Check src/nodes/ installation.")
+        return
+
+    registry = NodeRegistry()
+
+    if not args:
+        # Show interactive node list
+        _show_nodes_menu(registry)
+        return
+
+    subcmd = args[0].lower()
+
+    if subcmd == 'list':
+        _show_nodes_menu(registry)
+
+    elif subcmd == 'enable' and len(args) > 1:
+        node_id = args[1].upper()
+        if registry.enable_node(node_id):
+            print_success(f"Enabled {node_id}")
+        else:
+            print_error(f"Could not enable {node_id}")
+
+    elif subcmd == 'disable' and len(args) > 1:
+        node_id = args[1].upper()
+        if registry.disable_node(node_id):
+            print_success(f"Disabled {node_id}")
+        else:
+            print_error(f"Could not disable {node_id}")
+
+    elif subcmd == 'info' and len(args) > 1:
+        node_id = args[1].upper()
+        _show_node_info(registry, node_id)
+
+    elif subcmd == 'run':
+        target = args[1] if len(args) > 1 else None
+        node_ids = args[2].split(',') if len(args) > 2 else None
+        _run_nodes(registry, target, node_ids)
+
+    elif subcmd == 'stats':
+        stats = registry.get_stats()
+        print(f"\n{Colors.BOLD} Node Statistics{Colors.END}")
+        print(f"  Total: {stats['total_nodes']} nodes")
+        print(f"  Enabled: {Colors.GREEN}{stats['enabled']}{Colors.END}")
+        print(f"  Installed: {stats['installed']}")
+        print(f"  Model size: {stats['total_model_size_kb']}KB total")
+
+    else:
+        print_info("Usage: /nodes [list|enable|disable|info|run|stats] [args]")
+
+
+def _get_node_training_status(node_id: str) -> dict:
+    """Check if a node's model is trained and get its metrics."""
+    import json
+    from pathlib import Path
+
+    # Check for trained model file
+    folder_map = {
+        'EXOPLANET-001': 'exoplanet',
+        'VSTAR-001': 'variable_star',
+        'FLARE-001': 'flare',
+        'ASTERO-001': 'asteroseismo',
+        'SUPERNOVA-001': 'supernova',
+        'GALAXY-001': 'galaxy',
+        'SPECTYPE-001': 'spectral_type',
+        'MICROLENS-001': 'microlensing',
+    }
+
+    folder = folder_map.get(node_id, '')
+    model_path = Path(f"nodes/{folder}/model")
+
+    # Check for TFLite model
+    tflite_files = list(model_path.glob("*.tflite")) if model_path.exists() else []
+
+    # Check training results
+    results_path = Path("nodes/training_results.json")
+    accuracy = None
+    if results_path.exists():
+        try:
+            with open(results_path) as f:
+                results = json.load(f)
+            for r in results:
+                if r.get('node_id') == node_id and 'accuracy' in r:
+                    accuracy = r['accuracy']
+                    break
+        except:
+            pass
+
+    # Check manifest for metrics
+    manifest_path = Path(f"nodes/{folder}/manifest.yaml")
+    if manifest_path.exists() and accuracy is None:
+        try:
+            import yaml
+            with open(manifest_path) as f:
+                manifest = yaml.safe_load(f)
+            accuracy = manifest.get('metrics', {}).get('accuracy')
+        except:
+            pass
+
+    return {
+        'has_model': len(tflite_files) > 0,
+        'accuracy': accuracy,
+        'model_file': tflite_files[0].name if tflite_files else None,
+    }
+
+
+def _show_nodes_menu(registry):
+    """Display available nodes as an interactive menu with training status."""
+    import random
+    nodes = registry.list_nodes()
+
+    print(f"\n{Colors.BOLD}╔══════════════════════════════════════════════════════════════╗{Colors.END}")
+    print(f"{Colors.BOLD}║            🔭 LARUN Analysis Nodes                           ║{Colors.END}")
+    print(f"{Colors.BOLD}╚══════════════════════════════════════════════════════════════╝{Colors.END}\n")
+
+    # Group by category
+    categories = {}
+    for node in nodes:
+        cat = node.category
+        if cat not in categories:
+            categories[cat] = []
+        categories[cat].append(node)
+
+    # Category display names and icons
+    cat_display = {
+        'exoplanet': ('🪐 EXOPLANET DETECTION', Colors.CYAN),
+        'stellar': ('⭐ STELLAR ANALYSIS', Colors.YELLOW),
+        'transient': ('💥 TRANSIENT DETECTION', Colors.RED),
+        'galactic': ('🌌 GALACTIC', Colors.MAGENTA),
+        'spectroscopy': ('🌈 SPECTROSCOPY', Colors.BLUE),
+    }
+
+    for category, cat_nodes in sorted(categories.items()):
+        display_name, color = cat_display.get(category, (category.upper(), Colors.END))
+        print(f"{color}{Colors.BOLD}{display_name}{Colors.END}")
+        print(f"{Colors.DIM}{'─' * 70}{Colors.END}")
+
+        for node in cat_nodes:
+            # Get training status
+            training = _get_node_training_status(node.node_id)
+
+            # Status indicator
+            if node.status == 'enabled':
+                status = f"{Colors.GREEN}● ON {Colors.END}"
+                icon = "▶"
+            elif node.status in ('installed', 'disabled'):
+                status = f"{Colors.DIM}○ OFF{Colors.END}"
+                icon = "○"
+            else:
+                status = f"{Colors.DIM}     {Colors.END}"
+                icon = " "
+
+            # Size badge
+            size_color = Colors.GREEN if node.model_size_kb <= 50 else Colors.YELLOW
+            size_badge = f"{size_color}{node.model_size_kb:>2}KB{Colors.END}"
+
+            # Training status badge
+            if training['has_model'] and training['accuracy']:
+                acc_pct = int(training['accuracy'] * 100)
+                if acc_pct >= 80:
+                    train_badge = f"{Colors.GREEN}✓ {acc_pct}%{Colors.END}"
+                elif acc_pct >= 60:
+                    train_badge = f"{Colors.YELLOW}◐ {acc_pct}%{Colors.END}"
+                else:
+                    train_badge = f"{Colors.RED}◔ {acc_pct}%{Colors.END}"
+            elif training['has_model']:
+                train_badge = f"{Colors.GREEN}✓ trained{Colors.END}"
+            else:
+                train_badge = f"{Colors.DIM}○ untrained{Colors.END}"
+
+            print(f"  {icon} {Colors.BOLD}{node.node_id:<14}{Colors.END} {node.name:<26} {size_badge}  {train_badge:<12} {status}")
+
+        print()
+
+    # Legend
+    print(f"{Colors.DIM}{'─' * 70}{Colors.END}")
+    print(f"  {Colors.GREEN}●{Colors.END} ON = enabled    ○ OFF = disabled    {Colors.GREEN}✓{Colors.END} = trained    {Colors.DIM}○{Colors.END} = needs training")
+
+    # Tips section
+    tips = [
+        "Enable multiple nodes for comprehensive analysis of the same target",
+        "Run 'python train_nodes.py --all' to train all node models",
+        "Models are <100KB each - suitable for Raspberry Pi deployment",
+        "Use '/nodes run TIC_123456' to analyze a TESS target",
+        "Combine EXOPLANET + VSTAR nodes to catch eclipsing binaries",
+        "FLARE-001 works best on M-dwarf targets with high cadence data",
+        "Enable ASTERO-001 for solar-like oscillation detection",
+        "Galaxy morphology needs image cutouts, not light curves",
+    ]
+    tip = random.choice(tips)
+    print(f"\n  {Colors.CYAN}💡 Tip:{Colors.END} {tip}")
+
+    # Quick commands
+    print(f"\n{Colors.BOLD}Commands:{Colors.END}")
+    print(f"  /nodes enable VSTAR-001     Enable a node")
+    print(f"  /nodes info EXOPLANET-001   Show node details & training")
+    print(f"  /nodes run TIC_123456       Analyze target with enabled nodes")
+    print()
+
+
+def _show_node_info(registry, node_id: str):
+    """Show detailed info for a node including training status."""
+    node = registry.get_node(node_id)
+    if not node:
+        print_error(f"Node not found: {node_id}")
+        return
+
+    # Try to load metadata from manifest
+    try:
+        from src.nodes.base import NodeMetadata
+        node_path = Path(f"nodes/{registry.BUILTIN_NODES.get(node_id, {}).get('folder', '')}")
+        manifest_path = node_path / 'manifest.yaml'
+        if manifest_path.exists():
+            metadata = NodeMetadata.from_yaml(manifest_path)
+        else:
+            metadata = None
+    except:
+        metadata = None
+
+    # Get training status
+    training = _get_node_training_status(node_id)
+
+    status_color = Colors.GREEN if node.status == 'enabled' else Colors.DIM
+
+    print(f"\n{Colors.BOLD}╔══════════════════════════════════════════════════════════╗{Colors.END}")
+    print(f"{Colors.BOLD}║  {node_id:<54} ║{Colors.END}")
+    print(f"{Colors.BOLD}╚══════════════════════════════════════════════════════════╝{Colors.END}")
+
+    print(f"\n  {Colors.BOLD}Name:{Colors.END}        {node.name}")
+    print(f"  {Colors.BOLD}Status:{Colors.END}      {status_color}{node.status.upper()}{Colors.END}")
+    print(f"  {Colors.BOLD}Category:{Colors.END}    {node.category}")
+    print(f"  {Colors.BOLD}Model Size:{Colors.END}  {node.model_size_kb}KB (target <100KB)")
+    print(f"  {Colors.BOLD}Description:{Colors.END} {node.description}")
+
+    # Training status section
+    print(f"\n  {Colors.BOLD}Training Status:{Colors.END}")
+    if training['has_model']:
+        print(f"    Model:    {Colors.GREEN}✓ Trained{Colors.END} ({training['model_file']})")
+        if training['accuracy']:
+            acc = training['accuracy']
+            bar = "█" * int(acc * 10) + "░" * (10 - int(acc * 10))
+            acc_color = Colors.GREEN if acc >= 0.8 else Colors.YELLOW if acc >= 0.6 else Colors.RED
+            print(f"    Accuracy: {acc_color}{acc:.1%}{Colors.END} [{bar}]")
+        else:
+            print(f"    Accuracy: {Colors.DIM}Not recorded{Colors.END}")
+    else:
+        print(f"    Model:    {Colors.YELLOW}○ Not trained{Colors.END}")
+        print(f"    {Colors.DIM}Run: python train_nodes.py --node {node_id}{Colors.END}")
+
+    if metadata:
+        print(f"\n  {Colors.BOLD}Model Specs:{Colors.END}")
+        print(f"    Input:    {metadata.input_shape}")
+        print(f"    Output:   {len(metadata.output_classes)} classes")
+        print(f"  {Colors.BOLD}Classes:{Colors.END}")
+        for i, cls in enumerate(metadata.output_classes):
+            print(f"    {i+1}. {cls}")
+
+    print(f"\n  {Colors.BOLD}Commands:{Colors.END}")
+    if node.status != 'enabled':
+        print(f"    /nodes enable {node_id}         - Enable this node")
+    else:
+        print(f"    /nodes disable {node_id}        - Disable this node")
+    print(f"    /nodes run TIC_123 {node_id}   - Run on specific target")
+    if not training['has_model']:
+        print(f"    python train_nodes.py -n {node_id}  - Train this model")
+    print()
+
+
+def _run_nodes(registry, target: str = None, node_ids: list = None):
+    """Run analysis with selected nodes."""
+    import numpy as np
+    from src.nodes.loader import NodeLoader
+    from src.nodes.aggregator import NodeAggregator
+
+    loader = NodeLoader(registry)
+    aggregator = NodeAggregator()
+
+    # Get nodes
+    if node_ids:
+        nodes = loader.load_nodes([n.upper() for n in node_ids])
+    else:
+        nodes = loader.load_enabled_nodes()
+
+    if not nodes:
+        print_error("No nodes enabled. Use '/nodes enable <id>' first.")
+        return
+
+    # Generate or load data
+    if target:
+        print_info(f"Analyzing {target} with {len(nodes)} node(s)...")
+    else:
+        target = "synthetic_test"
+        print_info(f"Running test with synthetic data on {len(nodes)} node(s)...")
+
+    # Create test data
+    np.random.seed(hash(target or "test") % 2**32)
+    flux = 1.0 + 0.001 * np.random.randn(1024)
+    flux[400:450] -= 0.008  # Transit-like dip
+
+    print(f"\n{Colors.BOLD}Running Analysis...{Colors.END}")
+    print(f"{Colors.DIM}{'─' * 50}{Colors.END}")
+
+    results = []
+    for node in nodes:
+        print(f"  {node.node_id:<14} ", end="", flush=True)
+        result = node.run(flux)
+        results.append(result)
+
+        if result.success:
+            conf_bar = "█" * int(result.confidence * 10) + "░" * (10 - int(result.confidence * 10))
+            print(f"{result.classification:<18} [{conf_bar}] {result.confidence:.0%}")
+        else:
+            print(f"{Colors.RED}FAILED{Colors.END}")
+
+    # Aggregate
+    aggregated = aggregator.aggregate(results, target_id=target or "test")
+
+    print(f"{Colors.DIM}{'─' * 50}{Colors.END}")
+    print(f"\n{Colors.BOLD}Combined Result:{Colors.END}")
+    print(f"  Classification: {Colors.CYAN}{aggregated.primary_classification.upper()}{Colors.END}")
+    print(f"  Confidence:     {aggregated.overall_confidence:.0%}")
+    print(f"  Consensus:      {'Yes' if aggregated.consensus else 'No'}")
+
+    if aggregated.recommendations:
+        print(f"\n{Colors.BOLD}Recommendations:{Colors.END}")
+        for rec in aggregated.recommendations[:3]:
+            print(f"  • {rec}")
+    print()
+
+
+# ============================================================================
 # MAIN LOOP
 # ============================================================================
 
@@ -2007,6 +2363,7 @@ COMMANDS = {
     '/fit': cmd_fit,
     '/fpp': cmd_fpp,
     '/gaia': cmd_gaia,
+    '/nodes': cmd_nodes,
 }
 
 def main():
