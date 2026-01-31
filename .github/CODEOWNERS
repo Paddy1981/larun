@@ -1,0 +1,27 @@
+# LARUN Code Owners
+# These owners will be automatically requested for review
+
+# Default owners for everything
+* @larun-engineering
+
+# Core skills require senior review
+/src/skills/ @larun-engineering
+
+# ML models require ML team review
+/src/models/ @larun-engineering
+/train*.py @larun-engineering
+
+# API changes
+/api.py @larun-engineering
+
+# CI/CD changes
+/.github/ @larun-engineering
+
+# Documentation
+/docs/ @larun-engineering
+*.md @larun-engineering
+
+# Configuration files
+/config/ @larun-engineering
+pyproject.toml @larun-engineering
+requirements*.txt @larun-engineering

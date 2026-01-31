@@ -1,0 +1,58 @@
+# Labels for PR auto-labeling based on file paths
+
+# Core skills
+skills:
+  - changed-files:
+    - any-glob-to-any-file: 'src/skills/**/*'
+
+# ML/Model changes
+ml:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/models/**/*'
+      - 'train*.py'
+      - '**/*model*.py'
+
+# API changes
+api:
+  - changed-files:
+    - any-glob-to-any-file: 'api.py'
+
+# Tests
+tests:
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**/*'
+
+# Documentation
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**/*'
+      - '*.md'
+      - '!CHANGELOG.md'
+
+# Configuration
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'config/**/*'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - '.github/**/*'
+
+# CI/CD
+ci:
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**/*'
+
+# CLI
+cli:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'larun.py'
+      - 'larun_chat.py'
+
+# Coordination (multi-IDE)
+coordination:
+  - changed-files:
+    - any-glob-to-any-file: '.coordination/**/*'

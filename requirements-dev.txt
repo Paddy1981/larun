@@ -1,0 +1,59 @@
+# LARUN Development Dependencies
+# Install: pip install -r requirements-dev.txt
+
+# Include production dependencies
+-r requirements.txt
+
+# =============================================================================
+# Testing
+# =============================================================================
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0
+pytest-xdist>=3.5.0     # Parallel test execution
+hypothesis>=6.92.0       # Property-based testing
+
+# =============================================================================
+# Code Quality
+# =============================================================================
+ruff>=0.2.0              # Fast linter
+black>=24.1.0            # Code formatter
+isort>=5.13.0            # Import sorter
+mypy>=1.8.0              # Type checker
+types-requests>=2.31.0   # Type stubs
+types-PyYAML>=6.0.0      # Type stubs
+
+# =============================================================================
+# Security
+# =============================================================================
+bandit>=1.7.0            # Security linter
+safety>=2.3.0            # Dependency vulnerability scanner
+pip-audit>=2.6.0         # Dependency audit
+
+# =============================================================================
+# Pre-commit
+# =============================================================================
+pre-commit>=3.6.0
+
+# =============================================================================
+# Documentation
+# =============================================================================
+mkdocs>=1.5.0
+mkdocs-material>=9.5.0
+mkdocstrings[python]>=0.24.0
+
+# =============================================================================
+# Development Tools
+# =============================================================================
+ipython>=8.18.0
+ipdb>=0.13.0             # Better debugger
+rich>=13.7.0             # Rich terminal output
+httpx>=0.26.0            # For API testing
+
+# =============================================================================
+# FastAPI Development
+# =============================================================================
+uvicorn>=0.25.0
+fastapi>=0.109.0
+python-multipart>=0.0.6

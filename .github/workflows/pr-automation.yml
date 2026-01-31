@@ -1,0 +1,85 @@
+# LARUN PR Automation
+# Automated labeling, review assignment, and checks
+
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  labeler:
+    name: Auto-Label PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Label based on files changed
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
+
+  size-label:
+    name: PR Size Label
+    runs-on: ubuntu-latest
+    steps:
+      - uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/XS'
+          xs_max_size: 10
+          s_label: 'size/S'
+          s_max_size: 100
+          m_label: 'size/M'
+          m_max_size: 500
+          l_label: 'size/L'
+          l_max_size: 1000
+          xl_label: 'size/XL'
+          fail_if_xl: false
+
+  pr-description-check:
+    name: PR Description Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description
+        uses: jadrol/pr-description-checker@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          min-length: 50
+          exempt-labels: 'skip-description-check,dependencies'
+
+  conventional-commits:
+    name: Conventional Commits Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        uses: webiny/action-conventional-commits@v1.3.0
+        with:
+          allowed-commit-types: "feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert"
+
+  coordination-check:
+    name: Multi-IDE Coordination Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for coordination updates
+        run: |
+          if git diff --name-only origin/main...HEAD | grep -q "^\.coordination/"; then
+            echo "::notice::Coordination files updated - ensure other contributors are aware"
+          fi
+
+          # Check for file lock conflicts
+          if [ -f ".coordination/FILE_LOCKS.md" ]; then
+            echo "Checking file locks..."
+            cat .coordination/FILE_LOCKS.md
+          fi
