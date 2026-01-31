@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://larun.space"><img src="https://img.shields.io/badge/website-larun.space-blueviolet?style=flat-square&logo=safari&logoColor=white" alt="Website"></a>
   <a href="#"><img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
   <a href="#"><img src="https://img.shields.io/badge/TensorFlow-2.13+-orange?style=flat-square&logo=tensorflow&logoColor=white" alt="TensorFlow"></a>
   <a href="#"><img src="https://img.shields.io/badge/license-BSL--1.1-green?style=flat-square" alt="License"></a>
@@ -152,6 +153,7 @@ python larun_chat.py
 
 | Document | Description |
 |----------|-------------|
+| [docs/FRAMEWORK_ARCHITECTURE.md](docs/FRAMEWORK_ARCHITECTURE.md) | Vinveli-Vinoli-Vidhai three-tier framework |
 | [docs/FEDERATED_ARCHITECTURE.md](docs/FEDERATED_ARCHITECTURE.md) | Distributed/federated learning design |
 | [docs/CLAUDE.md](docs/CLAUDE.md) | AI assistant integration documentation |
 
@@ -316,12 +318,12 @@ If you use LARUN in your research, please cite:
 ```
 Veeraragavalu, P. (2026). LARUN: TinyML-Powered Astronomical Data Analysis
 for Democratized Exoplanet Discovery. Larun Engineering.
-https://github.com/Paddy1981/larun
+https://larun.space
 ```
 
 ### Commercial Licensing
 
-For commercial use, enterprise licensing, white-labeling, or partnership inquiries, contact **Larun Engineering**.
+For commercial use, enterprise licensing, white-labeling, or partnership inquiries, visit **[larun.space](https://larun.space)** or contact **Larun Engineering**.
 
 ### Core Tools Promise
 

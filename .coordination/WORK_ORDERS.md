@@ -20,15 +20,37 @@
 |----|:--------:|------|----------|----------------|
 | WO-010 | 🔴 Critical | Train production model (90%+ accuracy) | Antigravity | `train_real_data.py`, `models/` |
 | WO-011 | 🔴 Critical | Save & export trained model files (.h5, .tflite, int8) | Antigravity | `models/real/` |
-| WO-012 | 🔴 Critical | Fix failing augmentation test (transit depth) | Claude | `tests/test_augmentation.py` |
-| WO-013 | 🔴 High | Create model training documentation | Claude | `docs/TRAINING_GUIDE.md` |
 | WO-014 | 🔴 High | Benchmark model on test set, create confusion matrix | Antigravity | `output/`, `docs/` |
-| WO-015 | 🟡 Medium | Create Quick Start guide (5 min to first detection) | Claude | `docs/QUICKSTART.md` |
 | WO-016 | 🟡 Medium | Create inference examples notebook | Antigravity | `notebooks/inference_demo.ipynb` |
-| WO-017 | 🟡 Medium | Add Docker containerization | Claude | `Dockerfile`, `docker-compose.yml` |
 | WO-018 | 🟡 Medium | Create deployment guide (RPi, ESP32) | Antigravity | `docs/DEPLOYMENT.md` |
 | WO-019 | 🟢 Lower | Edge device benchmarks (actual hardware) | Any | `docs/BENCHMARKS.md` |
 | WO-020 | 🟢 Lower | Create model download/install script | Any | `scripts/download_model.py` |
+
+---
+
+## Vinveli-Vinoli-Vidhai Rebrand Sprint
+
+**Goal**: Rename project from LARUN (name taken) to Vinveli-Vinoli-Vidhai
+**Reference**: `docs/VINVELI_VINOLI_MIGRATION.md`
+
+### Three-Tier Brand Structure
+- **Vinveli** (விண்வெளி - Space) = Main ML system, Central orchestration, Training
+- **Vinoli** (வெளிச்சம் - Light) = CLI interface, Communication layer, Data flow
+- **Vidhai** (விதை - Seed) = Seeds planted on user systems to harvest knowledge
+
+*"Plant a seed. Harvest the stars. Discover new worlds."*
+
+| ID | Priority | Task | Assigned | Files Affected |
+|----|:--------:|------|----------|----------------|
+| WO-021 | 🔴 Critical | Phase 1: Foundation files | Claude | `pyproject.toml`, `vinoli.py`, `Dockerfile` |
+| WO-022 | 🔴 Critical | Phase 2: Source code updates | Claude | `src/**/*.py` |
+| WO-023 | 🔴 High | Phase 3: Documentation updates | Antigravity | `README.md`, `docs/*.md` |
+| WO-024 | 🟡 Medium | Phase 4: Skills & config | Claude | `skills/*.yaml`, `config/` |
+| WO-025 | 🟡 Medium | Phase 5: Notebooks rename | Antigravity | `notebooks/*.ipynb` |
+| WO-026 | 🟡 Medium | Phase 6: Web/UI updates | Claude | `dashboard.html`, `src/reporter/` |
+| WO-027 | 🟢 Lower | Phase 7: Tests & validation | Both | `tests/*.py` |
+| WO-028 | 🟢 Lower | Phase 8: Repository & CI/CD | User + Both | `.github/workflows/` |
+| WO-029 | 🟢 Lower | Create new logo assets | Any | `assets/vinoli-logo.*` |
 
 ---
 
@@ -50,6 +72,10 @@
 | WO-006 | Claude | 2026-01-31 | Add Gaia DR3 integration | `src/skills/gaia.py` complete |
 | WO-007 | Claude | 2026-01-31 | Planet radius/habitability skill | `src/skills/planet.py` complete |
 | WO-009 | Claude | 2026-01-31 | CI/CD Pipeline & BSL License | GitHub Actions, BSL-1.1 license |
+| WO-012 | Claude | 2026-01-31 | Fix failing augmentation test | Fixed `flux < threshold` → `flux <= threshold` |
+| WO-013 | Claude | 2026-01-31 | Create model training documentation | `docs/TRAINING_GUIDE.md` created |
+| WO-015 | Claude | 2026-01-31 | Create Quick Start guide | `docs/QUICKSTART.md` created |
+| WO-017 | Claude | 2026-01-31 | Add Docker containerization | `Dockerfile`, `docker-compose.yml`, `.dockerignore` |
 
 ---
 
