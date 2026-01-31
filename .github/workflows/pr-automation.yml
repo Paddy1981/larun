@@ -66,20 +66,4 @@ jobs:
         with:
           allowed-commit-types: "feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert"
 
-  coordination-check:
-    name: Multi-IDE Coordination Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check for coordination updates
-        run: |
-          if git diff --name-only origin/main...HEAD | grep -q "^\.coordination/"; then
-            echo "::notice::Coordination files updated - ensure other contributors are aware"
-          fi
-
-          # Check for file lock conflicts
-          if [ -f ".coordination/FILE_LOCKS.md" ]; then
-            echo "Checking file locks..."
-            cat .coordination/FILE_LOCKS.md
-          fi
+  # Coordination check removed - internal files not tracked in public repo

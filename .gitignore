@@ -37,5 +37,18 @@ logs/
 TestResults.xml
 .pytest_cache/
 test_output.txt
+test_output_full.txt
 
 debug*.txt
+
+# Build artifacts
+*.egg-info/
+larun.egg-info/
+dist/
+build/
+
+# Internal AI coordination (not for public)
+.coordination/
+.agent/
+docs/CLAUDE.md
+docs/ANTIGRAVITY.md
