@@ -96,3 +96,22 @@ nodes:
     install_date: null
     checksum: null
     source_url: null
+  TRAINER-001:
+    node_id: TRAINER-001
+    name: Space Science Educational Trainer
+    version: 1.0.0
+    category: educational
+    status: enabled
+    path: nodes/trainer
+    model_size_kb: 0
+    description: Interactive educational node for space science learning
+    install_date: null
+    checksum: null
+    source_url: null
+    has_model: false
+    commands:
+      - /learn topics
+      - /learn topic <id>
+      - /learn quiz <id>
+      - /learn explain
+      - /learn progress

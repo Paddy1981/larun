@@ -1,0 +1,343 @@
+# LARUN Training Configuration
+# =============================
+# Configuration for automated model training pipeline
+
+version: "1.0"
+
+# =============================================================================
+# Schedule Configuration
+# =============================================================================
+schedule:
+  # Weekly training on Sunday at midnight UTC
+  weekly_train: "0 0 * * 0"
+
+  # Monthly data refresh
+  data_refresh: "0 0 1 * *"
+
+  # Quarterly full retrain
+  full_retrain: "0 0 1 */3 *"
+
+# =============================================================================
+# Node Training Configuration
+# =============================================================================
+nodes:
+  EXOPLANET-001:
+    enabled: true
+    category: exoplanet
+    training:
+      epochs: 50
+      batch_size: 32
+      learning_rate: 0.001
+      early_stopping_patience: 10
+    data:
+      source: nasa_exoplanet_archive
+      tables:
+        - pscomppars
+        - ps
+      default_limit: 5000
+      update_frequency: monthly
+    model:
+      architecture: 1d_cnn
+      input_length: 1024
+      filters: [16, 32, 32]
+      kernel_size: 5
+      dense_units: 32
+      max_size_kb: 60
+    quality_gates:
+      min_accuracy: 0.82
+      min_precision: 0.80
+      min_recall: 0.85
+      min_f1: 0.82
+
+  VSTAR-001:
+    enabled: true
+    category: stellar
+    training:
+      epochs: 40
+      batch_size: 32
+      learning_rate: 0.001
+      early_stopping_patience: 8
+    data:
+      sources:
+        - ogle
+        - asas_sn
+        - gaia_dr3_variables
+      default_limit: 50000
+      update_frequency: quarterly
+    model:
+      architecture: 1d_cnn
+      input_length: 512
+      filters: [16, 32]
+      kernel_size: 5
+      dense_units: 32
+      max_size_kb: 80
+    quality_gates:
+      min_accuracy: 0.85
+      min_precision: 0.82
+      min_recall: 0.85
+      min_f1: 0.83
+
+  FLARE-001:
+    enabled: true
+    category: stellar
+    training:
+      epochs: 50
+      batch_size: 64
+      learning_rate: 0.001
+      early_stopping_patience: 10
+    data:
+      sources:
+        - tess_2min
+        - kepler_flares
+      default_limit: 10000
+      update_frequency: monthly
+    model:
+      architecture: 1d_cnn
+      input_length: 256
+      filters: [16, 24]
+      kernel_size: 5
+      dense_units: 24
+      max_size_kb: 40
+    quality_gates:
+      min_accuracy: 0.88
+      min_recall: 0.90  # High recall for flare detection
+      min_f1: 0.88
+
+  ASTERO-001:
+    enabled: true
+    category: stellar
+    training:
+      epochs: 40
+      batch_size: 32
+      learning_rate: 0.001
+      early_stopping_patience: 8
+    data:
+      source: kasoc
+      catalog: kepler_asteroseismic
+      default_limit: 16000
+      update_frequency: yearly
+    model:
+      architecture: 1d_cnn
+      input_length: 512
+      filters: [16, 32]
+      kernel_size: 7
+      dense_units: 32
+      max_size_kb: 70
+    quality_gates:
+      min_accuracy: 0.80
+      min_f1: 0.78
+
+  SUPERNOVA-001:
+    enabled: true
+    category: transient
+    training:
+      epochs: 50
+      batch_size: 32
+      learning_rate: 0.001
+      early_stopping_patience: 10
+    data:
+      sources:
+        - ztf
+        - atlas
+        - tns
+      default_limit: 50000
+      update_frequency: weekly
+    model:
+      architecture: 1d_cnn
+      input_length: 128
+      filters: [16, 32, 32]
+      kernel_size: 5
+      dense_units: 32
+      max_size_kb: 90
+    quality_gates:
+      min_accuracy: 0.85
+      min_recall: 0.88  # Don't miss transients
+      min_f1: 0.85
+
+  GALAXY-001:
+    enabled: true
+    category: galactic
+    training:
+      epochs: 60
+      batch_size: 16
+      learning_rate: 0.0005
+      early_stopping_patience: 15
+    data:
+      sources:
+        - galaxy_zoo
+        - decals
+      default_limit: 100000
+      update_frequency: yearly
+    model:
+      architecture: 2d_cnn
+      input_shape: [64, 64, 3]
+      max_size_kb: 95  # Images need more capacity
+    quality_gates:
+      min_accuracy: 0.78
+      min_f1: 0.76
+
+  SPECTYPE-001:
+    enabled: true
+    category: spectroscopy
+    training:
+      epochs: 40
+      batch_size: 64
+      learning_rate: 0.001
+      early_stopping_patience: 8
+    data:
+      source: gaia_dr3
+      table: spectral_classifications
+      default_limit: 100000
+      update_frequency: yearly
+    model:
+      architecture: mlp
+      input_dim: 8
+      max_size_kb: 50
+    quality_gates:
+      min_accuracy: 0.82
+      min_f1: 0.80
+
+  MICROLENS-001:
+    enabled: true
+    category: transient
+    training:
+      epochs: 50
+      batch_size: 32
+      learning_rate: 0.001
+      early_stopping_patience: 10
+    data:
+      sources:
+        - ogle_ews
+        - moa
+      default_limit: 3000
+      update_frequency: monthly
+    model:
+      architecture: 1d_cnn
+      input_length: 512
+      filters: [16, 32]
+      kernel_size: 7
+      dense_units: 32
+      max_size_kb: 80
+    quality_gates:
+      min_accuracy: 0.80
+      min_recall: 0.85
+      min_f1: 0.82
+
+# =============================================================================
+# Global Training Settings
+# =============================================================================
+training:
+  default:
+    epochs: 30
+    batch_size: 32
+    learning_rate: 0.001
+    optimizer: adam
+    early_stopping_patience: 10
+    reduce_lr_patience: 5
+    reduce_lr_factor: 0.5
+    validation_split: 0.2
+    random_seed: 42
+
+  quantization:
+    enabled: true
+    type: int8
+    representative_dataset_size: 1000
+
+  augmentation:
+    enabled: true
+    noise_std: 0.01
+    shift_fraction: 0.1
+    scale_range: [0.9, 1.1]
+
+# =============================================================================
+# Quality Gates (Defaults)
+# =============================================================================
+quality_gates:
+  default:
+    min_accuracy: 0.80
+    min_precision: 0.70
+    min_recall: 0.70
+    min_f1: 0.75
+    max_size_kb: 100
+    max_inference_ms: 50
+
+# =============================================================================
+# Data Sources
+# =============================================================================
+data_sources:
+  nasa_exoplanet_archive:
+    url: https://exoplanetarchive.ipac.caltech.edu/TAP/sync
+    rate_limit_ms: 100
+
+  mast:
+    url: https://mast.stsci.edu/api/v0
+    auth_token: ${MAST_API_TOKEN}
+
+  gaia_dr3:
+    url: https://gea.esac.esa.int/tap-server/tap
+    rate_limit_ms: 500
+
+  ogle:
+    url: http://ogle.astrouw.edu.pl/
+    rate_limit_ms: 1000
+
+  asas_sn:
+    url: https://asas-sn.osu.edu/
+    rate_limit_ms: 500
+
+  ztf:
+    url: https://ztf.caltech.edu/
+    rate_limit_ms: 200
+
+  tns:
+    url: https://www.wis-tns.org/
+    rate_limit_ms: 1000
+
+# =============================================================================
+# CI/CD Configuration
+# =============================================================================
+ci:
+  # Run full validation on PRs
+  validate_on_pr: true
+
+  # Run training on schedule
+  train_on_schedule: true
+
+  # Create release on tag push
+  release_on_tag: true
+
+  # Required checks before release
+  required_checks:
+    - lint
+    - typecheck
+    - test
+    - model_validation
+
+  # Artifact retention
+  artifact_retention_days: 90
+
+# =============================================================================
+# Logging
+# =============================================================================
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  training_log: logs/training.log
+  rotate_mb: 50
+  backup_count: 5
+
+# =============================================================================
+# Notifications
+# =============================================================================
+notifications:
+  # Notify on training completion
+  on_complete: true
+
+  # Notify on failure
+  on_failure: true
+
+  # Slack webhook (optional)
+  slack_webhook: ${SLACK_WEBHOOK_URL}
+
+  # Email (optional)
+  email: ${TRAINING_NOTIFICATION_EMAIL}

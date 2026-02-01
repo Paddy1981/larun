@@ -1,0 +1,98 @@
+# LARUN Node Manifest - Educational Trainer
+# Version: 1.0.0
+
+node_id: TRAINER-001
+name: Space Science Educational Trainer
+version: 1.0.0
+description: >
+  An interactive educational node that teaches space science concepts
+  through lessons, quizzes, and model prediction explainers. Designed
+  for students learning about exoplanets, stellar physics, and
+  astronomical data analysis.
+
+category: educational
+author: LARUN Project
+license: MIT
+min_larun_version: 2.0.0
+
+# This node has no ML model - it's educational content
+model_size_kb: 0
+has_model: false
+
+# Entry point
+entry_point: src/trainer.py
+
+# Available commands
+commands:
+  - name: learn
+    description: Start interactive learning mode
+    usage: /learn [topic]
+
+  - name: quiz
+    description: Take a quiz on a topic
+    usage: /learn quiz <topic>
+
+  - name: explain
+    description: Explain a model prediction
+    usage: /learn explain
+
+  - name: progress
+    description: Show learning progress
+    usage: /learn progress
+
+  - name: topics
+    description: List available topics
+    usage: /learn topics
+
+# Content structure
+content:
+  lessons:
+    - id: exoplanets_intro
+      title: "Introduction to Exoplanets"
+      difficulty: beginner
+      estimated_time_min: 15
+
+    - id: transit_method
+      title: "The Transit Method"
+      difficulty: beginner
+      estimated_time_min: 20
+
+    - id: light_curves
+      title: "Understanding Light Curves"
+      difficulty: intermediate
+      estimated_time_min: 25
+
+    - id: variable_stars
+      title: "Types of Variable Stars"
+      difficulty: intermediate
+      estimated_time_min: 20
+
+    - id: stellar_flares
+      title: "Stellar Flares and Activity"
+      difficulty: intermediate
+      estimated_time_min: 15
+
+  quizzes:
+    - id: basics
+      title: "Space Science Basics"
+      questions: 10
+      passing_score: 70
+
+    - id: transits
+      title: "Transit Detection"
+      questions: 10
+      passing_score: 70
+
+# Tags for discovery
+tags:
+  - educational
+  - learning
+  - tutorial
+  - beginner
+  - student
+
+# Dependencies
+dependencies: []
+
+# No data sources - educational content only
+data_sources: []

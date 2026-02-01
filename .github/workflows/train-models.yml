@@ -1,0 +1,388 @@
+# LARUN Automated Model Training
+# ================================
+# Trains TinyML models on schedule or on-demand
+#
+# Triggers:
+# - Weekly (Sunday at midnight UTC)
+# - Manual dispatch with node selection
+# - Push to main with changes to training files
+
+name: Train Models
+
+on:
+  schedule:
+    # Weekly on Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+
+  workflow_dispatch:
+    inputs:
+      nodes:
+        description: 'Nodes to train (comma-separated or "all")'
+        required: false
+        default: 'all'
+        type: string
+      epochs:
+        description: 'Training epochs'
+        required: false
+        default: '30'
+        type: string
+      skip_validation:
+        description: 'Skip model validation'
+        required: false
+        default: false
+        type: boolean
+      create_artifacts:
+        description: 'Create downloadable artifacts'
+        required: false
+        default: true
+        type: boolean
+
+  push:
+    branches: [main]
+    paths:
+      - 'train_nodes.py'
+      - 'scripts/fetch_training_data.py'
+      - 'config/training_config.yaml'
+      - 'nodes/**/manifest.yaml'
+
+# Prevent concurrent training runs
+concurrency:
+  group: training-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: '3.11'
+  TF_CPP_MIN_LOG_LEVEL: '2'
+
+jobs:
+  # ==========================================================================
+  # Prepare Training
+  # ==========================================================================
+  prepare:
+    name: Prepare Training
+    runs-on: ubuntu-latest
+    outputs:
+      nodes: ${{ steps.set-nodes.outputs.nodes }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine nodes to train
+        id: set-nodes
+        run: |
+          INPUT_NODES="${{ inputs.nodes || 'all' }}"
+
+          if [ "$INPUT_NODES" = "all" ]; then
+            NODES='["VSTAR-001","FLARE-001","ASTERO-001","SUPERNOVA-001","SPECTYPE-001","MICROLENS-001","GALAXY-001"]'
+          else
+            # Convert comma-separated to JSON array
+            NODES=$(echo "$INPUT_NODES" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$";""))')
+          fi
+
+          echo "nodes=$NODES" >> $GITHUB_OUTPUT
+          echo "Training nodes: $NODES"
+
+      - name: Create training matrix
+        id: set-matrix
+        run: |
+          NODES='${{ steps.set-nodes.outputs.nodes }}'
+          echo "matrix={\"node\":$NODES}" >> $GITHUB_OUTPUT
+
+  # ==========================================================================
+  # Fetch Training Data
+  # ==========================================================================
+  fetch-data:
+    name: Fetch Data
+    runs-on: ubuntu-latest
+    needs: prepare
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch training data
+        run: |
+          python scripts/fetch_training_data.py --all
+        env:
+          MAST_API_TOKEN: ${{ secrets.MAST_API_TOKEN }}
+
+      - name: Upload data artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-data
+          path: data/
+          retention-days: 7
+
+  # ==========================================================================
+  # Train Models (Matrix)
+  # ==========================================================================
+  train:
+    name: Train ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    needs: [prepare, fetch-data]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download training data
+        uses: actions/download-artifact@v4
+        with:
+          name: training-data
+          path: data/
+
+      - name: Train model
+        id: train
+        run: |
+          EPOCHS="${{ inputs.epochs || '30' }}"
+          echo "Training ${{ matrix.node }} for $EPOCHS epochs..."
+
+          python train_nodes.py --node ${{ matrix.node }} --epochs $EPOCHS
+
+          # Check if model was created
+          NODE_FOLDER=$(python -c "
+          folders = {
+            'EXOPLANET-001': 'exoplanet',
+            'VSTAR-001': 'variable_star',
+            'FLARE-001': 'flare',
+            'ASTERO-001': 'asteroseismo',
+            'SUPERNOVA-001': 'supernova',
+            'GALAXY-001': 'galaxy',
+            'SPECTYPE-001': 'spectral_type',
+            'MICROLENS-001': 'microlensing',
+          }
+          print(folders.get('${{ matrix.node }}', ''))
+          ")
+
+          if [ -d "nodes/$NODE_FOLDER/model" ]; then
+            echo "model_created=true" >> $GITHUB_OUTPUT
+            echo "node_folder=$NODE_FOLDER" >> $GITHUB_OUTPUT
+          else
+            echo "model_created=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload model artifact
+        if: steps.train.outputs.model_created == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-${{ matrix.node }}
+          path: nodes/${{ steps.train.outputs.node_folder }}/model/
+          retention-days: 30
+
+  # ==========================================================================
+  # Validate Models
+  # ==========================================================================
+  validate:
+    name: Validate Models
+    runs-on: ubuntu-latest
+    needs: train
+    if: ${{ !inputs.skip_validation }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download all model artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: model-*
+          merge-multiple: false
+
+      - name: Copy models to nodes directory
+        run: |
+          # Copy each downloaded model to the correct node folder
+          for artifact_dir in model-*/; do
+            node_id=$(basename "$artifact_dir" | sed 's/model-//')
+            node_folder=$(python -c "
+          folders = {
+            'EXOPLANET-001': 'exoplanet',
+            'VSTAR-001': 'variable_star',
+            'FLARE-001': 'flare',
+            'ASTERO-001': 'asteroseismo',
+            'SUPERNOVA-001': 'supernova',
+            'GALAXY-001': 'galaxy',
+            'SPECTYPE-001': 'spectral_type',
+            'MICROLENS-001': 'microlensing',
+          }
+          print(folders.get('$node_id', ''))
+            ")
+
+            if [ -n "$node_folder" ]; then
+              mkdir -p "nodes/$node_folder/model"
+              cp -r "$artifact_dir"/* "nodes/$node_folder/model/"
+              echo "Copied model for $node_id to nodes/$node_folder/model/"
+            fi
+          done
+
+      - name: Validate all models
+        run: |
+          python scripts/validate_models.py --all --output validation_results.json
+
+      - name: Upload validation results
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-results
+          path: validation_results.json
+          retention-days: 30
+
+      - name: Check validation status
+        run: |
+          python -c "
+          import json
+          with open('validation_results.json') as f:
+              results = json.load(f)
+          if not results.get('summary', {}).get('all_passed', False):
+              print('Some models failed validation!')
+              for node, result in results.get('nodes', {}).items():
+                  if not result.get('passed', False):
+                      print(f'  - {node}: FAILED')
+              exit(1)
+          print('All models passed validation!')
+          "
+
+  # ==========================================================================
+  # Bundle Models
+  # ==========================================================================
+  bundle:
+    name: Bundle Models
+    runs-on: ubuntu-latest
+    needs: [train, validate]
+    if: ${{ inputs.create_artifacts != false }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Download all model artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: model-*
+          merge-multiple: false
+
+      - name: Copy models to nodes directory
+        run: |
+          for artifact_dir in model-*/; do
+            node_id=$(basename "$artifact_dir" | sed 's/model-//')
+            node_folder=$(python -c "
+          folders = {
+            'EXOPLANET-001': 'exoplanet',
+            'VSTAR-001': 'variable_star',
+            'FLARE-001': 'flare',
+            'ASTERO-001': 'asteroseismo',
+            'SUPERNOVA-001': 'supernova',
+            'GALAXY-001': 'galaxy',
+            'SPECTYPE-001': 'spectral_type',
+            'MICROLENS-001': 'microlensing',
+          }
+          print(folders.get('$node_id', ''))
+            ")
+
+            if [ -n "$node_folder" ]; then
+              mkdir -p "nodes/$node_folder/model"
+              cp -r "$artifact_dir"/* "nodes/$node_folder/model/"
+            fi
+          done
+
+      - name: Create bundle
+        run: |
+          VERSION=$(date +%Y%m%d)-$(echo ${{ github.sha }} | cut -c1-7)
+          python scripts/bundle_models.py --version $VERSION
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-bundle
+          path: dist/
+          retention-days: 90
+
+  # ==========================================================================
+  # Summary
+  # ==========================================================================
+  summary:
+    name: Training Summary
+    runs-on: ubuntu-latest
+    needs: [train, validate, bundle]
+    if: always()
+
+    steps:
+      - name: Download validation results
+        if: needs.validate.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-results
+          path: .
+
+      - name: Generate summary
+        run: |
+          echo "# Training Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow:** ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Run:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Training | ${{ needs.train.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | ${{ needs.validate.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle | ${{ needs.bundle.result }} |" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f validation_results.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## Validation Details" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            python3 -c "
+          import json
+          with open('validation_results.json') as f:
+              results = json.load(f)
+          summary = results.get('summary', {})
+          print(f\"- Passed: {summary.get('passed', 0)}\")
+          print(f\"- Failed: {summary.get('failed', 0)}\")
+            " >> $GITHUB_STEP_SUMMARY
+          fi

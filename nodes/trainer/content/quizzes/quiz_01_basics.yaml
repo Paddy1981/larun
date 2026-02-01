@@ -1,0 +1,107 @@
+# LARUN Educational Quiz: Space Science Basics
+# =============================================
+
+id: basics
+title: Space Science Basics
+description: Test your knowledge of fundamental space science concepts related to exoplanets and stellar astronomy.
+passing_score: 70
+shuffle: true
+
+questions:
+  - question: "What is an exoplanet?"
+    type: multiple_choice
+    options:
+      - "A) A planet in our solar system"
+      - "B) A planet orbiting a star other than the Sun"
+      - "C) A large asteroid"
+      - "D) A moon of Jupiter"
+    answer: "B"
+    explanation: "Exoplanets (extrasolar planets) are planets that orbit stars other than our Sun. The first one around a Sun-like star was discovered in 1995."
+
+  - question: "Approximately how many exoplanets have been confirmed as of 2024?"
+    type: multiple_choice
+    options:
+      - "A) About 500"
+      - "B) About 1,000"
+      - "C) Over 5,000"
+      - "D) Over 50,000"
+    answer: "C"
+    explanation: "As of 2024, over 5,000 exoplanets have been confirmed, with thousands more candidates awaiting verification."
+
+  - question: "What is the most successful method for detecting exoplanets?"
+    type: multiple_choice
+    options:
+      - "A) Direct imaging"
+      - "B) Transit method"
+      - "C) Astrometry"
+      - "D) Gravitational waves"
+    answer: "B"
+    explanation: "The transit method, which detects planets by the dimming they cause when passing in front of their stars, has discovered the most exoplanets."
+
+  - question: "What is a 'Hot Jupiter'?"
+    type: multiple_choice
+    options:
+      - "A) Jupiter when it's closest to the Sun"
+      - "B) A gas giant orbiting very close to its star"
+      - "C) A star that looks like Jupiter"
+      - "D) A volcanic moon"
+    answer: "B"
+    explanation: "Hot Jupiters are gas giant planets that orbit very close to their host stars, often completing an orbit in just a few days."
+
+  - question: "Which space telescope discovered the most exoplanets?"
+    type: multiple_choice
+    options:
+      - "A) Hubble Space Telescope"
+      - "B) James Webb Space Telescope"
+      - "C) Kepler Space Telescope"
+      - "D) Spitzer Space Telescope"
+    answer: "C"
+    explanation: "The Kepler Space Telescope discovered over 2,700 confirmed exoplanets during its mission from 2009-2018."
+
+  - question: "What does the 'habitable zone' refer to?"
+    type: multiple_choice
+    options:
+      - "A) Where humans can live without spacesuits"
+      - "B) The region where liquid water could exist on a planet's surface"
+      - "C) Areas with no asteroids"
+      - "D) The center of a galaxy"
+    answer: "B"
+    explanation: "The habitable zone (or 'Goldilocks zone') is the region around a star where temperatures could allow liquid water to exist on a planet's surface."
+
+  - question: "What is a light curve?"
+    type: multiple_choice
+    options:
+      - "A) The shape of a galaxy"
+      - "B) A graph of brightness versus time"
+      - "C) The path light takes through space"
+      - "D) A type of telescope"
+    answer: "B"
+    explanation: "A light curve is a graph showing how an astronomical object's brightness changes over time, essential for detecting transits and variable stars."
+
+  - question: "True or False: All stars have the same brightness."
+    type: true_false
+    options:
+      - "A) True"
+      - "B) False"
+    answer: "B"
+    explanation: "Stars vary greatly in brightness (luminosity) due to differences in their size, temperature, age, and distance from Earth."
+
+  - question: "What mission is currently surveying bright, nearby stars for exoplanets?"
+    type: multiple_choice
+    options:
+      - "A) Kepler"
+      - "B) TESS"
+      - "C) Voyager"
+      - "D) Apollo"
+    answer: "B"
+    explanation: "TESS (Transiting Exoplanet Survey Satellite) has been surveying bright, nearby stars for transiting exoplanets since its launch in 2018."
+
+  - question: "What type of star is most common in our galaxy?"
+    type: multiple_choice
+    options:
+      - "A) Stars like our Sun (G-type)"
+      - "B) Hot blue stars (O-type)"
+      - "C) Cool red dwarf stars (M-type)"
+      - "D) White dwarfs"
+    answer: "C"
+    explanation: "Cool red dwarf stars (M-type) make up about 70% of all stars in our galaxy, making them the most common stellar type."

@@ -1,0 +1,171 @@
+# LARUN Educational Glossary
+# ==========================
+# Definitions of key astronomical and data science terms
+
+version: "1.0"
+
+terms:
+  # Exoplanet Terms
+  exoplanet:
+    term: Exoplanet
+    definition: A planet that orbits a star outside our solar system.
+    also_known_as: [extrasolar planet]
+    related: [transit, habitable zone, hot jupiter]
+
+  transit:
+    term: Transit
+    definition: The event when a planet passes in front of its host star as seen from Earth, causing a small dip in the star's brightness.
+    related: [light curve, transit depth, ingress, egress]
+
+  transit_depth:
+    term: Transit Depth
+    definition: The fraction of starlight blocked during a transit, proportional to the square of the planet-to-star radius ratio.
+    formula: "depth = (R_planet / R_star)²"
+    units: [percent, ppm]
+    related: [transit, planet radius]
+
+  habitable_zone:
+    term: Habitable Zone
+    definition: The region around a star where conditions could allow liquid water to exist on a planet's surface.
+    also_known_as: [Goldilocks zone, circumstellar habitable zone]
+    related: [exoplanet, stellar luminosity]
+
+  hot_jupiter:
+    term: Hot Jupiter
+    definition: A gas giant exoplanet orbiting very close to its star, typically completing an orbit in just a few days.
+    characteristics:
+      - High surface temperature (>1000K)
+      - Short orbital period (<10 days)
+      - Often tidally locked
+    related: [exoplanet, gas giant]
+
+  super_earth:
+    term: Super-Earth
+    definition: A rocky exoplanet with mass between 2-10 Earth masses, larger than Earth but smaller than Neptune.
+    related: [exoplanet, mini-neptune]
+
+  # Stellar Terms
+  light_curve:
+    term: Light Curve
+    definition: A graph showing how an astronomical object's brightness changes over time.
+    used_for: [transit detection, variable star classification, flare detection]
+    related: [photometry, flux]
+
+  flux:
+    term: Flux
+    definition: The amount of light energy received per unit area per unit time from an astronomical source.
+    units: [ergs/s/cm², W/m², counts]
+    related: [luminosity, magnitude]
+
+  magnitude:
+    term: Magnitude
+    definition: A logarithmic measure of brightness where smaller numbers mean brighter objects.
+    types:
+      apparent: Brightness as seen from Earth
+      absolute: Intrinsic brightness at 10 parsecs distance
+    related: [flux, luminosity]
+
+  spectral_type:
+    term: Spectral Type
+    definition: A classification of stars based on their temperature and spectral features.
+    sequence: [O, B, A, F, G, K, M]
+    note: "O is hottest, M is coolest. Remember: 'Oh Be A Fine Girl/Guy, Kiss Me'"
+    related: [effective temperature, luminosity class]
+
+  effective_temperature:
+    term: Effective Temperature
+    definition: The temperature of a black body that would emit the same total amount of electromagnetic radiation as the star.
+    symbol: Teff
+    units: Kelvin (K)
+    examples:
+      - "Sun: ~5778 K"
+      - "Hot blue star: >30000 K"
+      - "Cool red dwarf: ~3000 K"
+
+  # Variable Star Terms
+  variable_star:
+    term: Variable Star
+    definition: A star whose brightness changes over time, either due to internal processes or external factors.
+    types:
+      intrinsic: [pulsating, eruptive, cataclysmic]
+      extrinsic: [eclipsing binary, rotating]
+    related: [light curve, period, amplitude]
+
+  cepheid:
+    term: Cepheid Variable
+    definition: A type of pulsating variable star with a well-defined period-luminosity relationship, used as a cosmic distance indicator.
+    period_range: 1-100 days
+    importance: Standard candles for measuring cosmic distances
+    related: [variable star, distance ladder]
+
+  eclipsing_binary:
+    term: Eclipsing Binary
+    definition: A binary star system where one star periodically passes in front of the other, causing brightness variations.
+    types:
+      - "Algol (EA): Distinct eclipses"
+      - "Beta Lyrae (EB): Continuous variation"
+      - "W UMa (EW): Contact binaries"
+    related: [binary star, light curve]
+
+  # Flare Terms
+  stellar_flare:
+    term: Stellar Flare
+    definition: A sudden, intense release of energy from a star's surface due to magnetic reconnection.
+    characteristics:
+      - Fast rise (seconds to minutes)
+      - Slower exponential decay
+      - Emission across electromagnetic spectrum
+    related: [magnetic field, activity, M dwarf]
+
+  superflare:
+    term: Superflare
+    definition: An extremely powerful stellar flare with energy >10^33 ergs, thousands of times more energetic than typical solar flares.
+    occurrence: More common on M dwarfs and young stars
+    related: [stellar flare, habitability]
+
+  # Technical Terms
+  signal_to_noise:
+    term: Signal-to-Noise Ratio (SNR)
+    definition: The ratio of the desired signal strength to the background noise level.
+    formula: "SNR = signal / noise"
+    threshold: "SNR > 7 typically required for transit detection"
+
+  false_positive:
+    term: False Positive
+    definition: A signal that appears to be from a planet but is actually caused by something else, such as an eclipsing binary or instrumental artifact.
+    common_causes:
+      - Background eclipsing binaries
+      - Stellar variability
+      - Instrumental effects
+    related: [vetting, validation]
+
+  limb_darkening:
+    term: Limb Darkening
+    definition: The phenomenon where a star appears dimmer at its edges (limb) than at its center due to the viewing geometry through the stellar atmosphere.
+    effect: Causes transit light curves to have rounded rather than flat-bottomed shapes
+    related: [transit, light curve]
+
+  # TinyML Terms
+  tinyml:
+    term: TinyML
+    definition: Machine learning models optimized to run on resource-constrained devices with limited memory and processing power.
+    constraints:
+      - Model size typically <100 KB
+      - Inference time <50 ms
+      - Low power consumption
+    related: [quantization, edge computing]
+
+  quantization:
+    term: Quantization
+    definition: The process of converting a neural network's weights from floating-point to lower-precision formats (like INT8) to reduce model size and increase inference speed.
+    types:
+      - INT8 (8-bit integers)
+      - INT16 (16-bit integers)
+      - FLOAT16 (half precision)
+    related: [tinyml, model optimization]
+
+  inference:
+    term: Inference
+    definition: The process of using a trained machine learning model to make predictions on new data.
+    also_known_as: [prediction, forward pass]
+    related: [model, training]

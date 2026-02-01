@@ -1,0 +1,290 @@
+# LARUN Model Validation
+# =======================
+# Validates models on PRs and pushes
+#
+# Quality gates:
+# - Model size <= 100KB
+# - Accuracy >= 80%
+# - Valid TFLite format
+# - Inference time <= 50ms
+
+name: Model Validation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'nodes/**/model/**'
+      - 'nodes/**/manifest.yaml'
+      - 'scripts/validate_models.py'
+
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'nodes/**/model/**'
+      - 'nodes/**/manifest.yaml'
+
+  workflow_dispatch:
+    inputs:
+      node:
+        description: 'Node to validate (or "all")'
+        required: false
+        default: 'all'
+        type: string
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ==========================================================================
+  # Detect Changed Models
+  # ==========================================================================
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      nodes: ${{ steps.changes.outputs.nodes }}
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed nodes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            INPUT="${{ inputs.node }}"
+            if [ "$INPUT" = "all" ]; then
+              NODES='["VSTAR-001","FLARE-001","ASTERO-001","SUPERNOVA-001","SPECTYPE-001","MICROLENS-001","GALAXY-001"]'
+            else
+              NODES="[\"$INPUT\"]"
+            fi
+            echo "nodes=$NODES" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Get changed files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+          else
+            CHANGED=$(git diff --name-only HEAD~1)
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          # Map folders to node IDs
+          NODES=()
+
+          if echo "$CHANGED" | grep -q "nodes/exoplanet/"; then
+            NODES+=("EXOPLANET-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/variable_star/"; then
+            NODES+=("VSTAR-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/flare/"; then
+            NODES+=("FLARE-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/asteroseismo/"; then
+            NODES+=("ASTERO-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/supernova/"; then
+            NODES+=("SUPERNOVA-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/galaxy/"; then
+            NODES+=("GALAXY-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/spectral_type/"; then
+            NODES+=("SPECTYPE-001")
+          fi
+          if echo "$CHANGED" | grep -q "nodes/microlensing/"; then
+            NODES+=("MICROLENS-001")
+          fi
+
+          # If validation script changed, validate all
+          if echo "$CHANGED" | grep -q "scripts/validate_models.py"; then
+            NODES=("VSTAR-001" "FLARE-001" "ASTERO-001" "SUPERNOVA-001" "SPECTYPE-001" "MICROLENS-001" "GALAXY-001")
+          fi
+
+          if [ ${#NODES[@]} -eq 0 ]; then
+            echo "No model changes detected"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo 'nodes=[]' >> $GITHUB_OUTPUT
+          else
+            NODES_JSON=$(printf '%s\n' "${NODES[@]}" | jq -R . | jq -s .)
+            echo "nodes=$NODES_JSON" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Nodes to validate: $NODES_JSON"
+          fi
+
+  # ==========================================================================
+  # Validate Models
+  # ==========================================================================
+  validate:
+    name: Validate ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.detect-changes.outputs.nodes) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate model
+        id: validate
+        run: |
+          python scripts/validate_models.py \
+            --node ${{ matrix.node }} \
+            --output validation_${{ matrix.node }}.json
+
+      - name: Upload validation result
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ matrix.node }}
+          path: validation_${{ matrix.node }}.json
+          retention-days: 7
+
+      - name: Check validation passed
+        run: |
+          python -c "
+          import json
+          import sys
+          with open('validation_${{ matrix.node }}.json') as f:
+              result = json.load(f)
+
+          if not result.get('passed', False):
+              print('Validation FAILED for ${{ matrix.node }}')
+              for check_name, check_result in result.get('checks', {}).items():
+                  if isinstance(check_result, dict):
+                      passed = check_result.get('passed', check_result.get('valid', False))
+                      if not passed:
+                          print(f'  - {check_name}: FAILED')
+                          for k, v in check_result.items():
+                              print(f'      {k}: {v}')
+              sys.exit(1)
+
+          print('Validation PASSED for ${{ matrix.node }}')
+
+          # Print summary
+          for check_name, check_result in result.get('checks', {}).items():
+              if isinstance(check_result, dict):
+                  if 'size_kb' in check_result:
+                      print(f'  Size: {check_result[\"size_kb\"]}KB')
+                  if 'avg_ms' in check_result:
+                      print(f'  Inference: {check_result[\"avg_ms\"]}ms')
+          "
+
+  # ==========================================================================
+  # Summary
+  # ==========================================================================
+  summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [detect-changes, validate]
+    if: always() && needs.detect-changes.outputs.has_changes == 'true'
+
+    steps:
+      - name: Download all validation results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: validation-*
+          merge-multiple: true
+
+      - name: Generate summary
+        run: |
+          echo "# Model Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "| Node | Status | Size (KB) | Inference (ms) |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|-----------|----------------|" >> $GITHUB_STEP_SUMMARY
+
+          for f in validation_*.json; do
+            if [ -f "$f" ]; then
+              python3 -c "
+          import json
+          with open('$f') as f:
+              result = json.load(f)
+          node = result.get('node_id', 'Unknown')
+          passed = '✅' if result.get('passed', False) else '❌'
+          size = result.get('checks', {}).get('size', {}).get('size_kb', 'N/A')
+          inference = result.get('checks', {}).get('inference', {}).get('avg_ms', 'N/A')
+          print(f'| {node} | {passed} | {size} | {inference} |')
+              " >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+      - name: Check overall status
+        run: |
+          FAILED=0
+
+          for f in validation_*.json; do
+            if [ -f "$f" ]; then
+              PASSED=$(python3 -c "import json; print(json.load(open('$f')).get('passed', False))")
+              if [ "$PASSED" != "True" ]; then
+                FAILED=$((FAILED + 1))
+              fi
+            fi
+          done
+
+          if [ $FAILED -gt 0 ]; then
+            echo "❌ $FAILED model(s) failed validation"
+            exit 1
+          fi
+
+          echo "✅ All models passed validation"
+
+  # ==========================================================================
+  # Size Check (Quick)
+  # ==========================================================================
+  size-check:
+    name: Quick Size Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check model sizes
+        run: |
+          echo "# Model Size Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Model | Size | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          FAILED=0
+          MAX_SIZE_KB=100
+
+          find nodes -name "*.tflite" -type f | while read model; do
+            SIZE_BYTES=$(stat -c%s "$model" 2>/dev/null || stat -f%z "$model")
+            SIZE_KB=$((SIZE_BYTES / 1024))
+
+            if [ $SIZE_KB -gt $MAX_SIZE_KB ]; then
+              echo "| $model | ${SIZE_KB}KB | ❌ Too large |" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+            else
+              echo "| $model | ${SIZE_KB}KB | ✅ |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "⚠️ Some models exceed the ${MAX_SIZE_KB}KB limit"
+            exit 1
+          fi

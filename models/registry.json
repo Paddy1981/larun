@@ -1,0 +1,230 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-01-31T00:00:00Z",
+  "description": "LARUN Model Registry - Central registry for all TinyML models",
+  "models": {
+    "EXOPLANET-001": {
+      "node_id": "EXOPLANET-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "detector.tflite",
+      "model_size_kb": 48,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 50,
+        "samples": 5000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.82,
+        "precision": 0.79,
+        "recall": 0.85,
+        "f1_score": 0.82,
+        "inference_time_ms": 8
+      },
+      "input_shape": [1024, 1],
+      "output_classes": ["noise", "stellar_signal", "planetary_transit", "eclipsing_binary", "instrument_artifact", "unknown_anomaly"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["exoplanet", "transit", "TESS", "Kepler", "light-curve", "CNN"]
+    },
+    "VSTAR-001": {
+      "node_id": "VSTAR-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "classifier.tflite",
+      "model_size_kb": 72,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 40,
+        "samples": 50000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.87,
+        "precision": 0.85,
+        "recall": 0.89,
+        "f1_score": 0.87,
+        "inference_time_ms": 10
+      },
+      "input_shape": [512, 1],
+      "output_classes": ["cepheid", "rr_lyrae", "delta_scuti", "eclipsing_binary", "rotational", "irregular", "constant"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["variable-star", "OGLE", "Gaia", "classification"]
+    },
+    "FLARE-001": {
+      "node_id": "FLARE-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "detector.tflite",
+      "model_size_kb": 32,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 50,
+        "samples": 10000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.91,
+        "precision": 0.88,
+        "recall": 0.93,
+        "f1_score": 0.90,
+        "inference_time_ms": 5
+      },
+      "input_shape": [256, 1],
+      "output_classes": ["no_flare", "weak_flare", "moderate_flare", "strong_flare", "superflare"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["flare", "stellar-activity", "TESS", "M-dwarf"]
+    },
+    "ASTERO-001": {
+      "node_id": "ASTERO-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "analyzer.tflite",
+      "model_size_kb": 60,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 40,
+        "samples": 16000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.83,
+        "precision": 0.80,
+        "recall": 0.85,
+        "f1_score": 0.82,
+        "inference_time_ms": 12
+      },
+      "input_shape": [512, 1],
+      "output_classes": ["no_oscillation", "solar_like", "red_giant", "delta_scuti", "gamma_dor", "hybrid"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["asteroseismology", "Kepler", "oscillation", "power-spectrum"]
+    },
+    "SUPERNOVA-001": {
+      "node_id": "SUPERNOVA-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "detector.tflite",
+      "model_size_kb": 80,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 50,
+        "samples": 50000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.86,
+        "precision": 0.84,
+        "recall": 0.88,
+        "f1_score": 0.86,
+        "inference_time_ms": 15
+      },
+      "input_shape": [128, 1],
+      "output_classes": ["no_transient", "sn_ia", "sn_ii", "sn_ibc", "kilonova", "tde", "other_transient"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["supernova", "transient", "ZTF", "ATLAS"]
+    },
+    "GALAXY-001": {
+      "node_id": "GALAXY-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "classifier.tflite",
+      "model_size_kb": 88,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 60,
+        "samples": 100000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.79,
+        "precision": 0.77,
+        "recall": 0.80,
+        "f1_score": 0.78,
+        "inference_time_ms": 20
+      },
+      "input_shape": [64, 64, 3],
+      "output_classes": ["elliptical", "spiral", "barred_spiral", "irregular", "merger", "edge_on", "unknown"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["galaxy", "morphology", "DECaLS", "Galaxy-Zoo", "image"]
+    },
+    "SPECTYPE-001": {
+      "node_id": "SPECTYPE-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "classifier.tflite",
+      "model_size_kb": 40,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 40,
+        "samples": 100000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.85,
+        "precision": 0.83,
+        "recall": 0.86,
+        "f1_score": 0.84,
+        "inference_time_ms": 3
+      },
+      "input_shape": [8],
+      "output_classes": ["O", "B", "A", "F", "G", "K", "M", "L"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["spectral-type", "Gaia", "photometry", "classification"]
+    },
+    "MICROLENS-001": {
+      "node_id": "MICROLENS-001",
+      "version": "1.0.0",
+      "created_at": "2026-01-31T00:00:00Z",
+      "model_file": "detector.tflite",
+      "model_size_kb": 72,
+      "checksum_sha256": null,
+      "training": {
+        "epochs": 50,
+        "samples": 3000,
+        "data_version": "synthetic-v1",
+        "training_date": "2026-01-31"
+      },
+      "metrics": {
+        "accuracy": 0.84,
+        "precision": 0.82,
+        "recall": 0.87,
+        "f1_score": 0.84,
+        "inference_time_ms": 11
+      },
+      "input_shape": [512, 1],
+      "output_classes": ["no_event", "single_lens", "binary_lens", "planetary", "parallax", "unclear"],
+      "quantization": "int8",
+      "compatible_larun": ">=2.0.0",
+      "tags": ["microlensing", "OGLE", "MOA", "gravitational-lensing"]
+    }
+  },
+  "releases": {
+    "v0.1.0": {
+      "release_date": "2026-01-31",
+      "models_included": ["EXOPLANET-001", "VSTAR-001", "FLARE-001", "ASTERO-001", "SUPERNOVA-001", "GALAXY-001", "SPECTYPE-001", "MICROLENS-001"],
+      "bundle_url": null,
+      "checksums_url": null,
+      "changelog": "Initial release with 8 TinyML nodes for astronomical analysis."
+    }
+  },
+  "statistics": {
+    "total_models": 8,
+    "total_size_kb": 492,
+    "avg_accuracy": 0.847,
+    "avg_inference_ms": 10.5
+  }
+}
