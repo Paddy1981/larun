@@ -3,9 +3,9 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-provider";
 
 export const metadata: Metadata = {
-  title: "AstroTinyML - Discover Exoplanets with AI",
-  description: "TinyML-powered exoplanet detection achieving 81.8% accuracy. Upload light curve data from Kepler, TESS, or ground-based telescopes.",
-  keywords: ["exoplanet", "astronomy", "AI", "TinyML", "light curve", "transit detection", "Kepler", "TESS"],
+  title: "LARUN - Discover Exoplanets with AI",
+  description: "Analyze NASA TESS and Kepler data using TinyML-powered transit detection. 81.8% accuracy. No PhD required.",
+  keywords: ["exoplanet", "astronomy", "AI", "TinyML", "light curve", "transit detection", "Kepler", "TESS", "NASA"],
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="font-sans antialiased bg-white text-slate-900">
+      <body className="font-sans antialiased bg-[#0a0a0a] text-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
         <AuthProvider>
           {children}
         </AuthProvider>
