@@ -2,7 +2,6 @@ import { NextAuthOptions } from 'next-auth';
 import { SupabaseAdapter } from '@auth/supabase-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
-import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { createServerSupabaseClient } from './supabase';
 import jwt from 'jsonwebtoken';
@@ -62,27 +61,14 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: true,
     }),
 
-    // GitHub OAuth
-    GitHubProvider({
+    // GitHub OAuth (optional - add GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to enable)
+    ...(process.env.GITHUB_CLIENT_ID ? [GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking: true,
-    }),
+    })] : []),
 
-    // Magic link email authentication
-    EmailProvider({
-      server: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      },
-      from: process.env.EMAIL_FROM || 'LARUN <noreply@larun.space>',
-    }),
-
-    // Email/Password credentials (optional fallback)
+    // Email/Password credentials
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -131,7 +117,6 @@ export const authOptions: NextAuthOptions = {
 
   pages: {
     signIn: '/auth/login',
-    signUp: '/auth/register',
     error: '/auth/error',
     verifyRequest: '/auth/verify',
   },
