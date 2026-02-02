@@ -34,6 +34,57 @@ const tessTargets = [
   { id: 'TIC 231702397', toi: 'TOI-1231', period: '24.25', depth: '0.45%', mag: '12.3', priority: 75 },
 ];
 
+const products = [
+  {
+    name: 'Pipeline',
+    sub: 'NASA Data Ingestion',
+    description: 'Automated data pipeline for MAST, TESS, and Kepler archives. Ingest FITS files and light curves with built-in preprocessing.',
+    icon: 'folder',
+    filled: true,
+    stats: [{ value: '3', label: 'Sources' }, { value: '15K', label: 'Files/day' }, { value: '99.9%', label: 'Uptime' }],
+  },
+  {
+    name: 'Calibrate',
+    sub: 'Auto-Calibration System',
+    description: 'Self-calibrating system using NASA Exoplanet Archive confirmed discoveries. Automatic drift detection and model validation.',
+    icon: 'check',
+    filled: false,
+    stats: [{ value: '5,500+', label: 'References' }, { value: '100%', label: 'Accuracy' }, { value: '2h', label: 'Last Run' }],
+  },
+  {
+    name: 'Detect',
+    sub: 'Spectral Anomaly Detection',
+    description: 'Advanced anomaly detection with transit analysis. BLS periodogram, SNR calculation, and significance testing.',
+    icon: 'eye',
+    filled: true,
+    stats: [{ value: '6', label: 'Classes' }, { value: '<10ms', label: 'Inference' }, { value: '7.0', label: 'Min SNR' }],
+  },
+  {
+    name: 'Reports',
+    sub: 'NASA Report Generator',
+    description: 'Generate NASA-compatible reports in multiple formats. PDF, JSON, FITS, and CSV output with submission packaging.',
+    icon: 'doc',
+    filled: false,
+    stats: [{ value: '4', label: 'Formats' }, { value: '47', label: 'Generated' }, { value: 'NASA', label: 'Compatible' }],
+  },
+  {
+    name: 'Model',
+    sub: 'TinyML CNN Classifier',
+    description: 'Lightweight spectral CNN optimized for edge deployment. INT8 quantization for microcontroller compatibility.',
+    icon: 'code',
+    filled: true,
+    stats: [{ value: '<100KB', label: 'Size' }, { value: '96%', label: 'Accuracy' }, { value: 'INT8', label: 'Quantized' }],
+  },
+  {
+    name: 'Vetting',
+    sub: 'False Positive Detection',
+    description: 'Transit candidate vetting suite. Odd/even depth test, secondary eclipse search, V-shape analysis, and duration checks.',
+    icon: 'shield',
+    filled: false,
+    stats: [{ value: '4', label: 'Tests' }, { value: '95%', label: 'Accuracy' }, { value: '<1s', label: 'Analysis' }],
+  },
+];
+
 export default function DashboardPage() {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [stats, setStats] = useState<StatsData>({
@@ -81,46 +132,41 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Top Navigation */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50">
-        <div className="flex items-center justify-between h-full px-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg lg:hidden">
-              <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-[#dadce0] z-50">
+        <div className="flex items-center justify-between h-full px-6">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="w-12 h-12 hover:bg-[#f1f3f4] rounded-full flex items-center justify-center transition-colors">
+              <svg className="w-6 h-6 text-[#5f6368]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
               </svg>
             </button>
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </div>
-              <span className="text-lg font-semibold text-gray-900">LARUN</span>
+            <Link href="/" className="flex items-center gap-2 ml-2">
+              <span className="text-[22px] font-medium text-[#202124]">Larun<span className="text-[#202124]">.</span></span>
+              <span className="text-[22px] font-normal text-[#5f6368]">AstroTinyML</span>
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-gray-600 hover:text-gray-900 text-sm">Home</Link>
-            <Link href="/dashboard" className="text-blue-600 text-sm font-medium">Dashboard</Link>
-            <Link href="/#pricing" className="text-gray-600 hover:text-gray-900 text-sm">Pricing</Link>
-            <Link href="/#features" className="text-gray-600 hover:text-gray-900 text-sm">Docs</Link>
+          <nav className="hidden md:flex items-center gap-2">
+            <Link href="/" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Home</Link>
+            <Link href="/dashboard" className="px-4 py-2 text-[#1a73e8] text-sm font-medium rounded">Dashboard</Link>
+            <Link href="/#pricing" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Pricing</Link>
+            <Link href="/#features" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Docs</Link>
           </nav>
 
           <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            <button className="w-10 h-10 hover:bg-[#f1f3f4] rounded-full flex items-center justify-center transition-colors">
+              <svg className="w-5 h-5 text-[#5f6368]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" />
               </svg>
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <button className="w-10 h-10 hover:bg-[#f1f3f4] rounded-full flex items-center justify-center transition-colors">
+              <svg className="w-5 h-5 text-[#5f6368]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
               </svg>
             </button>
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium ml-2">
+            <div className="w-8 h-8 bg-[#202124] rounded-full flex items-center justify-center text-white text-sm font-medium ml-2 cursor-pointer">
               U
             </div>
           </div>
@@ -128,192 +174,222 @@ export default function DashboardPage() {
       </header>
 
       {/* Sidebar */}
-      <aside className={`fixed top-16 left-0 bottom-0 w-64 bg-white border-r border-gray-200 overflow-y-auto transition-transform z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="p-4">
-          <div className="mb-6">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Products</p>
-            <nav className="space-y-1">
-              <Link href="/analyze" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Pipeline
-              </Link>
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-                Calibration
-              </Link>
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-                Detector
-              </Link>
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Vetting
-              </Link>
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Reports
-              </Link>
-            </nav>
+      <aside className={`fixed top-16 left-0 bottom-0 w-[280px] bg-white border-r border-[#dadce0] overflow-y-auto transition-transform z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="py-2">
+          {/* Main Nav */}
+          <div className="px-3 py-2">
+            <Link href="/" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+              </svg>
+              <span className="text-sm">Home</span>
+            </Link>
+            <Link href="/dashboard" className="flex items-center gap-4 px-6 h-12 text-[#202124] font-medium bg-[#f1f3f4] rounded-r-full">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+              </svg>
+              <span className="text-sm">Dashboard</span>
+            </Link>
           </div>
 
-          <div className="mb-6">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Interactive</p>
-            <nav className="space-y-1">
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Web Terminal
-              </Link>
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                AI Chat
-              </Link>
-            </nav>
+          <div className="h-px bg-[#dadce0] my-2" />
+
+          {/* Products Section */}
+          <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Products</p>
+          <div className="px-3">
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
+              </svg>
+              <span className="text-sm">Pipeline</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+              <span className="text-sm">Calibration</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+              </svg>
+              <span className="text-sm">Detector</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+              </svg>
+              <span className="text-sm">Vetting</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+              </svg>
+              <span className="text-sm">Reports</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+              </svg>
+              <span className="text-sm">Model</span>
+            </Link>
           </div>
 
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Account</p>
-            <nav className="space-y-1">
-              <Link href="#" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Profile
-              </Link>
-              <Link href="/settings/subscription" className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Usage & Billing
-              </Link>
-            </nav>
+          <div className="h-px bg-[#dadce0] my-2" />
+
+          {/* Interactive Section */}
+          <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Interactive</p>
+          <div className="px-3">
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-9-6l-4 4 1.4 1.4L11 10.8l2.6 2.6L15 12l-4-4z" />
+              </svg>
+              <span className="text-sm">Web Terminal</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+              </svg>
+              <span className="text-sm">AI Chat</span>
+            </Link>
+          </div>
+
+          <div className="h-px bg-[#dadce0] my-2" />
+
+          {/* Account Section */}
+          <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Account</p>
+          <div className="px-3">
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+              <span className="text-sm">Profile</span>
+            </Link>
+            <Link href="/settings/subscription" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+              </svg>
+              <span className="text-sm">Usage & Billing</span>
+            </Link>
+          </div>
+
+          <div className="h-px bg-[#dadce0] my-2" />
+
+          {/* Resources Section */}
+          <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Resources</p>
+          <div className="px-3">
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+              <span className="text-sm">Documentation</span>
+            </Link>
+            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+              </svg>
+              <span className="text-sm">Help & Support</span>
+            </Link>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 min-h-screen">
-        <div className="p-6">
+      <main className="lg:ml-[280px] pt-16 min-h-screen bg-[#f1f3f4]">
+        <div className="p-8">
           {/* Hero Card */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to LARUN Dashboard</h1>
-                <p className="text-gray-600">TinyML-powered spectral data analysis for exoplanet detection. Analyze NASA TESS and Kepler light curves with 81.8% accuracy.</p>
-              </div>
-              <div className="flex gap-3">
-                <Link href="/analyze" className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors">
-                  Run Analysis
-                </Link>
-                <Link href="/#features" className="bg-white hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg border border-gray-300 transition-colors">
-                  View Docs
-                </Link>
-              </div>
+          <div className="bg-white rounded-lg p-4 mb-5 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] text-center">
+            <div className="text-[28px] font-medium mb-0.5">
+              <span className="text-[#202124]">Larun</span><span className="text-[#202124]">.</span>
+            </div>
+            <div className="text-base font-normal text-[#5f6368] mb-1.5">AstroTinyML</div>
+            <p className="text-[13px] text-[#5f6368] max-w-[550px] mx-auto mb-3 leading-relaxed">
+              TinyML-powered spectral data analysis for astronomical research.
+              Process NASA data, detect exoplanets, and generate submission-ready reports.
+            </p>
+            <div className="flex justify-center gap-2.5">
+              <Link href="/analyze" className="bg-[#202124] hover:bg-[#3c4043] text-white text-xs font-medium px-5 py-1.5 rounded transition-colors">
+                Run Analysis
+              </Link>
+              <Link href="/#features" className="bg-white hover:bg-[#f1f3f4] text-[#202124] text-xs font-medium px-5 py-1.5 rounded border border-[#dadce0] transition-colors">
+                View Documentation
+              </Link>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-gray-500 text-sm">Objects Processed</span>
-                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-              </div>
-              <p className="text-3xl font-bold text-gray-900">{stats.objectsProcessed}</p>
-              <p className="text-gray-500 text-xs mt-1">Session: {stats.sessionDuration}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
+              <h4 className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Objects Processed</h4>
+              <div className="text-[32px] font-medium text-[#202124]">{stats.objectsProcessed}</div>
+              <div className="text-xs text-[#5f6368] mt-1">{stats.objectsProcessed > 0 ? `${stats.sessionDuration} this session` : 'Run an analysis to start'}</div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-gray-500 text-sm">Detections</span>
-                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="text-3xl font-bold text-gray-900">{stats.detections}</p>
-              <p className="text-gray-500 text-xs mt-1">Transit signals found</p>
+            <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
+              <h4 className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Detections</h4>
+              <div className="text-[32px] font-medium text-[#202124]">{stats.detections}</div>
+              <div className="text-xs text-[#5f6368] mt-1">{stats.detections > 0 ? 'From your analyses' : 'No detections yet'}</div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-gray-500 text-sm">Model Accuracy</span>
-                <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <p className="text-3xl font-bold text-blue-600">{stats.modelAccuracy}%</p>
-              <p className="text-gray-500 text-xs mt-1">TinyML precision</p>
+            <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
+              <h4 className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Model Accuracy</h4>
+              <div className="text-[32px] font-medium text-[#202124]">{stats.modelAccuracy}%</div>
+              <div className="text-xs text-[#5f6368] mt-1">Calibrated 2h ago</div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-gray-500 text-sm">Vetted Candidates</span>
-                <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-              </div>
-              <p className="text-3xl font-bold text-gray-900">{stats.vettedCandidates}</p>
-              <p className="text-gray-500 text-xs mt-1">Planet candidates</p>
+            <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
+              <h4 className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Vetted Candidates</h4>
+              <div className="text-[32px] font-medium text-[#202124]">{stats.vettedCandidates}</div>
+              <div className="text-xs text-[#5f6368] mt-1">{stats.vettedCandidates > 0 ? 'Candidates reviewed' : 'No candidates vetted'}</div>
             </div>
           </div>
 
           {/* Target Discovery Table */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+          <div className="bg-white rounded-lg p-6 mb-8 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">TESS Objects of Interest</h2>
-              <button className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-lg">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <h2 className="text-lg font-medium text-[#202124] flex items-center gap-2">
+                <svg className="w-5 h-5 text-[#5f6368]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                 </svg>
+                Discover Targets
+              </h2>
+              <button className="px-3 py-1.5 text-xs bg-[#f1f3f4] hover:bg-[#dadce0] text-[#3c4043] rounded transition-colors">
+                Refresh List
               </button>
             </div>
+            <p className="text-[13px] text-[#5f6368] mb-4">
+              TESS Objects of Interest (TOI) available for analysis. Higher priority targets are easier to analyze.
+            </p>
 
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b border-gray-200">
-                    <th className="pb-3 font-medium text-sm">Target ID</th>
-                    <th className="pb-3 font-medium text-sm">TOI</th>
-                    <th className="pb-3 font-medium text-sm">Period (days)</th>
-                    <th className="pb-3 font-medium text-sm">Depth</th>
-                    <th className="pb-3 font-medium text-sm">Mag</th>
-                    <th className="pb-3 font-medium text-sm">Priority</th>
-                    <th className="pb-3 font-medium text-sm">Action</th>
+                  <tr className="text-left text-[#3c4043] bg-[#f1f3f4]">
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">Target ID</th>
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">TOI</th>
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">Period</th>
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">Depth</th>
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">Mag</th>
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">Priority</th>
+                    <th className="py-2.5 px-3 font-medium border-b border-[#dadce0]">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tessTargets.map((target, index) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 text-gray-900 font-mono text-sm">{target.id}</td>
-                      <td className="py-3 text-blue-600 text-sm">{target.toi}</td>
-                      <td className="py-3 text-gray-700 text-sm">{target.period}</td>
-                      <td className="py-3 text-gray-700 text-sm">{target.depth}</td>
-                      <td className="py-3 text-gray-700 text-sm">{target.mag}</td>
-                      <td className="py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-gray-200 rounded-full h-1.5">
-                            <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${target.priority}%` }}></div>
-                          </div>
-                          <span className="text-gray-500 text-xs">{target.priority}%</span>
-                        </div>
+                    <tr key={index} className="hover:bg-[#f8f9fa] border-b border-[#f1f3f4]">
+                      <td className="py-2.5 px-3 text-[#202124] font-medium font-mono">{target.id}</td>
+                      <td className="py-2.5 px-3 text-[#3c4043]">{target.toi}</td>
+                      <td className="py-2.5 px-3 text-[#3c4043]">{target.period}</td>
+                      <td className="py-2.5 px-3 text-[#3c4043]">{target.depth}</td>
+                      <td className="py-2.5 px-3 text-[#3c4043]">{target.mag}</td>
+                      <td className={`py-2.5 px-3 font-medium ${target.priority >= 80 ? 'text-[#137333]' : target.priority >= 60 ? 'text-[#b06000]' : 'text-[#5f6368]'}`}>
+                        {target.priority}%
                       </td>
-                      <td className="py-3">
-                        <Link href={`/analyze?tic=${target.id.replace('TIC ', '')}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      <td className="py-2.5 px-3">
+                        <Link
+                          href={`/analyze?tic=${target.id.replace('TIC ', '')}`}
+                          className="inline-block bg-[#202124] hover:opacity-90 text-white text-xs font-medium px-3 py-1 rounded transition-opacity"
+                        >
                           Analyze
                         </Link>
                       </td>
@@ -324,95 +400,107 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Two Column Layout */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Recent Analyses */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Analyses</h2>
+          {/* Products Grid */}
+          <h2 className="text-[22px] font-normal text-[#202124] mb-6 flex items-center gap-3">
+            <svg className="w-6 h-6 text-[#5f6368]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 12c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0-6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+            Products
+          </h2>
 
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="text-gray-500 mt-2 text-sm">Loading analyses...</p>
-                </div>
-              ) : analyses.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-10">
+            {products.map((product, index) => (
+              <Link
+                key={index}
+                href="#"
+                className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] hover:-translate-y-0.5 transition-all"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${product.filled ? 'bg-[#202124]' : 'bg-white border-2 border-[#202124]'}`}>
+                    <svg className={`w-6 h-6 ${product.filled ? 'text-white' : 'text-[#202124]'}`} fill="currentColor" viewBox="0 0 24 24">
+                      {product.icon === 'folder' && <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />}
+                      {product.icon === 'check' && <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />}
+                      {product.icon === 'eye' && <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />}
+                      {product.icon === 'doc' && <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />}
+                      {product.icon === 'code' && <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />}
+                      {product.icon === 'shield' && <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />}
                     </svg>
                   </div>
-                  <p className="text-gray-500 mb-3 text-sm">No analyses yet</p>
-                  <Link href="/analyze" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    Start your first analysis →
-                  </Link>
+                  <div>
+                    <h3 className="text-base font-medium text-[#202124]">Larun. {product.name}</h3>
+                    <p className="text-xs text-[#5f6368]">{product.sub}</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {analyses.slice(0, 5).map((analysis) => (
-                    <Link key={analysis.id} href={`/results/${analysis.id}`} className="block p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-900 font-mono text-sm">TIC {analysis.tic_id}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded ${
-                          analysis.status === 'completed' ? 'bg-green-100 text-green-700' :
-                          analysis.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                          analysis.status === 'failed' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {analysis.status}
-                        </span>
-                      </div>
-                      <p className="text-gray-500 text-xs mt-1">
-                        {new Date(analysis.created_at).toLocaleDateString()}
-                      </p>
-                    </Link>
+                <p className="text-sm text-[#5f6368] leading-relaxed mb-4">{product.description}</p>
+                <div className="flex gap-6 pt-4 border-t border-[#dadce0]">
+                  {product.stats.map((stat, i) => (
+                    <div key={i} className="text-center">
+                      <div className="text-xl font-medium text-[#202124]">{stat.value}</div>
+                      <div className="text-[11px] text-[#5f6368] uppercase tracking-wider">{stat.label}</div>
+                    </div>
                   ))}
                 </div>
-              )}
+              </Link>
+            ))}
+          </div>
+
+          {/* Activity Section */}
+          <div className="bg-white rounded-lg p-6 mb-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-medium text-[#202124]">Recent Activity</h3>
+              <button className="px-4 py-2 text-xs bg-white hover:bg-[#f1f3f4] text-[#202124] border border-[#dadce0] rounded transition-colors">
+                Refresh
+              </button>
             </div>
 
-            {/* Activity Feed */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-                <button className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-lg">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      activity.type === 'detection' ? 'bg-green-100' :
-                      activity.type === 'vetting' ? 'bg-orange-100' :
-                      'bg-blue-100'
-                    }`}>
-                      <svg className={`w-4 h-4 ${
-                        activity.type === 'detection' ? 'text-green-600' :
-                        activity.type === 'vetting' ? 'text-orange-600' :
-                        'text-blue-600'
-                      }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        {activity.type === 'detection' ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        ) : activity.type === 'vetting' ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        )}
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-gray-700 text-sm">{activity.message}</p>
-                      <p className="text-gray-400 text-xs mt-1">{activity.time}</p>
-                    </div>
+            <div className="space-y-0">
+              {recentActivity.map((activity, index) => (
+                <div key={index} className="flex items-start gap-4 py-4 border-b border-[#dadce0] last:border-b-0">
+                  <div className="w-9 h-9 rounded-full bg-[#f1f3f4] flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4.5 h-4.5 text-[#5f6368]" fill="currentColor" viewBox="0 0 24 24">
+                      {activity.type === 'detection' && <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />}
+                      {activity.type === 'vetting' && <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />}
+                      {activity.type === 'calibration' && <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />}
+                    </svg>
                   </div>
-                ))}
-              </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-[#202124]">{activity.message}</p>
+                    <p className="text-xs text-[#5f6368] mt-1">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* CLI Notice */}
+          <div className="bg-white rounded-lg p-5 mb-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#202124] rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-9-6l-4 4 1.4 1.4L11 10.8l2.6 2.6L15 12l-4-4z"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-base font-medium text-[#202124] mb-1">Prefer Terminal? Use the CLI</h4>
+              <p className="text-sm text-[#5f6368]">All tools are available via command line. Download the TinyML package for terminal-based access with the same on-device processing.</p>
+            </div>
+            <Link href="#" className="px-5 py-2.5 bg-[#202124] text-white text-sm font-medium rounded-md hover:bg-[#3c4043] transition-colors">
+              Download CLI
+            </Link>
+          </div>
+
+          {/* Footer */}
+          <footer className="text-center py-8 bg-white border-t border-[#dadce0] -mx-8 px-8 mt-8">
+            <div className="flex justify-center flex-wrap gap-6 mb-4">
+              <a href="https://laruneng.com" target="_blank" rel="noopener noreferrer" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">laruneng.com</a>
+              <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">GitHub</a>
+              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">API Docs</Link>
+              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">User Guide</Link>
+              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">Models</Link>
+              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">How It Works</Link>
+              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">FAQ</Link>
+            </div>
+            <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun. AstroTinyML. All rights reserved.</p>
+          </footer>
         </div>
       </main>
     </div>
