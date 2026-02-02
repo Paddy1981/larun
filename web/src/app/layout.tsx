@@ -3,9 +3,9 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-provider";
 
 export const metadata: Metadata = {
-  title: "LARUN - Discover Exoplanets with AI",
-  description: "AI-powered light curve analysis for exoplanet discovery. Upload your astronomical data and let machine learning find hidden worlds.",
-  keywords: ["exoplanet", "astronomy", "AI", "light curve", "transit detection", "machine learning"],
+  title: "AstroTinyML - Discover Exoplanets with AI",
+  description: "TinyML-powered exoplanet detection achieving 81.8% accuracy. Upload light curve data from Kepler, TESS, or ground-based telescopes.",
+  keywords: ["exoplanet", "astronomy", "AI", "TinyML", "light curve", "transit detection", "Kepler", "TESS"],
 };
 
 export default function RootLayout({
