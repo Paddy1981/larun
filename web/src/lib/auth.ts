@@ -1,10 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
-import { SupabaseAdapter } from '@auth/supabase-adapter';
 import GoogleProvider from 'next-auth/providers/google';
-import GitHubProvider from 'next-auth/providers/github';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { createServerSupabaseClient } from './supabase';
-import jwt from 'jsonwebtoken';
 
 // Extend the session type to include custom fields
 declare module 'next-auth' {
@@ -48,67 +43,15 @@ function getAnalysesLimit(tier: string): number {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: SupabaseAdapter({
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  }),
-
+  // No adapter - use JWT only for now (simpler, no database required)
   providers: [
-    // Google OAuth
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
-    }),
-
-    // GitHub OAuth (optional - add GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to enable)
-    ...(process.env.GITHUB_CLIENT_ID ? [GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
-    })] : []),
-
-    // Email/Password credentials
-    CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        const supabase = createServerSupabaseClient();
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password,
-        });
-
-        if (error || !data.user) {
-          return null;
-        }
-
-        // Get user profile from our users table
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        return {
-          id: data.user.id,
-          email: data.user.email!,
-          name: profile?.name || data.user.user_metadata?.name,
-          image: profile?.image || data.user.user_metadata?.avatar_url,
-          subscriptionTier: profile?.subscription_tier || 'free',
-          analysesThisMonth: profile?.analyses_this_month || 0,
-        };
-      },
     }),
   ],
+
+  secret: process.env.NEXTAUTH_SECRET,
 
   session: {
     strategy: 'jwt',
@@ -118,79 +61,26 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/login',
     error: '/auth/error',
-    verifyRequest: '/auth/verify',
   },
 
   callbacks: {
-    async signIn({ user, account }) {
-      // Create or update user in our users table on OAuth sign in
-      if (account?.provider !== 'credentials' && user.email) {
-        const supabase = createServerSupabaseClient();
-
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', user.email)
-          .single();
-
-        if (!existingUser) {
-          // Create new user record
-          await supabase.from('users').insert({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            subscription_tier: 'free',
-            analyses_this_month: 0,
-          });
-        }
-      }
-      return true;
-    },
-
-    async jwt({ token, user, account }) {
-      // Initial sign in
+    async jwt({ token, user }) {
       if (user) {
-        token.subscriptionTier = user.subscriptionTier || 'free';
-        token.analysesThisMonth = user.analysesThisMonth || 0;
+        token.id = user.id;
+        token.subscriptionTier = 'free';
+        token.analysesThisMonth = 0;
       }
-
-      // Generate Supabase access token for API calls
-      if (account?.provider && token.sub) {
-        const payload = {
-          aud: 'authenticated',
-          exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
-          sub: token.sub,
-          email: token.email,
-          role: 'authenticated',
-        };
-        token.supabaseAccessToken = jwt.sign(
-          payload,
-          process.env.SUPABASE_JWT_SECRET!
-        );
-      }
-
       return token;
     },
 
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub!;
-        session.user.subscriptionTier = token.subscriptionTier || 'free';
-        session.user.analysesThisMonth = token.analysesThisMonth || 0;
-        session.user.analysesLimit = getAnalysesLimit(token.subscriptionTier || 'free');
-        session.supabaseAccessToken = token.supabaseAccessToken;
+        session.user.id = token.id as string || token.sub!;
+        session.user.subscriptionTier = (token.subscriptionTier as 'free' | 'hobbyist' | 'professional') || 'free';
+        session.user.analysesThisMonth = (token.analysesThisMonth as number) || 0;
+        session.user.analysesLimit = getAnalysesLimit(token.subscriptionTier as string || 'free');
       }
       return session;
-    },
-  },
-
-  events: {
-    async signIn({ user }) {
-      console.log(`User signed in: ${user.email}`);
-    },
-    async signOut({ token }) {
-      console.log(`User signed out: ${token?.email}`);
     },
   },
 
