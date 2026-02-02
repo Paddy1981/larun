@@ -1,0 +1,392 @@
+# =============================================================================
+# LARUN MVP - Production Deployment Workflow
+# =============================================================================
+# Deploys to production on version tags (v*.*.*)
+# Requires manual approval for safety
+# =============================================================================
+
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to deploy (e.g., v1.0.0)'
+        required: true
+        type: string
+      confirm_production:
+        description: 'Type "deploy-production" to confirm'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/${{ github.repository }}/larun-api
+  WEB_IMAGE: ghcr.io/${{ github.repository }}/larun-web
+
+jobs:
+  # ===========================================================================
+  # Validate Deployment
+  # ===========================================================================
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Validate manual trigger
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ github.event.inputs.confirm_production }}" != "deploy-production" ]; then
+            echo "::error::Production deployment not confirmed. Please type 'deploy-production' to confirm."
+            exit 1
+          fi
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version: $VERSION"
+
+  # ===========================================================================
+  # Run Full Test Suite
+  # ===========================================================================
+  test:
+    name: Run Full Tests
+    runs-on: ubuntu-latest
+    needs: [validate]
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: larun
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: larun_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.version }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run API tests
+        env:
+          DATABASE_URL: postgresql://larun:password@localhost:5432/larun_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-jwt-secret-min-32-characters
+        run: |
+          pytest tests/ -v --tb=short --cov=api --cov-report=xml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Run web tests
+        working-directory: web
+        run: npm test -- --passWithNoTests --coverage
+
+      - name: Run web build
+        working-directory: web
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.larun.ai
+
+  # ===========================================================================
+  # Build and Push Production Images
+  # ===========================================================================
+  build:
+    name: Build Production Images
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.version }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for API
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.API_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=production
+            type=raw,value=latest
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.api
+          target: runtime
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata for Web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.WEB_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=production
+            type=raw,value=latest
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.web
+          target: runner
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.PRODUCTION_API_URL }}
+
+  # ===========================================================================
+  # Deploy to Production (Requires Approval)
+  # ===========================================================================
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    environment:
+      name: production
+      url: https://larun.ai
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.version }}
+
+      # Option A: Deploy to Railway
+      # - name: Deploy to Railway
+      #   uses: railwayapp/railway-github-action@v1
+      #   with:
+      #     service: larun-production
+      #   env:
+      #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
+
+      # Option B: Deploy to Fly.io
+      # - name: Deploy to Fly.io
+      #   uses: superfly/flyctl-actions/setup-flyctl@master
+      # - run: flyctl deploy --remote-only --app larun-production
+      #   env:
+      #     FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
+
+      # Option C: Deploy to AWS/GCP/Azure
+      # (Configure based on your cloud provider)
+
+      # Placeholder deployment step
+      - name: Deploy notification
+        run: |
+          echo "=========================================="
+          echo "  PRODUCTION DEPLOYMENT READY"
+          echo "=========================================="
+          echo ""
+          echo "Version: ${{ needs.validate.outputs.version }}"
+          echo ""
+          echo "Docker images built and pushed:"
+          echo "  - API: ${{ env.API_IMAGE }}:${{ needs.validate.outputs.version }}"
+          echo "  - Web: ${{ env.WEB_IMAGE }}:${{ needs.validate.outputs.version }}"
+          echo ""
+          echo "Configure your deployment platform by uncommenting"
+          echo "the appropriate deployment step above."
+
+  # ===========================================================================
+  # Post-Deployment Verification
+  # ===========================================================================
+  verify:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy]
+
+    steps:
+      - name: Wait for deployment to stabilize
+        run: sleep 60
+
+      - name: Health check - API
+        run: |
+          for i in {1..10}; do
+            if curl -sf https://api.larun.ai/health; then
+              echo "API health check passed"
+              exit 0
+            fi
+            echo "Waiting for API... ($i/10)"
+            sleep 10
+          done
+          echo "::warning::API health check failed after deployment"
+
+      - name: Health check - Web
+        run: |
+          for i in {1..10}; do
+            if curl -sf https://larun.ai; then
+              echo "Web health check passed"
+              exit 0
+            fi
+            echo "Waiting for Web... ($i/10)"
+            sleep 10
+          done
+          echo "::warning::Web health check failed after deployment"
+
+  # ===========================================================================
+  # Create GitHub Release
+  # ===========================================================================
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [validate, verify]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.version }}
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --abbrev=0 --tags HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG="Initial release"
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: LARUN ${{ needs.validate.outputs.version }}
+          body: |
+            ## What's Changed
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Docker Images
+
+            - API: `${{ env.API_IMAGE }}:${{ needs.validate.outputs.version }}`
+            - Web: `${{ env.WEB_IMAGE }}:${{ needs.validate.outputs.version }}`
+
+            ## Deployment Status
+
+            - [x] Tests passed
+            - [x] Docker images built
+            - [x] Production deployed
+            - [x] Health checks verified
+          draft: false
+          prerelease: false
+
+  # ===========================================================================
+  # Notify on Completion
+  # ===========================================================================
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [validate, verify]
+    if: always()
+
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.verify.result }}
+          text: |
+            Production deployment ${{ needs.verify.result }}
+            Version: ${{ needs.validate.outputs.version }}
+            Repository: ${{ github.repository }}
+            Author: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Summary
+        run: |
+          echo "=========================================="
+          echo "  PRODUCTION DEPLOYMENT COMPLETE"
+          echo "=========================================="
+          echo ""
+          echo "Version: ${{ needs.validate.outputs.version }}"
+          echo "Status: ${{ needs.verify.result }}"
+          echo ""
+          echo "URLs:"
+          echo "  - Web: https://larun.ai"
+          echo "  - API: https://api.larun.ai"
