@@ -4,10 +4,12 @@
 name: CI
 
 on:
-  push:
-    branches: [main, master, develop]
-  pull_request:
-    branches: [main, master, develop]
+  workflow_dispatch:  # Manual trigger only
+  # Disabled automatic triggers to prevent CI noise
+  # push:
+  #   branches: [main, master, develop]
+  # pull_request:
+  #   branches: [main, master, develop]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

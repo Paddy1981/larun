@@ -4,8 +4,10 @@
 name: PR Automation
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:  # Manual trigger only
+  # Disabled automatic triggers
+  # pull_request:
+  #   types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read

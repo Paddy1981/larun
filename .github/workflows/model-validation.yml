@@ -11,20 +11,19 @@
 name: Model Validation
 
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'nodes/**/model/**'
-      - 'nodes/**/manifest.yaml'
-      - 'scripts/validate_models.py'
-
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'nodes/**/model/**'
-      - 'nodes/**/manifest.yaml'
-
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
+  # Disabled automatic triggers
+  # push:
+  #   branches: [main, develop]
+  #   paths:
+  #     - 'nodes/**/model/**'
+  #     - 'nodes/**/manifest.yaml'
+  #     - 'scripts/validate_models.py'
+  # pull_request:
+  #   branches: [main, develop]
+  #   paths:
+  #     - 'nodes/**/model/**'
+  #     - 'nodes/**/manifest.yaml'
     inputs:
       node:
         description: 'Node to validate (or "all")'

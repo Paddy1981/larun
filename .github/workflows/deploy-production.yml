@@ -8,11 +8,11 @@
 name: Deploy to Production
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
-
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
+  # Disabled automatic triggers
+  # push:
+  #   tags:
+  #     - 'v*.*.*'
     inputs:
       version:
         description: 'Version tag to deploy (e.g., v1.0.0)'
