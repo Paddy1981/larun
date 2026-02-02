@@ -1,0 +1,93 @@
+# =============================================================================
+# LARUN MVP - Python FastAPI Dockerfile
+# =============================================================================
+# Multi-stage build for optimized image size
+# Supports both CPU and GPU training (GPU requires nvidia-docker)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder - Install dependencies
+# -----------------------------------------------------------------------------
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt requirements-dev.txt ./
+
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime - Production image
+# -----------------------------------------------------------------------------
+FROM python:3.11-slim as runtime
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user for security
+RUN groupadd -r larun && useradd -r -g larun larun
+
+# Copy application code
+COPY --chown=larun:larun api/ ./api/
+COPY --chown=larun:larun src/ ./src/
+COPY --chown=larun:larun larun.py ./
+COPY --chown=larun:larun pyproject.toml ./
+
+# Create directories for models and output
+RUN mkdir -p /app/models /app/output /app/data && \
+    chown -R larun:larun /app/models /app/output /app/data
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+# Switch to non-root user
+USER larun
+
+# Expose API port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command - uvicorn with hot reload disabled for production
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# -----------------------------------------------------------------------------
+# Stage 3: Development - With dev dependencies and hot reload
+# -----------------------------------------------------------------------------
+FROM runtime as development
+
+USER root
+
+# Install development dependencies
+RUN pip install --no-cache-dir pytest pytest-cov httpx
+
+USER larun
+
+# Enable hot reload for development
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
