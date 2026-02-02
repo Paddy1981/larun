@@ -47,11 +47,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check PR description
-        uses: jadrol/pr-description-checker@v1
+        uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          min-length: 50
-          exempt-labels: 'skip-description-check,dependencies'
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const minLength = 50;
+
+            // Check for exempt labels
+            const exemptLabels = ['skip-description-check', 'dependencies'];
+            const prLabels = pr.labels.map(l => l.name);
+            const isExempt = exemptLabels.some(label => prLabels.includes(label));
+
+            if (isExempt) {
+              console.log('PR is exempt from description check');
+              return;
+            }
+
+            if (body.length < minLength) {
+              core.setFailed(`PR description must be at least ${minLength} characters. Current: ${body.length}`);
+            } else {
+              console.log(`PR description length: ${body.length} characters ✓`);
+            }
 
   conventional-commits:
     name: Conventional Commits Check
