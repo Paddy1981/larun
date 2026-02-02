@@ -8,17 +8,17 @@
 name: Deploy to Staging
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'api/**'
-      - 'web/**'
-      - 'src/**'
-      - 'docker/**'
-      - '.github/workflows/deploy-staging.yml'
-
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
+  # Disabled automatic triggers
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'api/**'
+  #     - 'web/**'
+  #     - 'src/**'
+  #     - 'docker/**'
+  #     - '.github/workflows/deploy-staging.yml'
     inputs:
       skip_tests:
         description: 'Skip tests before deployment'

@@ -10,11 +10,7 @@
 name: Train Models
 
 on:
-  schedule:
-    # Weekly on Sunday at midnight UTC
-    - cron: '0 0 * * 0'
-
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
     inputs:
       nodes:
         description: 'Nodes to train (comma-separated or "all")'
@@ -36,14 +32,16 @@ on:
         required: false
         default: true
         type: boolean
-
-  push:
-    branches: [main]
-    paths:
-      - 'train_nodes.py'
-      - 'scripts/fetch_training_data.py'
-      - 'config/training_config.yaml'
-      - 'nodes/**/manifest.yaml'
+  # Disabled automatic triggers
+  # schedule:
+  #   - cron: '0 0 * * 0'
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'train_nodes.py'
+  #     - 'scripts/fetch_training_data.py'
+  #     - 'config/training_config.yaml'
+  #     - 'nodes/**/manifest.yaml'
 
 # Prevent concurrent training runs
 concurrency:

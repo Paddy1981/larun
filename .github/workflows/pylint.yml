@@ -1,10 +1,12 @@
 name: Pylint
 
 on:
-  push:
-    branches: [main, master, develop]
-  pull_request:
-    branches: [main, master, develop]
+  workflow_dispatch:  # Manual trigger only
+  # Disabled automatic triggers
+  # push:
+  #   branches: [main, master, develop]
+  # pull_request:
+  #   branches: [main, master, develop]
 
 jobs:
   pylint:
