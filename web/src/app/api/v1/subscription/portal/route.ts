@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { stripe } from '@/lib/stripe';
+import { lemonSqueezyApi, STORE_ID } from '@/lib/lemonsqueezy';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,31 +15,43 @@ export async function POST(request: NextRequest) {
     }
 
     // Find customer by email
-    const customers = await stripe.customers.list({
-      email: session.user.email,
-      limit: 1,
-    });
+    const customersResponse = await lemonSqueezyApi(
+      `/customers?filter[store_id]=${STORE_ID}&filter[email]=${encodeURIComponent(session.user.email)}`
+    );
 
-    if (customers.data.length === 0) {
+    if (!customersResponse.ok) {
+      const errorData = await customersResponse.json();
+      console.error('LemonSqueezy customers error:', errorData);
+      return NextResponse.json(
+        { error: 'Failed to find customer record' },
+        { status: 500 }
+      );
+    }
+
+    const customersData = await customersResponse.json();
+
+    if (!customersData.data || customersData.data.length === 0) {
       return NextResponse.json(
         { error: 'No billing account found. Please subscribe to a plan first.' },
         { status: 404 }
       );
     }
 
-    const customerId = customers.data[0].id;
+    const customer = customersData.data[0];
+    const portalUrl = customer.attributes.urls?.customer_portal;
 
-    // Create billing portal session
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `${process.env.NEXTAUTH_URL}/settings/subscription`,
-    });
+    if (!portalUrl) {
+      return NextResponse.json(
+        { error: 'Customer portal not available' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
-      url: portalSession.url,
+      url: portalUrl,
     });
   } catch (error) {
-    console.error('Stripe portal error:', error);
+    console.error('Portal error:', error);
 
     if (error instanceof Error) {
       return NextResponse.json(
@@ -49,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Failed to create billing portal session' },
+      { error: 'Failed to access billing portal' },
       { status: 500 }
     );
   }
