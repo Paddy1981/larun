@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import Header from '@/components/Header';
+import PricingSection from '@/components/PricingSection';
+import { HeroButtons, BottomCTA } from '@/components/HeroCTA';
 
 export default function HomePage() {
   return (
@@ -30,20 +32,7 @@ export default function HomePage() {
           <p className="text-lg text-[#1a73e8] font-medium mb-10">
             No PhD required.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/auth/register"
-              className="bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium px-8 py-3.5 rounded-lg transition-colors text-base"
-            >
-              Start Exploring - Free
-            </Link>
-            <Link
-              href="/dashboard"
-              className="bg-white hover:bg-[#f1f3f4] text-[#202124] font-medium px-8 py-3.5 rounded-lg border border-[#dadce0] transition-colors text-base"
-            >
-              View Demo
-            </Link>
-          </div>
+          <HeroButtons />
         </div>
       </section>
 
@@ -224,129 +213,10 @@ export default function HomePage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-[#202124] text-center mb-4">
-            Simple Pricing
-          </h2>
-          <p className="text-[#5f6368] text-center mb-12">
-            Start free, upgrade when you need more
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Free */}
-            <div className="bg-white border border-[#dadce0] rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-[#202124] mb-2">Free</h3>
-              <p className="text-[#5f6368] text-sm mb-4">For getting started</p>
-              <div className="text-3xl font-bold text-[#202124] mb-6">$0</div>
-              <ul className="space-y-3 mb-6 text-sm text-[#5f6368]">
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  3 analyses per month
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Basic TinyML detection
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  CSV export
-                </li>
-              </ul>
-              <Link href="/auth/register" className="block text-center bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium py-2.5 rounded-lg transition-colors">
-                Get Started
-              </Link>
-            </div>
-
-            {/* Monthly */}
-            <div className="bg-[#1a73e8] text-white rounded-xl p-6 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#202124] text-white text-xs font-medium px-3 py-1 rounded-full">
-                Popular
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Monthly</h3>
-              <p className="text-blue-100 text-sm mb-4">For active users</p>
-              <div className="text-3xl font-bold mb-6">$9<span className="text-lg font-normal">/mo</span></div>
-              <ul className="space-y-3 mb-6 text-sm">
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  50 analyses per month
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Advanced AI models
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Priority processing
-                </li>
-              </ul>
-              <Link href="/auth/register" className="block text-center bg-white hover:bg-[#f1f3f4] text-[#1a73e8] font-medium py-2.5 rounded-lg transition-colors">
-                Subscribe
-              </Link>
-            </div>
-
-            {/* Annual */}
-            <div className="bg-white border border-[#dadce0] rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-[#202124] mb-2">Annual</h3>
-              <p className="text-[#5f6368] text-sm mb-4">Best value</p>
-              <div className="text-3xl font-bold text-[#202124] mb-6">$89<span className="text-lg font-normal text-[#5f6368]">/yr</span></div>
-              <ul className="space-y-3 mb-6 text-sm text-[#5f6368]">
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Unlimited analyses
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  All AI models + API
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  White-label reports
-                </li>
-              </ul>
-              <Link href="/auth/register" className="block text-center bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium py-2.5 rounded-lg transition-colors">
-                Subscribe
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PricingSection />
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#202124] text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Start Exploring the Cosmos
-          </h2>
-          <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-            Join researchers and astronomy enthusiasts discovering new worlds with AI-powered analysis. No credit card required.
-          </p>
-          <Link
-            href="/auth/register"
-            className="inline-block bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium px-8 py-3.5 rounded-lg transition-colors"
-          >
-            Create Free Account
-          </Link>
-        </div>
-      </section>
+      <BottomCTA />
 
       {/* Footer */}
       <footer className="py-12 bg-[#f1f3f4] border-t border-[#dadce0]">
