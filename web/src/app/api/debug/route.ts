@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * GET /api/auth/debug
+ * GET /api/debug
  *
  * Debug endpoint to check auth configuration.
  * Only shows whether env vars are set, not their values.
