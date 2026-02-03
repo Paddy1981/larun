@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, Input } from '@/components/ui';
-import { Header, Footer } from '@/components/layout';
+import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface AnalysisResult {
   id: string;
@@ -14,23 +14,32 @@ interface AnalysisResult {
     period_days: number | null;
     depth_ppm: number | null;
     duration_hours: number | null;
-    vetting: {
+    vetting?: {
       disposition: string;
       odd_even: { flag: string; message: string };
       v_shape: { flag: string; message: string };
       secondary_eclipse: { flag: string; message: string };
     };
   };
+  error?: string;
 }
+
+const popularTargets = [
+  { id: '470710327', name: 'TOI-1338 b', description: 'Circumbinary planet' },
+  { id: '307210830', name: 'TOI-700 d', description: 'Earth-sized in HZ' },
+  { id: '261136679', name: 'TOI-175 b', description: 'Super-Earth' },
+];
 
 export default function AnalyzePage() {
   const [ticId, setTicId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
-  const handleAnalyze = async () => {
-    if (!ticId.trim()) {
+  const handleAnalyze = async (targetId?: string) => {
+    const idToAnalyze = targetId || ticId.trim();
+    if (!idToAnalyze) {
       setError('Please enter a TIC ID');
       return;
     }
@@ -38,35 +47,43 @@ export default function AnalyzePage() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setProgress(0);
 
     try {
       // Submit analysis
       const response = await fetch('/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tic_id: ticId }),
+        body: JSON.stringify({ tic_id: idToAnalyze }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start analysis');
+        const data = await response.json();
+        throw new Error(data.error?.message || 'Failed to start analysis');
       }
 
       const { analysis_id } = await response.json();
+      setProgress(10);
 
       // Poll for results
       let attempts = 0;
-      const maxAttempts = 60; // 5 minutes max
+      const maxAttempts = 60;
 
       while (attempts < maxAttempts) {
         const statusResponse = await fetch(`/api/v1/analyze/${analysis_id}`);
         const statusData = await statusResponse.json();
 
+        if (statusData.status === 'processing') {
+          setProgress(Math.min(90, 10 + attempts * 5));
+        }
+
         if (statusData.status === 'completed' || statusData.status === 'failed') {
           setResult(statusData);
+          setProgress(100);
           break;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         attempts++;
       }
 
@@ -80,191 +97,309 @@ export default function AnalyzePage() {
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading && ticId.trim()) {
+      handleAnalyze();
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-2">Analyze Target</h1>
-          <p className="text-gray-400 mb-8">
-            Enter a TESS Input Catalog (TIC) ID to search for exoplanet transit signals.
-          </p>
+      <main className="flex-1 pt-24 pb-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Title */}
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold text-[#202124] mb-3">Analyze Target</h1>
+            <p className="text-[#5f6368] max-w-2xl mx-auto">
+              Enter a TESS Input Catalog (TIC) ID to search for exoplanet transit signals using our TinyML detection models.
+            </p>
+          </div>
 
           {/* Search Form */}
-          <Card className="p-6 mb-8">
-            <div className="flex gap-4">
-              <Input
+          <div className="bg-white border border-[#dadce0] rounded-xl p-6 mb-6 shadow-sm">
+            <div className="flex gap-3">
+              <input
                 type="text"
                 placeholder="Enter TIC ID (e.g., 470710327)"
                 value={ticId}
                 onChange={(e) => setTicId(e.target.value)}
-                className="flex-1"
+                onKeyPress={handleKeyPress}
                 disabled={isLoading}
+                className="flex-1 px-4 py-3 border border-[#dadce0] rounded-lg text-[#202124] placeholder-[#5f6368] focus:outline-none focus:ring-2 focus:ring-[#1a73e8] focus:border-transparent disabled:bg-[#f1f3f4] disabled:cursor-not-allowed"
               />
-              <Button
-                onClick={handleAnalyze}
+              <button
+                onClick={() => handleAnalyze()}
                 disabled={isLoading || !ticId.trim()}
+                className="px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors disabled:bg-[#dadce0] disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Analyzing...' : 'Analyze'}
-              </Button>
+              </button>
             </div>
 
             {error && (
-              <p className="mt-4 text-red-400">{error}</p>
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {error}
+              </div>
             )}
-          </Card>
+          </div>
+
+          {/* Popular Targets */}
+          {!isLoading && !result && (
+            <div className="mb-8">
+              <p className="text-sm text-[#5f6368] mb-3">Try a known target:</p>
+              <div className="flex flex-wrap gap-2">
+                {popularTargets.map((target) => (
+                  <button
+                    key={target.id}
+                    onClick={() => {
+                      setTicId(target.id);
+                      handleAnalyze(target.id);
+                    }}
+                    className="px-4 py-2 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] text-sm rounded-full transition-colors"
+                  >
+                    TIC {target.id} ({target.name})
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Loading State */}
           {isLoading && (
-            <Card className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-white">Analyzing TIC {ticId}...</p>
-              <p className="text-gray-400 text-sm mt-2">
-                This may take up to 2 minutes. We're searching for transit signals,
-                running vetting tests, and generating results.
+            <div className="bg-white border border-[#dadce0] rounded-xl p-8 text-center shadow-sm">
+              <div className="w-16 h-16 mx-auto mb-4 relative">
+                <div className="absolute inset-0 border-4 border-[#f1f3f4] rounded-full"></div>
+                <div
+                  className="absolute inset-0 border-4 border-[#1a73e8] rounded-full border-t-transparent animate-spin"
+                ></div>
+              </div>
+              <h3 className="text-lg font-medium text-[#202124] mb-2">Analyzing TIC {ticId || 'target'}...</h3>
+              <p className="text-[#5f6368] text-sm mb-4">
+                Running transit detection and vetting tests
               </p>
-            </Card>
+              <div className="w-full bg-[#f1f3f4] rounded-full h-2 mb-2">
+                <div
+                  className="bg-[#1a73e8] h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-[#5f6368]">{progress}% complete</p>
+            </div>
           )}
 
-          {/* Results */}
+          {/* Results - Detection Found */}
           {result && result.status === 'completed' && result.result && (
             <div className="space-y-6">
-              {/* Detection Result */}
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Detection Result</h2>
-
-                <div className={`inline-block px-4 py-2 rounded-full text-lg font-bold mb-4 ${
-                  result.result.detection
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-gray-500/20 text-gray-400'
-                }`}>
-                  {result.result.detection ? '🌍 Planet Candidate Detected!' : 'No Transit Detected'}
+              {/* Detection Summary */}
+              <div className={`rounded-xl p-6 ${
+                result.result.detection
+                  ? 'bg-green-50 border border-green-200'
+                  : 'bg-[#f1f3f4] border border-[#dadce0]'
+              }`}>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                    result.result.detection ? 'bg-green-100' : 'bg-[#dadce0]'
+                  }`}>
+                    {result.result.detection ? (
+                      <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-8 h-8 text-[#5f6368]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <h2 className={`text-xl font-bold ${result.result.detection ? 'text-green-700' : 'text-[#202124]'}`}>
+                      {result.result.detection ? 'Planet Candidate Detected!' : 'No Transit Signal Detected'}
+                    </h2>
+                    <p className="text-[#5f6368]">TIC {result.tic_id}</p>
+                  </div>
                 </div>
 
                 {result.result.detection && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm">Confidence</p>
-                      <p className="text-2xl font-bold text-white">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div className="bg-white rounded-lg p-4 border border-green-200">
+                      <p className="text-xs text-[#5f6368] uppercase tracking-wider mb-1">Confidence</p>
+                      <p className="text-2xl font-bold text-[#202124]">
                         {(result.result.confidence * 100).toFixed(1)}%
                       </p>
                     </div>
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm">Period</p>
-                      <p className="text-2xl font-bold text-white">
-                        {result.result.period_days?.toFixed(4)} days
+                    <div className="bg-white rounded-lg p-4 border border-green-200">
+                      <p className="text-xs text-[#5f6368] uppercase tracking-wider mb-1">Period</p>
+                      <p className="text-2xl font-bold text-[#202124]">
+                        {result.result.period_days?.toFixed(2)} <span className="text-sm font-normal">days</span>
                       </p>
                     </div>
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm">Depth</p>
-                      <p className="text-2xl font-bold text-white">
-                        {result.result.depth_ppm?.toFixed(0)} ppm
+                    <div className="bg-white rounded-lg p-4 border border-green-200">
+                      <p className="text-xs text-[#5f6368] uppercase tracking-wider mb-1">Depth</p>
+                      <p className="text-2xl font-bold text-[#202124]">
+                        {result.result.depth_ppm?.toFixed(0)} <span className="text-sm font-normal">ppm</span>
                       </p>
                     </div>
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm">Duration</p>
-                      <p className="text-2xl font-bold text-white">
-                        {result.result.duration_hours?.toFixed(2)} hrs
+                    <div className="bg-white rounded-lg p-4 border border-green-200">
+                      <p className="text-xs text-[#5f6368] uppercase tracking-wider mb-1">Duration</p>
+                      <p className="text-2xl font-bold text-[#202124]">
+                        {result.result.duration_hours?.toFixed(1)} <span className="text-sm font-normal">hrs</span>
                       </p>
                     </div>
                   </div>
                 )}
-              </Card>
+              </div>
 
               {/* Vetting Results */}
               {result.result.vetting && (
-                <Card className="p-6">
-                  <h2 className="text-xl font-semibold text-white mb-4">Vetting Results</h2>
+                <div className="bg-white border border-[#dadce0] rounded-xl p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-[#202124] mb-4">Vetting Results</h3>
 
                   <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${
                     result.result.vetting.disposition === 'PLANET_CANDIDATE'
-                      ? 'bg-green-500/20 text-green-400'
+                      ? 'bg-green-100 text-green-700'
                       : result.result.vetting.disposition === 'LIKELY_FALSE_POSITIVE'
-                      ? 'bg-red-500/20 text-red-400'
-                      : 'bg-yellow-500/20 text-yellow-400'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-700'
                   }`}>
                     {result.result.vetting.disposition.replace(/_/g, ' ')}
                   </div>
 
                   <div className="space-y-3">
                     {/* Odd-Even Test */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-[#f8f9fa] rounded-lg">
                       <div>
-                        <p className="text-white font-medium">Odd-Even Depth Test</p>
-                        <p className="text-gray-400 text-sm">{result.result.vetting.odd_even.message}</p>
+                        <p className="font-medium text-[#202124]">Odd-Even Depth Test</p>
+                        <p className="text-sm text-[#5f6368]">{result.result.vetting.odd_even.message}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded text-sm ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         result.result.vetting.odd_even.flag === 'PASS'
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-red-500/20 text-red-400'
+                          ? 'bg-green-100 text-green-700'
+                          : result.result.vetting.odd_even.flag === 'WARNING'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
                       }`}>
                         {result.result.vetting.odd_even.flag}
                       </span>
                     </div>
 
                     {/* V-Shape Test */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-[#f8f9fa] rounded-lg">
                       <div>
-                        <p className="text-white font-medium">V-Shape Detection</p>
-                        <p className="text-gray-400 text-sm">{result.result.vetting.v_shape.message}</p>
+                        <p className="font-medium text-[#202124]">V-Shape Analysis</p>
+                        <p className="text-sm text-[#5f6368]">{result.result.vetting.v_shape.message}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded text-sm ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         result.result.vetting.v_shape.flag === 'PASS'
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-red-500/20 text-red-400'
+                          ? 'bg-green-100 text-green-700'
+                          : result.result.vetting.v_shape.flag === 'WARNING'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
                       }`}>
                         {result.result.vetting.v_shape.flag}
                       </span>
                     </div>
 
                     {/* Secondary Eclipse */}
-                    <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-[#f8f9fa] rounded-lg">
                       <div>
-                        <p className="text-white font-medium">Secondary Eclipse</p>
-                        <p className="text-gray-400 text-sm">{result.result.vetting.secondary_eclipse.message}</p>
+                        <p className="font-medium text-[#202124]">Secondary Eclipse Check</p>
+                        <p className="text-sm text-[#5f6368]">{result.result.vetting.secondary_eclipse.message}</p>
                       </div>
-                      <span className={`px-2 py-1 rounded text-sm ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         result.result.vetting.secondary_eclipse.flag === 'PASS'
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-red-500/20 text-red-400'
+                          ? 'bg-green-100 text-green-700'
+                          : result.result.vetting.secondary_eclipse.flag === 'WARNING'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
                       }`}>
                         {result.result.vetting.secondary_eclipse.flag}
                       </span>
                     </div>
                   </div>
-                </Card>
+                </div>
               )}
 
               {/* Actions */}
               <div className="flex gap-4">
-                <Button variant="outline" onClick={() => setResult(null)}>
-                  Analyze Another Target
-                </Button>
-                <Button>
-                  Save to Dashboard
-                </Button>
+                <button
+                  onClick={() => {
+                    setResult(null);
+                    setTicId('');
+                  }}
+                  className="px-6 py-3 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors"
+                >
+                  Analyze Another
+                </button>
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors"
+                >
+                  View Dashboard
+                </Link>
               </div>
             </div>
           )}
 
           {/* Error State */}
           {result && result.status === 'failed' && (
-            <Card className="p-6 border-red-500/50">
-              <h2 className="text-xl font-semibold text-red-400 mb-2">Analysis Failed</h2>
-              <p className="text-gray-400">
-                Unable to analyze TIC {ticId}. This could be due to insufficient data
-                or the target not being observed by TESS.
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-red-700 mb-2">Analysis Failed</h3>
+              <p className="text-[#5f6368] mb-4">
+                {result.error || `Unable to analyze TIC ${result.tic_id}. This could be due to insufficient data or the target not being observed by TESS.`}
               </p>
-              <Button className="mt-4" onClick={() => setResult(null)}>
+              <button
+                onClick={() => {
+                  setResult(null);
+                  setTicId('');
+                }}
+                className="px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors"
+              >
                 Try Again
-              </Button>
-            </Card>
+              </button>
+            </div>
+          )}
+
+          {/* How It Works */}
+          {!isLoading && !result && (
+            <div className="mt-12 bg-[#f8f9fa] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-[#202124] mb-4">How It Works</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-[#1a73e8] text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+                  <div>
+                    <p className="font-medium text-[#202124]">Data Retrieval</p>
+                    <p className="text-sm text-[#5f6368]">We fetch light curve data from NASA TESS archives</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-[#1a73e8] text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+                  <div>
+                    <p className="font-medium text-[#202124]">Transit Detection</p>
+                    <p className="text-sm text-[#5f6368]">TinyML models search for periodic dimming signals</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-[#1a73e8] text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+                  <div>
+                    <p className="font-medium text-[#202124]">Vetting Tests</p>
+                    <p className="text-sm text-[#5f6368]">Multiple tests rule out false positives</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </main>
 
-      <Footer />
+      {/* Footer */}
+      <footer className="py-8 bg-[#f1f3f4] border-t border-[#dadce0]">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm text-[#5f6368]">
+            &copy; {new Date().getFullYear()} Larun Engineering. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
