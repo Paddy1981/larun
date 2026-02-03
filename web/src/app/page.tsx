@@ -1,52 +1,11 @@
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#202124]">
       {/* Header Navigation */}
-      <header className="fixed top-0 left-0 right-0 bg-white border-b border-[#dadce0] z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-[#202124]">Larun<span className="text-[#1a73e8]">.</span></span>
-              <span className="text-sm font-medium text-[#5f6368]">AstroTinyML</span>
-            </Link>
-
-            {/* Center Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="#features" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
-                Features
-              </Link>
-              <Link href="#how-it-works" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
-                How It Works
-              </Link>
-              <Link href="#pricing" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
-                Pricing
-              </Link>
-              <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
-                GitHub
-              </a>
-            </nav>
-
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
-              <Link
-                href="/auth/login"
-                className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/dashboard"
-                className="bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-              >
-                Try Demo
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 bg-white">
