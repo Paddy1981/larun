@@ -33,8 +33,11 @@ export default function Header() {
             <Link href="#features" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Features
             </Link>
-            <Link href="#how-it-works" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
-              How It Works
+            <Link href="/models" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
+              Models
+            </Link>
+            <Link href="/guide" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
+              Guide
             </Link>
             <Link href="#pricing" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Pricing
