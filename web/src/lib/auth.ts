@@ -42,14 +42,30 @@ function getAnalysesLimit(tier: string): number {
   }
 }
 
+// Check if Google OAuth is configured
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const isGoogleConfigured = !!(googleClientId && googleClientSecret);
+
+// Log configuration status (helpful for debugging)
+if (typeof window === 'undefined') {
+  console.log('[NextAuth] Google OAuth configured:', isGoogleConfigured);
+  console.log('[NextAuth] GOOGLE_CLIENT_ID set:', !!googleClientId);
+  console.log('[NextAuth] GOOGLE_CLIENT_SECRET set:', !!googleClientSecret);
+  console.log('[NextAuth] NEXTAUTH_SECRET set:', !!process.env.NEXTAUTH_SECRET);
+  console.log('[NextAuth] NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'not set');
+}
+
 export const authOptions: NextAuthOptions = {
   // No adapter - use JWT only for now (simpler, no database required)
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
+  providers: isGoogleConfigured
+    ? [
+        GoogleProvider({
+          clientId: googleClientId!,
+          clientSecret: googleClientSecret!,
+        }),
+      ]
+    : [],
 
   secret: process.env.NEXTAUTH_SECRET,
 
