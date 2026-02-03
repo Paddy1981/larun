@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 
 interface SubscriptionData {
@@ -58,6 +58,7 @@ const PLANS = {
 export default function SubscriptionPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [subscription, setSubscription] = useState<SubscriptionData>({
     plan: 'free',
     status: 'active',
@@ -67,6 +68,22 @@ export default function SubscriptionPage() {
     analyses_limit: 3,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  // Check URL params for success/cancel messages
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+
+    if (success === 'true') {
+      setMessage({ type: 'success', text: 'Payment successful! Your subscription has been updated.' });
+      // Clear URL params
+      router.replace('/settings/subscription');
+    } else if (canceled === 'true') {
+      setMessage({ type: 'info', text: 'Checkout canceled. Your subscription was not changed.' });
+      router.replace('/settings/subscription');
+    }
+  }, [searchParams, router]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -77,19 +94,20 @@ export default function SubscriptionPage() {
 
   const handleManageBilling = async () => {
     setIsLoading(true);
+    setMessage(null);
     try {
       const res = await fetch('/api/v1/subscription/portal', {
         method: 'POST',
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      if (res.ok && data.url) {
         window.location.href = data.url;
       } else {
-        alert('Billing portal not configured yet. Coming soon!');
+        setMessage({ type: 'error', text: data.error || 'Failed to open billing portal' });
       }
     } catch (error) {
       console.error('Failed to open billing portal:', error);
-      alert('Billing portal not configured yet. Coming soon!');
+      setMessage({ type: 'error', text: 'Failed to connect to billing service' });
     } finally {
       setIsLoading(false);
     }
@@ -97,21 +115,22 @@ export default function SubscriptionPage() {
 
   const handleUpgrade = async (plan: string) => {
     setIsLoading(true);
+    setMessage(null);
     try {
       const res = await fetch('/api/v1/subscription/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      if (res.ok && data.url) {
         window.location.href = data.url;
       } else {
-        alert('Checkout not configured yet. Coming soon!');
+        setMessage({ type: 'error', text: data.error || 'Failed to start checkout' });
       }
     } catch (error) {
       console.error('Failed to create checkout session:', error);
-      alert('Checkout not configured yet. Coming soon!');
+      setMessage({ type: 'error', text: 'Failed to connect to payment service' });
     } finally {
       setIsLoading(false);
     }
@@ -141,6 +160,46 @@ export default function SubscriptionPage() {
       <Header />
 
       <main className="pt-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {/* Status Message */}
+        {message && (
+          <div
+            className={`mb-6 p-4 rounded-lg flex items-center justify-between ${
+              message.type === 'success'
+                ? 'bg-[#e6f4ea] text-[#137333] border border-[#34a853]'
+                : message.type === 'error'
+                ? 'bg-[#fce8e6] text-[#c5221f] border border-[#ea4335]'
+                : 'bg-[#e8f0fe] text-[#1967d2] border border-[#1a73e8]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              {message.type === 'success' && (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              )}
+              {message.type === 'error' && (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              )}
+              {message.type === 'info' && (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              )}
+              <span className="text-sm font-medium">{message.text}</span>
+            </div>
+            <button
+              onClick={() => setMessage(null)}
+              className="p-1 hover:opacity-70 transition-opacity"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         <div className="mb-8">
           <Link href="/dashboard" className="text-[#1a73e8] hover:underline text-sm mb-2 inline-flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
