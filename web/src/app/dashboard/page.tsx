@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface Analysis {
   id: string;
@@ -86,6 +88,8 @@ const products = [
 ];
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [stats, setStats] = useState<StatsData>({
     objectsProcessed: 0,
@@ -96,6 +100,25 @@ export default function DashboardPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login?callbackUrl=/dashboard');
+    }
+  }, [status, router]);
+
+  // Get user initials for avatar
+  const getUserInitial = () => {
+    if (session?.user?.name) {
+      return session.user.name.charAt(0).toUpperCase();
+    }
+    if (session?.user?.email) {
+      return session.user.email.charAt(0).toUpperCase();
+    }
+    return '?';
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,6 +153,23 @@ export default function DashboardPage() {
     { type: 'calibration', message: 'Light curve calibrated for TIC 470710327', time: '1 hour ago' },
     { type: 'detection', message: 'New analysis started for TIC 141527579', time: '2 hours ago' },
   ];
+
+  // Show loading while checking auth
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#5f6368]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (status === 'unauthenticated') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -166,8 +206,48 @@ export default function DashboardPage() {
                 <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
               </svg>
             </button>
-            <div className="w-8 h-8 bg-[#202124] rounded-full flex items-center justify-center text-white text-sm font-medium ml-2 cursor-pointer">
-              U
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-8 h-8 bg-[#1a73e8] rounded-full flex items-center justify-center text-white text-sm font-medium ml-2 cursor-pointer hover:bg-[#1557b0] transition-colors"
+              >
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt="" className="w-8 h-8 rounded-full" />
+                ) : (
+                  getUserInitial()
+                )}
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-[#dadce0] py-2 z-50">
+                  <div className="px-4 py-3 border-b border-[#dadce0]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#1a73e8] rounded-full flex items-center justify-center text-white font-medium">
+                        {session?.user?.image ? (
+                          <img src={session.user.image} alt="" className="w-10 h-10 rounded-full" />
+                        ) : (
+                          getUserInitial()
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[#202124]">{session?.user?.name || 'User'}</p>
+                        <p className="text-xs text-[#5f6368]">{session?.user?.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="py-1">
+                    <Link href="/settings/subscription" className="block px-4 py-2 text-sm text-[#3c4043] hover:bg-[#f1f3f4]">
+                      Usage & Billing
+                    </Link>
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="w-full text-left px-4 py-2 text-sm text-[#3c4043] hover:bg-[#f1f3f4]"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
