@@ -173,7 +173,7 @@ export default function FAQPage() {
         <div className="mt-12 p-6 bg-white border border-[#dadce0] rounded-lg text-center">
           <h3 className="text-lg font-medium text-[#202124] mb-2">Still have questions?</h3>
           <p className="text-[#5f6368] text-sm mb-4">
-            Can't find the answer you're looking for? Check out our documentation or reach out to support.
+            Can&apos;t find the answer you&apos;re looking for? Check out our documentation or reach out to support.
           </p>
           <div className="flex justify-center gap-3">
             <Link

@@ -24,6 +24,7 @@ export default function ChatPage() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messageIdRef = useRef(0);
 
   const scrollToBottom = () => {
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: 'smooth' });
@@ -68,8 +69,9 @@ export default function ChatPage() {
     const content = text || inputValue.trim();
     if (!content) return;
 
+    messageIdRef.current += 1;
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `msg-${messageIdRef.current}`,
       role: 'user',
       content,
     };
@@ -80,14 +82,15 @@ export default function ChatPage() {
 
     setTimeout(() => {
       const response = generateResponse(content);
+      messageIdRef.current += 1;
       const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `msg-${messageIdRef.current}`,
         role: 'bot',
         content: response,
       };
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }, 1500);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
