@@ -33,9 +33,10 @@ export interface Database {
           email: string;
           name: string | null;
           image: string | null;
-          subscription_tier: 'free' | 'hobbyist' | 'professional';
-          stripe_customer_id: string | null;
+          subscription_tier: 'free' | 'monthly' | 'annual';
+          lemon_squeezy_customer_id: string | null;
           analyses_this_month: number;
+          analyses_limit: number;
           created_at: string;
           updated_at: string;
         };
@@ -44,9 +45,10 @@ export interface Database {
           email: string;
           name?: string | null;
           image?: string | null;
-          subscription_tier?: 'free' | 'hobbyist' | 'professional';
-          stripe_customer_id?: string | null;
+          subscription_tier?: 'free' | 'monthly' | 'annual';
+          lemon_squeezy_customer_id?: string | null;
           analyses_this_month?: number;
+          analyses_limit?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -55,9 +57,10 @@ export interface Database {
           email?: string;
           name?: string | null;
           image?: string | null;
-          subscription_tier?: 'free' | 'hobbyist' | 'professional';
-          stripe_customer_id?: string | null;
+          subscription_tier?: 'free' | 'monthly' | 'annual';
+          lemon_squeezy_customer_id?: string | null;
           analyses_this_month?: number;
+          analyses_limit?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -98,9 +101,11 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          stripe_subscription_id: string;
-          stripe_price_id: string;
-          status: 'active' | 'canceled' | 'past_due' | 'trialing';
+          lemon_squeezy_subscription_id: string;
+          lemon_squeezy_customer_id: string;
+          variant_id: string;
+          plan: 'monthly' | 'annual';
+          status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused' | 'on_trial';
           current_period_start: string;
           current_period_end: string;
           cancel_at_period_end: boolean;
@@ -110,9 +115,11 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          stripe_subscription_id: string;
-          stripe_price_id: string;
-          status?: 'active' | 'canceled' | 'past_due' | 'trialing';
+          lemon_squeezy_subscription_id: string;
+          lemon_squeezy_customer_id: string;
+          variant_id: string;
+          plan: 'monthly' | 'annual';
+          status?: 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused' | 'on_trial';
           current_period_start: string;
           current_period_end: string;
           cancel_at_period_end?: boolean;
@@ -122,9 +129,11 @@ export interface Database {
         Update: {
           id?: string;
           user_id?: string;
-          stripe_subscription_id?: string;
-          stripe_price_id?: string;
-          status?: 'active' | 'canceled' | 'past_due' | 'trialing';
+          lemon_squeezy_subscription_id?: string;
+          lemon_squeezy_customer_id?: string;
+          variant_id?: string;
+          plan?: 'monthly' | 'annual';
+          status?: 'active' | 'cancelled' | 'expired' | 'past_due' | 'paused' | 'on_trial';
           current_period_start?: string;
           current_period_end?: string;
           cancel_at_period_end?: boolean;
