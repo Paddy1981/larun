@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -55,7 +55,7 @@ const PLANS = {
   },
 };
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [subscription, setSubscription] = useState<SubscriptionData>({
@@ -361,5 +361,20 @@ export default function SubscriptionPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#5f6368]">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SubscriptionContent />
+    </Suspense>
   );
 }

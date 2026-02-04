@@ -43,6 +43,7 @@ const products = [
     description: 'Automated data pipeline for MAST, TESS, and Kepler archives. Ingest FITS files and light curves with built-in preprocessing.',
     icon: 'folder',
     filled: true,
+    href: '/analyze',
     stats: [{ value: '3', label: 'Sources' }, { value: '15K', label: 'Files/day' }, { value: '99.9%', label: 'Uptime' }],
   },
   {
@@ -51,6 +52,7 @@ const products = [
     description: 'Self-calibrating system using NASA Exoplanet Archive confirmed discoveries. Automatic drift detection and model validation.',
     icon: 'check',
     filled: false,
+    href: '/analyze',
     stats: [{ value: '5,500+', label: 'References' }, { value: '100%', label: 'Accuracy' }, { value: '2h', label: 'Last Run' }],
   },
   {
@@ -59,6 +61,7 @@ const products = [
     description: 'Advanced anomaly detection with transit analysis. BLS periodogram, SNR calculation, and significance testing.',
     icon: 'eye',
     filled: true,
+    href: '/analyze',
     stats: [{ value: '6', label: 'Classes' }, { value: '<10ms', label: 'Inference' }, { value: '7.0', label: 'Min SNR' }],
   },
   {
@@ -67,6 +70,7 @@ const products = [
     description: 'Generate NASA-compatible reports in multiple formats. PDF, JSON, FITS, and CSV output with submission packaging.',
     icon: 'doc',
     filled: false,
+    href: '/guide',
     stats: [{ value: '4', label: 'Formats' }, { value: '47', label: 'Generated' }, { value: 'NASA', label: 'Compatible' }],
   },
   {
@@ -75,6 +79,7 @@ const products = [
     description: 'Lightweight spectral CNN optimized for edge deployment. INT8 quantization for microcontroller compatibility.',
     icon: 'code',
     filled: true,
+    href: '/models',
     stats: [{ value: '<100KB', label: 'Size' }, { value: '96%', label: 'Accuracy' }, { value: 'INT8', label: 'Quantized' }],
   },
   {
@@ -83,6 +88,7 @@ const products = [
     description: 'Transit candidate vetting suite. Odd/even depth test, secondary eclipse search, V-shape analysis, and duration checks.',
     icon: 'shield',
     filled: false,
+    href: '/analyze',
     stats: [{ value: '4', label: 'Tests' }, { value: '95%', label: 'Accuracy' }, { value: '<1s', label: 'Analysis' }],
   },
 ];
@@ -101,6 +107,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isRefreshingTargets, setIsRefreshingTargets] = useState(false);
+  const [isRefreshingActivity, setIsRefreshingActivity] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -120,32 +129,54 @@ export default function DashboardPage() {
     return '?';
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const analysesRes = await fetch('/api/v1/analyses');
-        if (analysesRes.ok) {
-          const data = await analysesRes.json();
-          setAnalyses(data.analyses || []);
-          const completed = data.analyses?.filter((a: Analysis) => a.status === 'completed') || [];
-          const detections = completed.filter((a: Analysis) => a.result?.detection);
-          const candidates = completed.filter((a: Analysis) => a.result?.vetting?.disposition === 'PLANET_CANDIDATE');
-          setStats({
-            objectsProcessed: completed.length,
-            detections: detections.length,
-            modelAccuracy: 81.8,
-            vettedCandidates: candidates.length,
-            sessionDuration: '1h 23m',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchDashboardData = async () => {
+    try {
+      setError(null);
+      const analysesRes = await fetch('/api/v1/analyses');
+      if (analysesRes.status === 401 || analysesRes.status === 403) {
+        router.push('/auth/login?callbackUrl=/dashboard');
+        return;
       }
-    };
-    fetchData();
+      if (analysesRes.ok) {
+        const data = await analysesRes.json();
+        setAnalyses(data.analyses || []);
+        const completed = data.analyses?.filter((a: Analysis) => a.status === 'completed') || [];
+        const detections = completed.filter((a: Analysis) => a.result?.detection);
+        const candidates = completed.filter((a: Analysis) => a.result?.vetting?.disposition === 'PLANET_CANDIDATE');
+        setStats({
+          objectsProcessed: completed.length,
+          detections: detections.length,
+          modelAccuracy: 81.8,
+          vettedCandidates: candidates.length,
+          sessionDuration: '1h 23m',
+        });
+      } else {
+        setError('Failed to load dashboard data. Please try again.');
+      }
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+      setError('Unable to connect to server. Please check your connection.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
+
+  const handleRefreshTargets = async () => {
+    setIsRefreshingTargets(true);
+    // Simulate refresh delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setIsRefreshingTargets(false);
+  };
+
+  const handleRefreshActivity = async () => {
+    setIsRefreshingActivity(true);
+    await fetchDashboardData();
+    setIsRefreshingActivity(false);
+  };
 
   const recentActivity = [
     { type: 'detection', message: 'Transit signal detected in TIC 307210830', time: '2 min ago' },
@@ -277,37 +308,37 @@ export default function DashboardPage() {
           {/* Products Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Products</p>
           <div className="px-3">
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
               </svg>
               <span className="text-sm">Pipeline</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
               </svg>
               <span className="text-sm">Calibration</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
               </svg>
               <span className="text-sm">Detector</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
               </svg>
               <span className="text-sm">Vetting</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/guide" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
               </svg>
               <span className="text-sm">Reports</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/models" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
               </svg>
@@ -320,13 +351,13 @@ export default function DashboardPage() {
           {/* Interactive Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Interactive</p>
           <div className="px-3">
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-9-6l-4 4 1.4 1.4L11 10.8l2.6 2.6L15 12l-4-4z" />
               </svg>
               <span className="text-sm">Web Terminal</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/chat" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
               </svg>
@@ -339,7 +370,7 @@ export default function DashboardPage() {
           {/* Account Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Account</p>
           <div className="px-3">
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/settings/subscription" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
@@ -358,13 +389,13 @@ export default function DashboardPage() {
           {/* Resources Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Resources</p>
           <div className="px-3">
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/guide" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
               </svg>
               <span className="text-sm">Documentation</span>
             </Link>
-            <Link href="#" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/faq" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
               </svg>
@@ -377,6 +408,24 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="lg:ml-[280px] pt-16 min-h-screen bg-[#f1f3f4]">
         <div className="p-8">
+          {/* Error Banner */}
+          {error && (
+            <div className="bg-[#fce8e6] border border-[#f5c6cb] rounded-lg p-4 mb-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-[#c5221f]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                <span className="text-sm text-[#c5221f]">{error}</span>
+              </div>
+              <button
+                onClick={() => { setError(null); fetchDashboardData(); }}
+                className="px-3 py-1.5 text-xs bg-[#c5221f] hover:bg-[#a31c18] text-white rounded transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Hero Card */}
           <div className="bg-white rounded-lg p-4 mb-5 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] text-center">
             <div className="text-[28px] font-medium mb-0.5">
@@ -433,7 +482,17 @@ export default function DashboardPage() {
                 </svg>
                 Discover Targets
               </h2>
-              <button className="px-3 py-1.5 text-xs bg-[#f1f3f4] hover:bg-[#dadce0] text-[#3c4043] rounded transition-colors">
+              <button
+                onClick={handleRefreshTargets}
+                disabled={isRefreshingTargets}
+                className="px-3 py-1.5 text-xs bg-[#f1f3f4] hover:bg-[#dadce0] text-[#3c4043] rounded transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isRefreshingTargets && (
+                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
                 Refresh List
               </button>
             </div>
@@ -492,7 +551,7 @@ export default function DashboardPage() {
             {products.map((product, index) => (
               <Link
                 key={index}
-                href="#"
+                href={product.href}
                 className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] hover:-translate-y-0.5 transition-all"
               >
                 <div className="flex items-center gap-4 mb-4">
@@ -528,7 +587,17 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg p-6 mb-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-medium text-[#202124]">Recent Activity</h3>
-              <button className="px-4 py-2 text-xs bg-white hover:bg-[#f1f3f4] text-[#202124] border border-[#dadce0] rounded transition-colors">
+              <button
+                onClick={handleRefreshActivity}
+                disabled={isRefreshingActivity}
+                className="px-4 py-2 text-xs bg-white hover:bg-[#f1f3f4] text-[#202124] border border-[#dadce0] rounded transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isRefreshingActivity && (
+                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
                 Refresh
               </button>
             </div>
@@ -563,9 +632,9 @@ export default function DashboardPage() {
               <h4 className="text-base font-medium text-[#202124] mb-1">Prefer Terminal? Use the CLI</h4>
               <p className="text-sm text-[#5f6368]">All tools are available via command line. Download the TinyML package for terminal-based access with the same on-device processing.</p>
             </div>
-            <Link href="#" className="px-5 py-2.5 bg-[#202124] text-white text-sm font-medium rounded-md hover:bg-[#3c4043] transition-colors">
+            <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 bg-[#202124] text-white text-sm font-medium rounded-md hover:bg-[#3c4043] transition-colors">
               Download CLI
-            </Link>
+            </a>
           </div>
 
           {/* Footer */}
@@ -573,11 +642,11 @@ export default function DashboardPage() {
             <div className="flex justify-center flex-wrap gap-6 mb-4">
               <a href="https://laruneng.com" target="_blank" rel="noopener noreferrer" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">laruneng.com</a>
               <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">GitHub</a>
-              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">API Docs</Link>
-              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">User Guide</Link>
-              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">Models</Link>
-              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">How It Works</Link>
-              <Link href="#" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">FAQ</Link>
+              <Link href="/guide" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">API Docs</Link>
+              <Link href="/guide" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">User Guide</Link>
+              <Link href="/models" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">Models</Link>
+              <Link href="/guide" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">How It Works</Link>
+              <Link href="/faq" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">FAQ</Link>
             </div>
             <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun. AstroTinyML. All rights reserved.</p>
           </footer>
