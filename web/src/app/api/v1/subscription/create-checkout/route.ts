@@ -95,10 +95,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('LemonSqueezy API error:', error);
+      const errorText = await response.text();
+      console.error('LemonSqueezy API error:', response.status, errorText);
       return NextResponse.json(
-        { error: 'Failed to create checkout session' },
+        { error: `LemonSqueezy error: ${response.status}`, details: errorText },
         { status: 500 }
       );
     }
