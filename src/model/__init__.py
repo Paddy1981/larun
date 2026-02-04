@@ -88,9 +88,21 @@ from src.model.visual_guide import (
     Colors,
 )
 
-# Legacy models
-from src.model.spectral_cnn import SpectralCNN, TFLiteInference
-from src.model.numpy_cnn import NumpyCNN
+# Legacy models (optional - require TensorFlow)
+try:
+    from src.model.spectral_cnn import SpectralCNN, TFLiteInference
+    _HAS_TENSORFLOW = True
+except ImportError:
+    SpectralCNN = None
+    TFLiteInference = None
+    _HAS_TENSORFLOW = False
+
+try:
+    from src.model.numpy_cnn import NumpyCNN
+    _HAS_NUMPY_CNN = True
+except ImportError:
+    NumpyCNN = None
+    _HAS_NUMPY_CNN = False
 
 __all__ = [
     # Specs and factories
