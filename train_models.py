@@ -2,8 +2,15 @@
 """
 LARUN TinyML Model Training
 ============================
-Lightweight training script for all 8 TinyML models using pure NumPy.
-No TensorFlow required - perfect for quick training and testing.
+Training script with proper backpropagation and Adam optimizer.
+No TensorFlow required - pure NumPy implementation.
+
+Features:
+- Proper gradient computation via backpropagation
+- Adam optimizer for fast convergence
+- Early stopping and learning rate decay
+- Dropout regularization
+- Batch normalization
 
 Usage:
     python train_models.py                        # Train all models
@@ -30,6 +37,7 @@ from src.model.specialized_models import (
 from src.model.data_generators import (
     DATA_GENERATORS, DatasetConfig, get_generator
 )
+from src.model.trainer import NeuralNetworkTrainer, TrainingConfig
 
 
 class Colors:
@@ -79,7 +87,7 @@ class TinyMLTrainer:
                     batch_size: int = 32, n_samples: int = 5000,
                     learning_rate: float = 0.001) -> Dict[str, Any]:
         """
-        Train a single TinyML model.
+        Train a single TinyML model using proper backpropagation.
 
         Args:
             model_id: Model identifier (e.g., "EXOPLANET-001")
@@ -116,7 +124,7 @@ class TinyMLTrainer:
 
         # Show class distribution
         unique, counts = np.unique(y, return_counts=True)
-        self.log(f"Class distribution: {dict(zip(unique, counts))}")
+        self.log(f"Class distribution: {dict(zip(unique.tolist(), counts.tolist()))}")
 
         # Split data (80% train, 20% validation)
         n_val = int(len(X) * 0.2)
@@ -128,81 +136,34 @@ class TinyMLTrainer:
 
         self.log(f"Train: {len(X_train)}, Validation: {len(X_val)}")
 
-        # Initialize weights
-        if hasattr(model, 'initialize_weights'):
-            model.initialize_weights()
+        # Configure trainer with proper backpropagation
+        train_config = TrainingConfig(
+            epochs=epochs,
+            batch_size=batch_size,
+            learning_rate=learning_rate,
+            dropout_rate=0.2,
+            weight_decay=0.0001,
+            early_stopping_patience=15,
+            lr_decay_patience=7,
+            lr_decay_factor=0.5
+        )
 
-        # Training loop
-        self.log(f"\n{Colors.YELLOW}Training for {epochs} epochs...{Colors.ENDC}\n")
+        # Create trainer with Adam optimizer
+        trainer = NeuralNetworkTrainer(model, train_config)
 
-        history = {"loss": [], "accuracy": [], "val_loss": [], "val_accuracy": []}
-        best_val_acc = 0.0
-        best_weights = None
+        self.log(f"\n{Colors.YELLOW}Training with Adam optimizer and backpropagation...{Colors.ENDC}")
+        self.log(f"Learning rate: {learning_rate}, Batch size: {batch_size}")
+        self.log(f"Dropout: {train_config.dropout_rate}, Weight decay: {train_config.weight_decay}\n")
 
-        for epoch in range(epochs):
-            # Shuffle training data
-            perm = np.random.permutation(len(X_train))
-            X_shuffled = X_train[perm]
-            y_shuffled = y_train[perm]
-
-            # Train on batches
-            epoch_losses = []
-            for i in range(0, len(X_train), batch_size):
-                batch_x = X_shuffled[i:i+batch_size]
-                batch_y = y_shuffled[i:i+batch_size]
-
-                # Forward pass
-                probs = model.forward(batch_x)
-
-                # Cross-entropy loss
-                eps = 1e-7
-                y_one_hot = np.eye(model.num_classes)[batch_y]
-                loss = -np.mean(np.sum(y_one_hot * np.log(probs + eps), axis=-1))
-                epoch_losses.append(loss)
-
-                # Update weights (simplified gradient descent)
-                self._update_weights(model, batch_x, batch_y, learning_rate)
-
-            # Compute metrics
-            train_loss = np.mean(epoch_losses)
-            train_preds, _ = model.predict(X_train)
-            train_acc = np.mean(train_preds == y_train)
-
-            val_probs = model.forward(X_val)
-            val_loss = -np.mean(np.sum(np.eye(model.num_classes)[y_val] * np.log(val_probs + eps), axis=-1))
-            val_preds, _ = model.predict(X_val)
-            val_acc = np.mean(val_preds == y_val)
-
-            history["loss"].append(float(train_loss))
-            history["accuracy"].append(float(train_acc))
-            history["val_loss"].append(float(val_loss))
-            history["val_accuracy"].append(float(val_acc))
-
-            # Save best weights
-            if val_acc > best_val_acc:
-                best_val_acc = val_acc
-                best_weights = {k: v.copy() for k, v in model.weights.items()}
-
-            # Progress bar
-            if epoch % max(1, epochs // 10) == 0 or epoch == epochs - 1:
-                bar_len = 20
-                filled = int(bar_len * (epoch + 1) / epochs)
-                bar = '█' * filled + '░' * (bar_len - filled)
-
-                color = Colors.GREEN if val_acc > 0.7 else Colors.YELLOW if val_acc > 0.5 else Colors.RED
-                self.log(f"Epoch {epoch+1:3d}/{epochs} [{bar}] "
-                        f"loss: {train_loss:.4f} acc: {train_acc:.3f} "
-                        f"val_loss: {val_loss:.4f} {color}val_acc: {val_acc:.3f}{Colors.ENDC}")
-
-        # Restore best weights
-        if best_weights:
-            model.weights = best_weights
+        # Train model
+        history = trainer.fit(X_train, y_train, X_val, y_val, verbose=self.verbose)
 
         # Final evaluation
         self.log(f"\n{Colors.GREEN}Training complete!{Colors.ENDC}")
 
         final_preds, final_confs = model.predict(X_val)
         final_acc = np.mean(final_preds == y_val)
+        best_val_acc = max(history["val_accuracy"]) if history["val_accuracy"] else final_acc
 
         # Per-class accuracy
         class_metrics = {}
@@ -225,7 +186,7 @@ class TinyMLTrainer:
             "model_id": model_id,
             "name": spec.name,
             "training_time_seconds": round(training_time, 2),
-            "epochs": epochs,
+            "epochs": len(history["loss"]),  # Actual epochs (may be less due to early stopping)
             "n_samples": n_samples,
             "final_accuracy": round(float(final_acc), 4),
             "best_val_accuracy": round(float(best_val_acc), 4),
@@ -239,27 +200,6 @@ class TinyMLTrainer:
         self._print_summary(results)
 
         return results
-
-    def _update_weights(self, model: BaseNumpyModel, batch_x: np.ndarray,
-                       batch_y: np.ndarray, lr: float):
-        """Update model weights using simplified gradient descent."""
-        probs = model.forward(batch_x)
-        y_one_hot = np.eye(model.num_classes)[batch_y]
-        output_error = probs - y_one_hot
-
-        # Update output layer
-        if "out_b" in model.weights:
-            grad_b = np.mean(output_error, axis=0)
-            model.weights["out_b"] -= lr * grad_b
-
-        # Add small noise to help training
-        noise_scale = lr * 0.1
-        for name, weight in model.weights.items():
-            if 'mean' in name or 'var' in name:
-                continue
-            if name not in ['out_b']:
-                noise = np.random.randn(*weight.shape) * noise_scale
-                model.weights[name] += noise
 
     def _print_summary(self, results: Dict[str, Any]):
         """Print training summary."""
