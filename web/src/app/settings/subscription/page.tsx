@@ -61,12 +61,13 @@ function SubscriptionContent() {
   const [subscription, setSubscription] = useState<SubscriptionData>({
     plan: 'free',
     status: 'active',
-    current_period_end: '2026-03-02',
+    current_period_end: '',
     cancel_at_period_end: false,
-    analyses_used: 1,
-    analyses_limit: 3,
+    analyses_used: 0,
+    analyses_limit: 5,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -74,6 +75,27 @@ function SubscriptionContent() {
       router.push('/auth/login?callbackUrl=/settings/subscription');
     }
   }, [status, router]);
+
+  // Fetch subscription data on mount
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (status !== 'authenticated') return;
+
+      try {
+        const res = await fetch('/api/v1/subscription');
+        if (res.ok) {
+          const data = await res.json();
+          setSubscription(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch subscription:', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchSubscription();
+  }, [status]);
 
   const handleManageBilling = async () => {
     setIsLoading(true);
@@ -118,13 +140,13 @@ function SubscriptionContent() {
     }
   };
 
-  // Show loading while checking auth
-  if (status === 'loading') {
+  // Show loading while checking auth or fetching data
+  if (status === 'loading' || isLoadingData) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#5f6368]">Loading...</p>
+          <p className="text-[#5f6368]">Loading subscription data...</p>
         </div>
       </div>
     );
