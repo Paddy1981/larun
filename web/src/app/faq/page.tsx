@@ -36,7 +36,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'How accurate is the detection?',
-        answer: 'The EXOPLANET-001 model achieves 81.8% accuracy on the validation set. This is sufficient to identify promising candidates, but all detections should be verified through the vetting process.',
+        answer: 'The EXOPLANET-001 model achieves 82% accuracy on the validation set. This is sufficient to identify promising candidates, but all detections should be verified through the vetting process.',
       },
       {
         question: 'What is a false positive?',
