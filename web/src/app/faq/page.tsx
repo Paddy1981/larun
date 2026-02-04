@@ -74,7 +74,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'Is Larun free?',
-        answer: 'Yes! The free tier includes 3 analyses per month, which is enough for casual exploration. Paid tiers offer more analyses, API access, and additional features. See the Pricing page for details.',
+        answer: 'Yes! The free tier includes 5 analyses per month, which is enough for casual exploration. Paid tiers offer more analyses, API access, and additional features. See the Pricing page for details.',
       },
       {
         question: 'What\'s included in paid plans?',

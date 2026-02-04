@@ -130,7 +130,7 @@ export default function ModelsPage() {
             <div>
               <p className="text-sm text-[#7d6608] font-medium">All models are available to all users</p>
               <p className="text-xs text-[#9a7d0a] mt-1">
-                Subscription tiers limit the number of analyses per month: Free (3), Monthly (50), Annual (Unlimited).
+                Subscription tiers limit the number of analyses per month: Free (5), Monthly (50), Annual (Unlimited).
                 <Link href="/settings/subscription" className="ml-1 underline hover:no-underline">View plans</Link>
               </p>
             </div>
