@@ -20,9 +20,9 @@ const PLANS = {
     name: 'Free',
     price: 0,
     period: 'month',
-    analyses: 3,
+    analyses: 5,
     features: [
-      '3 analyses per month',
+      '5 analyses per month',
       'Basic TinyML detection',
       'CSV export',
     ],

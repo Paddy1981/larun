@@ -9,7 +9,7 @@ const VARIANT_IDS = {
 } as const;
 
 const PLAN_LIMITS = {
-  free: 3,
+  free: 5,
   monthly: 50,
   annual: -1, // unlimited
 };

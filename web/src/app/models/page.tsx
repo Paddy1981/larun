@@ -15,25 +15,41 @@ const detectionModels: ModelCard[] = [
     id: 'exoplanet-001',
     name: 'EXOPLANET-001',
     description: 'Primary exoplanet transit detection. Identifies periodic brightness dips characteristic of planetary transits.',
-    accuracy: '81.8%',
-    size: '45KB',
+    accuracy: '82%',
+    size: '48KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/exoplanet-001.tflite',
   },
   {
     id: 'vstar-001',
     name: 'VSTAR-001',
     description: 'Variable star classification. Distinguishes intrinsic stellar variability from transit signals.',
-    accuracy: '89.2%',
-    size: '38KB',
+    accuracy: '87%',
+    size: '72KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/vstar-001.tflite',
   },
   {
     id: 'flare-001',
     name: 'FLARE-001',
     description: 'Stellar flare detection. Identifies and flags flare events that could mask or mimic transits.',
-    accuracy: '94.1%',
+    accuracy: '91%',
     size: '32KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/flare-001.tflite',
+  },
+  {
+    id: 'supernova-001',
+    name: 'SUPERNOVA-001',
+    description: 'Supernova and transient detection. Classifies explosive stellar events including Type Ia, II, and kilonovae.',
+    accuracy: '86%',
+    size: '80KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/supernova-001.tflite',
+  },
+  {
+    id: 'microlens-001',
+    name: 'MICROLENS-001',
+    description: 'Gravitational microlensing detection. Identifies single, binary, and planetary lensing events.',
+    accuracy: '84%',
+    size: '72KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/microlens-001.tflite',
   },
 ];
 
@@ -41,25 +57,25 @@ const analysisModels: ModelCard[] = [
   {
     id: 'spectype-001',
     name: 'SPECTYPE-001',
-    description: 'Stellar spectral classification. Estimates stellar type from photometric data.',
-    accuracy: '87.5%',
-    size: '52KB',
+    description: 'Stellar spectral classification. Estimates stellar type (O, B, A, F, G, K, M, L) from photometric data.',
+    accuracy: '85%',
+    size: '40KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/spectype-001.tflite',
   },
   {
     id: 'astero-001',
     name: 'ASTERO-001',
     description: 'Asteroseismology analysis. Detects stellar oscillations to determine stellar properties.',
-    accuracy: '76.3%',
-    size: '48KB',
+    accuracy: '83%',
+    size: '60KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/astero-001.tflite',
   },
   {
     id: 'galaxy-001',
     name: 'GALAXY-001',
-    description: 'Galaxy morphology classification. Identifies galaxy types from imaging data.',
-    accuracy: '91.7%',
-    size: '67KB',
+    description: 'Galaxy morphology classification. Identifies elliptical, spiral, barred spiral, and irregular galaxies.',
+    accuracy: '79%',
+    size: '88KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/releases/download/v0.1.0/galaxy-001.tflite',
   },
 ];
@@ -105,10 +121,26 @@ export default function ModelsPage() {
           </div>
         </div>
 
+        {/* Subscription Info */}
+        <div className="bg-[#fef7e0] border border-[#f9e79f] rounded-xl p-4 mb-8">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-[#b7950b] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="text-sm text-[#7d6608] font-medium">All models are available to all users</p>
+              <p className="text-xs text-[#9a7d0a] mt-1">
+                Subscription tiers limit the number of analyses per month: Free (5), Monthly (50), Annual (Unlimited).
+                <Link href="/settings/subscription" className="ml-1 underline hover:no-underline">View plans</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">9</div>
+            <div className="text-3xl font-bold text-[#202124]">8</div>
             <div className="text-sm text-[#5f6368] mt-1">Specialized Models</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
@@ -116,12 +148,12 @@ export default function ModelsPage() {
             <div className="text-sm text-[#5f6368] mt-1">Per Model</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">81.8%</div>
-            <div className="text-sm text-[#5f6368] mt-1">Detection Accuracy</div>
+            <div className="text-3xl font-bold text-[#202124]">84.7%</div>
+            <div className="text-sm text-[#5f6368] mt-1">Avg. Accuracy</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">&lt;50ms</div>
-            <div className="text-sm text-[#5f6368] mt-1">Inference Time</div>
+            <div className="text-3xl font-bold text-[#202124]">&lt;20ms</div>
+            <div className="text-sm text-[#5f6368] mt-1">Avg. Inference</div>
           </div>
         </div>
 

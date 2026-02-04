@@ -36,7 +36,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'How accurate is the detection?',
-        answer: 'The EXOPLANET-001 model achieves 81.8% accuracy on the validation set. This is sufficient to identify promising candidates, but all detections should be verified through the vetting process.',
+        answer: 'The EXOPLANET-001 model achieves 82% accuracy on the validation set. This is sufficient to identify promising candidates, but all detections should be verified through the vetting process.',
       },
       {
         question: 'What is a false positive?',
@@ -74,7 +74,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'Is Larun free?',
-        answer: 'Yes! The free tier includes 3 analyses per month, which is enough for casual exploration. Paid tiers offer more analyses, API access, and additional features. See the Pricing page for details.',
+        answer: 'Yes! The free tier includes 5 analyses per month, which is enough for casual exploration. Paid tiers offer more analyses, API access, and additional features. See the Pricing page for details.',
       },
       {
         question: 'What\'s included in paid plans?',
