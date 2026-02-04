@@ -322,22 +322,22 @@ function SubscriptionContent() {
             <div>
               <h3 className="text-[#202124] font-medium">Can I cancel anytime?</h3>
               <p className="text-[#5f6368] text-sm mt-1">
-                Yes, you can cancel your subscription at any time. You'll continue to have access
+                Yes, you can cancel your subscription at any time. You&apos;ll continue to have access
                 until the end of your billing period.
               </p>
             </div>
             <div>
               <h3 className="text-[#202124] font-medium">What happens to my analyses if I downgrade?</h3>
               <p className="text-[#5f6368] text-sm mt-1">
-                All your previous analyses and results remain accessible. You'll just be limited
-                to the lower plan's monthly analysis quota going forward.
+                All your previous analyses and results remain accessible. You&apos;ll just be limited
+                to the lower plan&apos;s monthly analysis quota going forward.
               </p>
             </div>
             <div>
               <h3 className="text-[#202124] font-medium">Do unused analyses roll over?</h3>
               <p className="text-[#5f6368] text-sm mt-1">
                 No, unused analyses do not roll over to the next month. Each billing period
-                starts fresh with your plan's full allocation.
+                starts fresh with your plan&apos;s full allocation.
               </p>
             </div>
           </div>
