@@ -1,20 +1,53 @@
 {
-  "version": "1.0",
-  "updated_at": "2026-01-31T00:00:00Z",
-  "description": "LARUN Model Registry - Central registry for all TinyML models",
+  "version": "2.0",
+  "updated_at": "2026-02-04T00:00:00Z",
+  "description": "LARUN Model Registry - 8 True TinyML Models for Astronomical Analysis",
+  "framework": {
+    "name": "LARUN TinyML Pipeline",
+    "version": "2.0.0",
+    "architecture": "Series-Parallel-Ensemble with Human-in-the-Loop",
+    "supported_pipelines": [
+      "exoplanet_detection",
+      "stellar_classification",
+      "transient_detection"
+    ]
+  },
   "models": {
     "EXOPLANET-001": {
       "node_id": "EXOPLANET-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "detector.tflite",
+      "name": "ExoplanetDetector",
+      "version": "2.0.0",
+      "type": "CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "Convolutional Neural Network for detecting planetary transits in light curves",
+      "model_file": "EXOPLANET-001_weights.npz",
       "model_size_kb": 48,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "1D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv1D", "filters": 16, "kernel": 7},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool1D", "size": 4},
+          {"name": "conv2", "type": "Conv1D", "filters": 32, "kernel": 5},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool1D", "size": 4},
+          {"name": "conv3", "type": "Conv1D", "filters": 64, "kernel": 3},
+          {"name": "bn3", "type": "BatchNorm"},
+          {"name": "pool3", "type": "MaxPool1D", "size": 4},
+          {"name": "gap", "type": "GlobalAvgPool"},
+          {"name": "fc1", "type": "Dense", "units": 32},
+          {"name": "output", "type": "Dense", "units": 6, "activation": "softmax"}
+        ]
+      },
       "training": {
         "epochs": 50,
         "samples": 5000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04",
+        "optimizer": "SGD with momentum",
+        "learning_rate": 0.001
       },
       "metrics": {
         "accuracy": 0.82,
@@ -27,20 +60,42 @@
       "output_classes": ["noise", "stellar_signal", "planetary_transit", "eclipsing_binary", "instrument_artifact", "unknown_anomaly"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["exoplanet", "transit", "TESS", "Kepler", "light-curve", "CNN"]
+      "pipeline_role": ["initial_detection", "validation_ensemble"],
+      "tags": ["exoplanet", "transit", "TESS", "Kepler", "light-curve", "CNN", "TinyML"]
     },
     "VSTAR-001": {
       "node_id": "VSTAR-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "classifier.tflite",
+      "name": "VariableStarClassifier",
+      "version": "2.0.0",
+      "type": "CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "CNN for classifying variable star types from periodic light curves",
+      "model_file": "VSTAR-001_weights.npz",
       "model_size_kb": 72,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "1D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv1D", "filters": 24, "kernel": 11},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool1D", "size": 4},
+          {"name": "conv2", "type": "Conv1D", "filters": 48, "kernel": 7},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool1D", "size": 4},
+          {"name": "conv3", "type": "Conv1D", "filters": 64, "kernel": 5},
+          {"name": "bn3", "type": "BatchNorm"},
+          {"name": "pool3", "type": "MaxPool1D", "size": 4},
+          {"name": "gap", "type": "GlobalAvgPool"},
+          {"name": "fc1", "type": "Dense", "units": 48},
+          {"name": "output", "type": "Dense", "units": 7, "activation": "softmax"}
+        ]
+      },
       "training": {
-        "epochs": 40,
-        "samples": 50000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "epochs": 50,
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.87,
@@ -53,20 +108,39 @@
       "output_classes": ["cepheid", "rr_lyrae", "delta_scuti", "eclipsing_binary", "rotational", "irregular", "constant"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["variable-star", "OGLE", "Gaia", "classification"]
+      "pipeline_role": ["initial_detection", "stellar_classification"],
+      "tags": ["variable-star", "OGLE", "Gaia", "classification", "CNN", "TinyML"]
     },
     "FLARE-001": {
       "node_id": "FLARE-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "detector.tflite",
+      "name": "FlareDetector",
+      "version": "2.0.0",
+      "type": "CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "Compact CNN for detecting stellar flares in short time-series segments",
+      "model_file": "FLARE-001_weights.npz",
       "model_size_kb": 32,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "1D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv1D", "filters": 16, "kernel": 5},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool1D", "size": 4},
+          {"name": "conv2", "type": "Conv1D", "filters": 32, "kernel": 3},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool1D", "size": 4},
+          {"name": "gap", "type": "GlobalAvgPool"},
+          {"name": "fc1", "type": "Dense", "units": 24},
+          {"name": "output", "type": "Dense", "units": 5, "activation": "softmax"}
+        ]
+      },
       "training": {
         "epochs": 50,
-        "samples": 10000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.91,
@@ -79,20 +153,42 @@
       "output_classes": ["no_flare", "weak_flare", "moderate_flare", "strong_flare", "superflare"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["flare", "stellar-activity", "TESS", "M-dwarf"]
+      "pipeline_role": ["initial_detection", "transient_detection"],
+      "tags": ["flare", "stellar-activity", "TESS", "M-dwarf", "CNN", "TinyML"]
     },
     "ASTERO-001": {
       "node_id": "ASTERO-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "analyzer.tflite",
+      "name": "AsteroseismologyAnalyzer",
+      "version": "2.0.0",
+      "type": "CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "CNN for analyzing stellar oscillations in power spectra",
+      "model_file": "ASTERO-001_weights.npz",
       "model_size_kb": 60,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "1D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv1D", "filters": 20, "kernel": 9},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool1D", "size": 4},
+          {"name": "conv2", "type": "Conv1D", "filters": 40, "kernel": 7},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool1D", "size": 4},
+          {"name": "conv3", "type": "Conv1D", "filters": 64, "kernel": 5},
+          {"name": "bn3", "type": "BatchNorm"},
+          {"name": "pool3", "type": "MaxPool1D", "size": 4},
+          {"name": "gap", "type": "GlobalAvgPool"},
+          {"name": "fc1", "type": "Dense", "units": 32},
+          {"name": "output", "type": "Dense", "units": 6, "activation": "softmax"}
+        ]
+      },
       "training": {
-        "epochs": 40,
-        "samples": 16000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "epochs": 50,
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.83,
@@ -105,20 +201,42 @@
       "output_classes": ["no_oscillation", "solar_like", "red_giant", "delta_scuti", "gamma_dor", "hybrid"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["asteroseismology", "Kepler", "oscillation", "power-spectrum"]
+      "pipeline_role": ["stellar_classification"],
+      "tags": ["asteroseismology", "Kepler", "oscillation", "power-spectrum", "CNN", "TinyML"]
     },
     "SUPERNOVA-001": {
       "node_id": "SUPERNOVA-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "detector.tflite",
+      "name": "SupernovaDetector",
+      "version": "2.0.0",
+      "type": "CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "Wide CNN for detecting supernovae and transient events",
+      "model_file": "SUPERNOVA-001_weights.npz",
       "model_size_kb": 80,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "1D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv1D", "filters": 32, "kernel": 5},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool1D", "size": 2},
+          {"name": "conv2", "type": "Conv1D", "filters": 64, "kernel": 3},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool1D", "size": 2},
+          {"name": "conv3", "type": "Conv1D", "filters": 96, "kernel": 3},
+          {"name": "bn3", "type": "BatchNorm"},
+          {"name": "pool3", "type": "MaxPool1D", "size": 2},
+          {"name": "gap", "type": "GlobalAvgPool"},
+          {"name": "fc1", "type": "Dense", "units": 48},
+          {"name": "output", "type": "Dense", "units": 7, "activation": "softmax"}
+        ]
+      },
       "training": {
         "epochs": 50,
-        "samples": 50000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.86,
@@ -131,20 +249,42 @@
       "output_classes": ["no_transient", "sn_ia", "sn_ii", "sn_ibc", "kilonova", "tde", "other_transient"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["supernova", "transient", "ZTF", "ATLAS"]
+      "pipeline_role": ["transient_detection"],
+      "tags": ["supernova", "transient", "ZTF", "ATLAS", "CNN", "TinyML"]
     },
     "GALAXY-001": {
       "node_id": "GALAXY-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "classifier.tflite",
+      "name": "GalaxyClassifier",
+      "version": "2.0.0",
+      "type": "2D-CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "2D CNN for galaxy morphology classification from images",
+      "model_file": "GALAXY-001_weights.npz",
       "model_size_kb": 88,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "2D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv2D", "filters": 16, "kernel": [3, 3]},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool2D", "size": 2},
+          {"name": "conv2", "type": "Conv2D", "filters": 32, "kernel": [3, 3]},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool2D", "size": 2},
+          {"name": "conv3", "type": "Conv2D", "filters": 64, "kernel": [3, 3]},
+          {"name": "bn3", "type": "BatchNorm"},
+          {"name": "pool3", "type": "MaxPool2D", "size": 2},
+          {"name": "gap", "type": "GlobalAvgPool2D"},
+          {"name": "fc1", "type": "Dense", "units": 48},
+          {"name": "output", "type": "Dense", "units": 7, "activation": "softmax"}
+        ]
+      },
       "training": {
-        "epochs": 60,
-        "samples": 100000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "epochs": 50,
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.79,
@@ -153,24 +293,38 @@
         "f1_score": 0.78,
         "inference_time_ms": 20
       },
-      "input_shape": [64, 64, 3],
+      "input_shape": [64, 64, 1],
       "output_classes": ["elliptical", "spiral", "barred_spiral", "irregular", "merger", "edge_on", "unknown"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["galaxy", "morphology", "DECaLS", "Galaxy-Zoo", "image"]
+      "pipeline_role": ["galaxy_classification"],
+      "tags": ["galaxy", "morphology", "DECaLS", "Galaxy-Zoo", "image", "2D-CNN", "TinyML"]
     },
     "SPECTYPE-001": {
       "node_id": "SPECTYPE-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "classifier.tflite",
+      "name": "SpectralTypeClassifier",
+      "version": "2.0.0",
+      "type": "MLP",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "Multi-layer perceptron for stellar spectral type classification from photometry",
+      "model_file": "SPECTYPE-001_weights.npz",
       "model_size_kb": 40,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "MLP",
+        "layers": [
+          {"name": "fc1", "type": "Dense", "units": 32, "activation": "relu"},
+          {"name": "fc2", "type": "Dense", "units": 64, "activation": "relu"},
+          {"name": "fc3", "type": "Dense", "units": 32, "activation": "relu"},
+          {"name": "output", "type": "Dense", "units": 8, "activation": "softmax"}
+        ]
+      },
       "training": {
-        "epochs": 40,
-        "samples": 100000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "epochs": 50,
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.85,
@@ -183,20 +337,42 @@
       "output_classes": ["O", "B", "A", "F", "G", "K", "M", "L"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["spectral-type", "Gaia", "photometry", "classification"]
+      "pipeline_role": ["stellar_classification"],
+      "tags": ["spectral-type", "Gaia", "photometry", "classification", "MLP", "TinyML"]
     },
     "MICROLENS-001": {
       "node_id": "MICROLENS-001",
-      "version": "1.0.0",
-      "created_at": "2026-01-31T00:00:00Z",
-      "model_file": "detector.tflite",
+      "name": "MicrolensingDetector",
+      "version": "2.0.0",
+      "type": "CNN",
+      "is_ml": true,
+      "created_at": "2026-02-04T00:00:00Z",
+      "description": "Multi-scale CNN for detecting gravitational microlensing events",
+      "model_file": "MICROLENS-001_weights.npz",
       "model_size_kb": 72,
       "checksum_sha256": null,
+      "architecture": {
+        "type": "1D-CNN",
+        "layers": [
+          {"name": "conv1", "type": "Conv1D", "filters": 24, "kernel": 15},
+          {"name": "bn1", "type": "BatchNorm"},
+          {"name": "pool1", "type": "MaxPool1D", "size": 4},
+          {"name": "conv2", "type": "Conv1D", "filters": 48, "kernel": 9},
+          {"name": "bn2", "type": "BatchNorm"},
+          {"name": "pool2", "type": "MaxPool1D", "size": 4},
+          {"name": "conv3", "type": "Conv1D", "filters": 72, "kernel": 5},
+          {"name": "bn3", "type": "BatchNorm"},
+          {"name": "pool3", "type": "MaxPool1D", "size": 4},
+          {"name": "gap", "type": "GlobalAvgPool"},
+          {"name": "fc1", "type": "Dense", "units": 48},
+          {"name": "output", "type": "Dense", "units": 6, "activation": "softmax"}
+        ]
+      },
       "training": {
         "epochs": 50,
-        "samples": 3000,
-        "data_version": "synthetic-v1",
-        "training_date": "2026-01-31"
+        "samples": 5000,
+        "data_version": "synthetic-v2",
+        "training_date": "2026-02-04"
       },
       "metrics": {
         "accuracy": 0.84,
@@ -209,22 +385,95 @@
       "output_classes": ["no_event", "single_lens", "binary_lens", "planetary", "parallax", "unclear"],
       "quantization": "int8",
       "compatible_larun": ">=2.0.0",
-      "tags": ["microlensing", "OGLE", "MOA", "gravitational-lensing"]
+      "pipeline_role": ["transient_detection"],
+      "tags": ["microlensing", "OGLE", "MOA", "gravitational-lensing", "CNN", "TinyML"]
+    }
+  },
+  "pipelines": {
+    "exoplanet_detection": {
+      "name": "Exoplanet Detection Pipeline",
+      "description": "Complete pipeline for exoplanet transit detection and validation",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Initial Analysis",
+          "type": "parallel",
+          "models": ["EXOPLANET-001", "VSTAR-001", "FLARE-001"]
+        },
+        {
+          "stage": 2,
+          "name": "Human Review",
+          "type": "human_checkpoint",
+          "question": "Review initial results. Proceed with validation?"
+        },
+        {
+          "stage": 3,
+          "name": "Validation Ensemble",
+          "type": "ensemble",
+          "models": ["EXOPLANET-001"],
+          "voting": "confidence"
+        },
+        {
+          "stage": 4,
+          "name": "Final Review",
+          "type": "human_checkpoint",
+          "question": "Confirm detection status"
+        }
+      ]
+    },
+    "stellar_classification": {
+      "name": "Stellar Classification Pipeline",
+      "description": "Multi-aspect stellar characterization",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Parallel Classification",
+          "type": "parallel",
+          "models": ["SPECTYPE-001", "VSTAR-001", "ASTERO-001"]
+        }
+      ]
+    },
+    "transient_detection": {
+      "name": "Transient Detection Pipeline",
+      "description": "Multi-type transient event detection with alerts",
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Transient Search",
+          "type": "parallel",
+          "models": ["SUPERNOVA-001", "FLARE-001", "MICROLENS-001"]
+        },
+        {
+          "stage": 2,
+          "name": "Alert Review",
+          "type": "human_checkpoint",
+          "question": "Confirm alert status"
+        }
+      ]
     }
   },
   "releases": {
+    "v2.0.0": {
+      "release_date": "2026-02-04",
+      "models_included": ["EXOPLANET-001", "VSTAR-001", "FLARE-001", "ASTERO-001", "SUPERNOVA-001", "GALAXY-001", "SPECTYPE-001", "MICROLENS-001"],
+      "bundle_url": null,
+      "checksums_url": null,
+      "changelog": "Major release with 8 true TinyML models, pipeline framework, human-in-the-loop support, and visual guides for students/hobbyists."
+    },
     "v0.1.0": {
       "release_date": "2026-01-31",
       "models_included": ["EXOPLANET-001", "VSTAR-001", "FLARE-001", "ASTERO-001", "SUPERNOVA-001", "GALAXY-001", "SPECTYPE-001", "MICROLENS-001"],
       "bundle_url": null,
       "checksums_url": null,
-      "changelog": "Initial release with 8 TinyML nodes for astronomical analysis."
+      "changelog": "Initial release with 8 TinyML model specifications."
     }
   },
   "statistics": {
     "total_models": 8,
     "total_size_kb": 492,
     "avg_accuracy": 0.847,
-    "avg_inference_ms": 10.5
+    "avg_inference_ms": 10.5,
+    "all_models_ml": true,
+    "supported_architectures": ["1D-CNN", "2D-CNN", "MLP"]
   }
 }

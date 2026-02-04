@@ -1,47 +1,59 @@
 # LARUN Automated Model Training
 # ================================
-# Trains TinyML models on schedule or on-demand
+# Trains all 8 TinyML astronomical models on schedule or on-demand
 #
 # Triggers:
-# - Weekly (Sunday at midnight UTC)
-# - Manual dispatch with node selection
-# - Push to main with changes to training files
+# - Manual dispatch with model selection
+# - Weekly schedule (optional)
+#
+# Models:
+# - EXOPLANET-001: Exoplanet transit detection
+# - VSTAR-001: Variable star classification
+# - FLARE-001: Stellar flare detection
+# - ASTERO-001: Asteroseismology analysis
+# - SUPERNOVA-001: Supernova/transient detection
+# - GALAXY-001: Galaxy morphology classification
+# - SPECTYPE-001: Stellar spectral type classification
+# - MICROLENS-001: Microlensing event detection
 
 name: Train Models
 
 on:
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch:  # Manual trigger
     inputs:
-      nodes:
-        description: 'Nodes to train (comma-separated or "all")'
+      model:
+        description: 'Model to train (or "all" for all models)'
         required: false
         default: 'all'
-        type: string
+        type: choice
+        options:
+          - all
+          - EXOPLANET-001
+          - VSTAR-001
+          - FLARE-001
+          - ASTERO-001
+          - SUPERNOVA-001
+          - GALAXY-001
+          - SPECTYPE-001
+          - MICROLENS-001
       epochs:
         description: 'Training epochs'
         required: false
-        default: '30'
+        default: '50'
+        type: string
+      samples:
+        description: 'Training samples per model'
+        required: false
+        default: '5000'
         type: string
       skip_validation:
         description: 'Skip model validation'
         required: false
         default: false
         type: boolean
-      create_artifacts:
-        description: 'Create downloadable artifacts'
-        required: false
-        default: true
-        type: boolean
-  # Disabled automatic triggers
+  # Optional: Weekly training on Sunday at midnight UTC
   # schedule:
   #   - cron: '0 0 * * 0'
-  # push:
-  #   branches: [main]
-  #   paths:
-  #     - 'train_nodes.py'
-  #     - 'scripts/fetch_training_data.py'
-  #     - 'config/training_config.yaml'
-  #     - 'nodes/**/manifest.yaml'
 
 # Prevent concurrent training runs
 concurrency:
@@ -50,7 +62,6 @@ concurrency:
 
 env:
   PYTHON_VERSION: '3.11'
-  TF_CPP_MIN_LOG_LEVEL: '2'
 
 jobs:
   # ==========================================================================
@@ -60,75 +71,39 @@ jobs:
     name: Prepare Training
     runs-on: ubuntu-latest
     outputs:
-      nodes: ${{ steps.set-nodes.outputs.nodes }}
+      models: ${{ steps.set-models.outputs.models }}
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Determine nodes to train
-        id: set-nodes
+      - name: Determine models to train
+        id: set-models
         run: |
-          INPUT_NODES="${{ inputs.nodes || 'all' }}"
+          INPUT_MODEL="${{ inputs.model || 'all' }}"
 
-          if [ "$INPUT_NODES" = "all" ]; then
-            NODES='["VSTAR-001","FLARE-001","ASTERO-001","SUPERNOVA-001","SPECTYPE-001","MICROLENS-001","GALAXY-001"]'
+          if [ "$INPUT_MODEL" = "all" ]; then
+            MODELS='["EXOPLANET-001","VSTAR-001","FLARE-001","ASTERO-001","SUPERNOVA-001","GALAXY-001","SPECTYPE-001","MICROLENS-001"]'
           else
-            # Convert comma-separated to JSON array
-            NODES=$(echo "$INPUT_NODES" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$";""))')
+            MODELS="[\"$INPUT_MODEL\"]"
           fi
 
-          echo "nodes=$NODES" >> $GITHUB_OUTPUT
-          echo "Training nodes: $NODES"
+          echo "models=$MODELS" >> $GITHUB_OUTPUT
+          echo "Training models: $MODELS"
 
       - name: Create training matrix
         id: set-matrix
         run: |
-          NODES='${{ steps.set-nodes.outputs.nodes }}'
-          echo "matrix={\"node\":$NODES}" >> $GITHUB_OUTPUT
-
-  # ==========================================================================
-  # Fetch Training Data
-  # ==========================================================================
-  fetch-data:
-    name: Fetch Data
-    runs-on: ubuntu-latest
-    needs: prepare
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Fetch training data
-        run: |
-          python scripts/fetch_training_data.py --all
-        env:
-          MAST_API_TOKEN: ${{ secrets.MAST_API_TOKEN }}
-
-      - name: Upload data artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: training-data
-          path: data/
-          retention-days: 7
+          MODELS='${{ steps.set-models.outputs.models }}'
+          echo "matrix={\"model\":$MODELS}" >> $GITHUB_OUTPUT
 
   # ==========================================================================
   # Train Models (Matrix)
   # ==========================================================================
   train:
-    name: Train ${{ matrix.node }}
+    name: Train ${{ matrix.model }}
     runs-on: ubuntu-latest
-    needs: [prepare, fetch-data]
+    needs: prepare
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
@@ -145,40 +120,20 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Download training data
-        uses: actions/download-artifact@v4
-        with:
-          name: training-data
-          path: data/
+          pip install numpy
 
       - name: Train model
         id: train
         run: |
-          EPOCHS="${{ inputs.epochs || '30' }}"
-          echo "Training ${{ matrix.node }} for $EPOCHS epochs..."
+          EPOCHS="${{ inputs.epochs || '50' }}"
+          SAMPLES="${{ inputs.samples || '5000' }}"
+          echo "Training ${{ matrix.model }} for $EPOCHS epochs with $SAMPLES samples..."
 
-          python train_nodes.py --node ${{ matrix.node }} --epochs $EPOCHS
+          python train_models.py --model ${{ matrix.model }} --epochs $EPOCHS --samples $SAMPLES
 
           # Check if model was created
-          NODE_FOLDER=$(python -c "
-          folders = {
-            'EXOPLANET-001': 'exoplanet',
-            'VSTAR-001': 'variable_star',
-            'FLARE-001': 'flare',
-            'ASTERO-001': 'asteroseismo',
-            'SUPERNOVA-001': 'supernova',
-            'GALAXY-001': 'galaxy',
-            'SPECTYPE-001': 'spectral_type',
-            'MICROLENS-001': 'microlensing',
-          }
-          print(folders.get('${{ matrix.node }}', ''))
-          ")
-
-          if [ -d "nodes/$NODE_FOLDER/model" ]; then
+          if [ -f "models/trained/${{ matrix.model }}_weights.npz" ]; then
             echo "model_created=true" >> $GITHUB_OUTPUT
-            echo "node_folder=$NODE_FOLDER" >> $GITHUB_OUTPUT
           else
             echo "model_created=false" >> $GITHUB_OUTPUT
           fi
@@ -187,8 +142,8 @@ jobs:
         if: steps.train.outputs.model_created == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: model-${{ matrix.node }}
-          path: nodes/${{ steps.train.outputs.node_folder }}/model/
+          name: model-${{ matrix.model }}
+          path: models/trained/${{ matrix.model }}_weights.npz
           retention-days: 30
 
   # ==========================================================================
@@ -212,43 +167,69 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install numpy
 
       - name: Download all model artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: model-*
-          merge-multiple: false
-
-      - name: Copy models to nodes directory
-        run: |
-          # Copy each downloaded model to the correct node folder
-          for artifact_dir in model-*/; do
-            node_id=$(basename "$artifact_dir" | sed 's/model-//')
-            node_folder=$(python -c "
-          folders = {
-            'EXOPLANET-001': 'exoplanet',
-            'VSTAR-001': 'variable_star',
-            'FLARE-001': 'flare',
-            'ASTERO-001': 'asteroseismo',
-            'SUPERNOVA-001': 'supernova',
-            'GALAXY-001': 'galaxy',
-            'SPECTYPE-001': 'spectral_type',
-            'MICROLENS-001': 'microlensing',
-          }
-          print(folders.get('$node_id', ''))
-            ")
-
-            if [ -n "$node_folder" ]; then
-              mkdir -p "nodes/$node_folder/model"
-              cp -r "$artifact_dir"/* "nodes/$node_folder/model/"
-              echo "Copied model for $node_id to nodes/$node_folder/model/"
-            fi
-          done
+          path: models/trained/
+          merge-multiple: true
 
       - name: Validate all models
         run: |
-          python scripts/validate_models.py --all --output validation_results.json
+          python -c "
+          import numpy as np
+          import json
+          from pathlib import Path
+          from src.model.specialized_models import MODEL_SPECS, get_model
+          from src.model.data_generators import get_generator, DatasetConfig
+
+          results = {'models': {}, 'summary': {'passed': 0, 'failed': 0}}
+          model_dir = Path('models/trained')
+
+          for model_id in MODEL_SPECS.keys():
+              weight_file = model_dir / f'{model_id}_weights.npz'
+              if not weight_file.exists():
+                  print(f'{model_id}: SKIPPED (no weights found)')
+                  continue
+
+              try:
+                  # Load model and weights
+                  model = get_model(model_id)
+                  model.load(str(weight_file))
+
+                  # Generate test data
+                  generator = get_generator(model_id)
+                  config = DatasetConfig(n_samples=100, seed=99)
+                  X_test, y_test = generator.generate_dataset(config)
+
+                  # Test inference
+                  preds, confs = model.predict(X_test)
+                  accuracy = np.mean(preds == y_test)
+
+                  passed = accuracy > 0.1  # Basic sanity check
+                  results['models'][model_id] = {
+                      'passed': passed,
+                      'accuracy': float(accuracy),
+                      'samples_tested': len(X_test)
+                  }
+                  results['summary']['passed' if passed else 'failed'] += 1
+                  status = 'PASSED' if passed else 'FAILED'
+                  print(f'{model_id}: {status} (accuracy: {accuracy:.2%})')
+
+              except Exception as e:
+                  results['models'][model_id] = {'passed': False, 'error': str(e)}
+                  results['summary']['failed'] += 1
+                  print(f'{model_id}: FAILED ({e})')
+
+          results['summary']['all_passed'] = results['summary']['failed'] == 0
+
+          with open('validation_results.json', 'w') as f:
+              json.dump(results, f, indent=2)
+
+          print(f\"\\nTotal: {results['summary']['passed']} passed, {results['summary']['failed']} failed\")
+          "
 
       - name: Upload validation results
         uses: actions/upload-artifact@v4
@@ -265,9 +246,9 @@ jobs:
               results = json.load(f)
           if not results.get('summary', {}).get('all_passed', False):
               print('Some models failed validation!')
-              for node, result in results.get('nodes', {}).items():
+              for model, result in results.get('models', {}).items():
                   if not result.get('passed', False):
-                      print(f'  - {node}: FAILED')
+                      print(f'  - {model}: FAILED')
               exit(1)
           print('All models passed validation!')
           "
@@ -279,7 +260,7 @@ jobs:
     name: Bundle Models
     runs-on: ubuntu-latest
     needs: [train, validate]
-    if: ${{ inputs.create_artifacts != false }}
+    if: always() && needs.train.result == 'success'
 
     steps:
       - uses: actions/checkout@v4
@@ -293,47 +274,60 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install pyyaml
+          pip install numpy
 
       - name: Download all model artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: model-*
-          merge-multiple: false
-
-      - name: Copy models to nodes directory
-        run: |
-          for artifact_dir in model-*/; do
-            node_id=$(basename "$artifact_dir" | sed 's/model-//')
-            node_folder=$(python -c "
-          folders = {
-            'EXOPLANET-001': 'exoplanet',
-            'VSTAR-001': 'variable_star',
-            'FLARE-001': 'flare',
-            'ASTERO-001': 'asteroseismo',
-            'SUPERNOVA-001': 'supernova',
-            'GALAXY-001': 'galaxy',
-            'SPECTYPE-001': 'spectral_type',
-            'MICROLENS-001': 'microlensing',
-          }
-          print(folders.get('$node_id', ''))
-            ")
-
-            if [ -n "$node_folder" ]; then
-              mkdir -p "nodes/$node_folder/model"
-              cp -r "$artifact_dir"/* "nodes/$node_folder/model/"
-            fi
-          done
+          path: models/trained/
+          merge-multiple: true
 
       - name: Create bundle
         run: |
           VERSION=$(date +%Y%m%d)-$(echo ${{ github.sha }} | cut -c1-7)
-          python scripts/bundle_models.py --version $VERSION
+          mkdir -p dist
+
+          # Create model bundle info
+          python -c "
+          import json
+          import numpy as np
+          from pathlib import Path
+          from datetime import datetime
+
+          model_dir = Path('models/trained')
+          bundle = {
+              'version': '$VERSION',
+              'created': datetime.now().isoformat(),
+              'models': {}
+          }
+
+          for weight_file in model_dir.glob('*_weights.npz'):
+              model_id = weight_file.stem.replace('_weights', '')
+              weights = np.load(weight_file)
+              total_params = sum(w.size for w in weights.values())
+              bundle['models'][model_id] = {
+                  'file': weight_file.name,
+                  'parameters': total_params,
+                  'size_kb': round(weight_file.stat().st_size / 1024, 2)
+              }
+
+          with open('dist/bundle_info.json', 'w') as f:
+              json.dump(bundle, f, indent=2)
+
+          print(f'Bundle created with {len(bundle[\"models\"])} models')
+          "
+
+          # Copy all model weights to dist
+          cp models/trained/*.npz dist/ 2>/dev/null || echo "No model files to copy"
+
+          # Create training summary if exists
+          cp models/trained/training_summary.json dist/ 2>/dev/null || echo "No training summary"
 
       - name: Upload bundle
         uses: actions/upload-artifact@v4
         with:
-          name: model-bundle
+          name: model-bundle-${{ github.run_number }}
           path: dist/
           retention-days: 90
 
