@@ -103,15 +103,16 @@ function SubscriptionContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      if (res.ok && data.url) {
         window.location.href = data.url;
       } else {
-        alert('Checkout not configured yet. Coming soon!');
+        console.error('Checkout error:', data);
+        alert(data.error || 'Failed to create checkout. Please try again.');
       }
     } catch (error) {
       console.error('Failed to create checkout session:', error);
-      alert('Checkout not configured yet. Coming soon!');
+      alert('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
