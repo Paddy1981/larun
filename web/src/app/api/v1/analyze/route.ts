@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createAnalysis, processAnalysis } from '@/lib/analysis-store';
+import {
+  createAnalysisInDB,
+  runAnalysisWithDB,
+  incrementUserAnalysisCount,
+} from '@/lib/analysis-db';
 
 /**
  * POST /api/v1/analyze
  *
  * Submit a TIC ID for exoplanet transit detection analysis.
- * Requires authentication.
+ * Requires authentication. Runs detection synchronously.
  */
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         {
           error: {
@@ -59,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Check usage limits (for free tier)
     const analysesThisMonth = session.user.analysesThisMonth || 0;
-    const analysesLimit = session.user.analysesLimit || 3;
+    const analysesLimit = session.user.analysesLimit || 5;
 
     if (analysesLimit !== -1 && analysesThisMonth >= analysesLimit) {
       return NextResponse.json(
@@ -73,21 +77,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create analysis record
-    const analysis = createAnalysis(session.user.id, normalizedTicId);
+    // Create analysis record in Supabase
+    const analysis = await createAnalysisInDB(
+      session.user.id,
+      session.user.email,
+      normalizedTicId
+    );
 
-    // Start background processing (non-blocking)
-    // In production, this would use a job queue like Redis/BullMQ
-    processAnalysis(analysis.id).catch(err => {
-      console.error(`Background analysis failed for ${analysis.id}:`, err);
+    // Increment usage count
+    await incrementUserAnalysisCount(session.user.email);
+
+    // Run detection synchronously (Vercel functions have up to 60s timeout on Pro)
+    // This runs in the background via Promise but we return immediately
+    runAnalysisWithDB(analysis.id).catch((err) => {
+      console.error(`Analysis ${analysis.id} failed:`, err);
     });
 
-    // Return response immediately
+    // Return response immediately with analysis ID
     return NextResponse.json(
       {
         analysis_id: analysis.id,
         status: 'pending',
-        message: 'Analysis queued. Poll GET /api/v1/analyze/{id} for results.',
+        message: 'Analysis started. Redirecting to results page.',
       },
       { status: 202 }
     );
