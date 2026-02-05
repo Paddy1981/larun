@@ -29,26 +29,46 @@ const detectionModels: ModelCard[] = [
     id: 'exoplanet-001',
     name: 'EXOPLANET-001',
     description: 'Primary exoplanet transit detection. Identifies periodic brightness dips characteristic of planetary transits using 1D CNN architecture.',
-    accuracy: '79.2%',
-    size: '95KB',
+    accuracy: '80.2%',
+    size: '11KB',
     downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/EXOPLANET-001_weights.npz',
     trained: true,
   },
   {
     id: 'vstar-001',
     name: 'VSTAR-001',
-    description: 'Variable star classification. Distinguishes intrinsic stellar variability from transit signals.',
-    accuracy: '~85%',
-    size: '~40KB',
-    trained: false,
+    description: 'Variable star classification. Distinguishes Cepheids, RR Lyrae, Delta Scuti, and other variable star types.',
+    accuracy: '99.8%',
+    size: '27KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/VSTAR-001_weights.npz',
+    trained: true,
   },
   {
     id: 'flare-001',
     name: 'FLARE-001',
-    description: 'Stellar flare detection. Identifies and flags flare events that could mask or mimic transits.',
-    accuracy: '~90%',
-    size: '~35KB',
-    trained: false,
+    description: 'Stellar flare detection. Identifies weak, moderate, strong, and superflare events in light curves.',
+    accuracy: '84.2%',
+    size: '3KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/FLARE-001_weights.npz',
+    trained: true,
+  },
+  {
+    id: 'microlens-001',
+    name: 'MICROLENS-001',
+    description: 'Microlensing event detection. Identifies single lens, binary lens, and planetary microlensing events.',
+    accuracy: '84.8%',
+    size: '32KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/MICROLENS-001_weights.npz',
+    trained: true,
+  },
+  {
+    id: 'supernova-001',
+    name: 'SUPERNOVA-001',
+    description: 'Supernova and transient detection. Classifies Type Ia, II, Ibc supernovae and other transients.',
+    accuracy: '64.8%',
+    size: '30KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/SUPERNOVA-001_weights.npz',
+    trained: true,
   },
 ];
 
@@ -56,26 +76,29 @@ const analysisModels: ModelCard[] = [
   {
     id: 'spectype-001',
     name: 'SPECTYPE-001',
-    description: 'Stellar spectral classification. Estimates stellar type from photometric data.',
-    accuracy: '~85%',
-    size: '~50KB',
-    trained: false,
+    description: 'Stellar spectral classification. Classifies O, B, A, F, G, K, M, L type stars from photometric features.',
+    accuracy: '95.0%',
+    size: '5KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/SPECTYPE-001_weights.npz',
+    trained: true,
   },
   {
     id: 'astero-001',
     name: 'ASTERO-001',
-    description: 'Asteroseismology analysis. Detects stellar oscillations to determine stellar properties.',
-    accuracy: '~75%',
-    size: '~50KB',
-    trained: false,
+    description: 'Asteroseismology analysis. Detects solar-like, red giant, delta Scuti, and gamma Dor oscillations.',
+    accuracy: '99.8%',
+    size: '21KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/ASTERO-001_weights.npz',
+    trained: true,
   },
   {
     id: 'galaxy-001',
     name: 'GALAXY-001',
-    description: 'Galaxy morphology classification. Identifies galaxy types from imaging data.',
-    accuracy: '~88%',
-    size: '~65KB',
-    trained: false,
+    description: 'Galaxy morphology classification. Identifies elliptical, spiral, barred spiral, and irregular galaxies.',
+    accuracy: '25.2%',
+    size: '27KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/GALAXY-001_weights.npz',
+    trained: true,
   },
 ];
 
@@ -124,15 +147,15 @@ export default function ModelsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
             <div className="text-3xl font-bold text-[#202124]">9</div>
-            <div className="text-sm text-[#5f6368] mt-1">Specialized Models</div>
+            <div className="text-sm text-[#5f6368] mt-1">Trained Models</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">2</div>
-            <div className="text-sm text-[#5f6368] mt-1">Production Ready</div>
+            <div className="text-3xl font-bold text-[#202124]">99.8%</div>
+            <div className="text-sm text-[#5f6368] mt-1">Best Accuracy</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">79.2%</div>
-            <div className="text-sm text-[#5f6368] mt-1">Detection Accuracy</div>
+            <div className="text-3xl font-bold text-[#202124]">&lt;35KB</div>
+            <div className="text-sm text-[#5f6368] mt-1">Avg Model Size</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
             <div className="text-3xl font-bold text-[#202124]">&lt;50ms</div>
