@@ -64,14 +64,21 @@ export default function ResultsPage() {
   };
 
   useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null;
+
     const fetchAnalysis = async () => {
       try {
-        const res = await fetch(`/api/v1/analyses/${analysisId}`);
+        const res = await fetch(`/api/v1/analyze/${analysisId}`);
         if (!res.ok) {
           throw new Error('Analysis not found');
         }
         const data = await res.json();
         setAnalysis(data);
+
+        // If still processing, keep polling
+        if (data.status === 'pending' || data.status === 'processing') {
+          pollInterval = setTimeout(fetchAnalysis, 2000); // Poll every 2 seconds
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load analysis');
       } finally {
@@ -82,6 +89,13 @@ export default function ResultsPage() {
     if (analysisId) {
       fetchAnalysis();
     }
+
+    // Cleanup polling on unmount
+    return () => {
+      if (pollInterval) {
+        clearTimeout(pollInterval);
+      }
+    };
   }, [analysisId]);
 
   const getDispositionColor = (disposition: string) => {
