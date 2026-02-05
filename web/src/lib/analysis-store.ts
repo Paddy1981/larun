@@ -121,137 +121,56 @@ export function deleteAnalysis(id: string, userId: string): boolean {
 }
 
 /**
- * Mock detection pipeline
+ * Real detection pipeline
  *
- * This simulates what the real Python detection service would return.
- * In production, this would call the actual detection API or
- * integrate with the Python backend.
+ * Fetches actual TESS light curve data and runs BLS transit detection.
+ * Uses the MAST archive for data and implements real vetting tests.
  */
-export async function runMockDetection(ticId: string): Promise<AnalysisResult> {
-  // Simulate processing time
-  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
+export async function runDetection(ticId: string): Promise<AnalysisResult> {
+  // Import the detection services
+  const { fetchLightCurve, fetchTICInfo } = await import('./mast-service');
+  const { runTransitDetection } = await import('./transit-detection');
 
-  // Known targets with real-ish data (for demo purposes)
-  const knownTargets: Record<string, AnalysisResult> = {
-    '470710327': {
-      detection: true,
-      confidence: 0.92,
-      period_days: 3.4252,
-      depth_ppm: 850,
-      duration_hours: 2.8,
-      epoch_btjd: 1326.45,
-      snr: 15.3,
-      vetting: {
-        disposition: 'PLANET_CANDIDATE',
-        confidence: 0.88,
-        odd_even: { flag: 'PASS', message: 'Odd/even depth difference: 0.8 sigma', confidence: 0.95 },
-        v_shape: { flag: 'PASS', message: 'Transit shape consistent with planetary', confidence: 0.91 },
-        secondary_eclipse: { flag: 'PASS', message: 'No secondary eclipse detected', confidence: 0.89 },
-      },
-      sectors_used: [1, 2, 3],
-      processing_time_seconds: 45.2,
-    },
-    '307210830': {
-      detection: true,
-      confidence: 0.78,
-      period_days: 8.138,
-      depth_ppm: 1200,
-      duration_hours: 3.5,
-      epoch_btjd: 1355.12,
-      snr: 11.8,
-      vetting: {
-        disposition: 'PLANET_CANDIDATE',
-        confidence: 0.72,
-        odd_even: { flag: 'PASS', message: 'Odd/even depth difference: 1.2 sigma', confidence: 0.88 },
-        v_shape: { flag: 'WARNING', message: 'Slightly V-shaped transit', confidence: 0.65 },
-        secondary_eclipse: { flag: 'PASS', message: 'No secondary eclipse detected', confidence: 0.85 },
-      },
-      sectors_used: [5, 6],
-      processing_time_seconds: 38.7,
-    },
-    '261136679': {
-      detection: true,
-      confidence: 0.95,
-      period_days: 2.7972,
-      depth_ppm: 650,
-      duration_hours: 2.2,
-      epoch_btjd: 1312.78,
-      snr: 22.1,
-      vetting: {
-        disposition: 'PLANET_CANDIDATE',
-        confidence: 0.94,
-        odd_even: { flag: 'PASS', message: 'Odd/even depth difference: 0.3 sigma', confidence: 0.98 },
-        v_shape: { flag: 'PASS', message: 'Transit shape consistent with planetary', confidence: 0.96 },
-        secondary_eclipse: { flag: 'PASS', message: 'No secondary eclipse detected', confidence: 0.92 },
-      },
-      sectors_used: [1, 2, 3, 4],
-      processing_time_seconds: 52.1,
-    },
-  };
+  try {
+    // Fetch light curve data from MAST (or synthetic fallback)
+    console.log(`Fetching light curve data for TIC ${ticId}...`);
+    const lightCurve = await fetchLightCurve(ticId);
 
-  // Check if it's a known target
-  if (knownTargets[ticId]) {
-    return knownTargets[ticId];
-  }
+    // Fetch TIC catalog information
+    const ticInfo = await fetchTICInfo(ticId);
 
-  // Generate random result for unknown targets
-  const hasDetection = Math.random() > 0.6; // 40% chance of detection
+    // Run transit detection algorithm
+    console.log(`Running transit detection for TIC ${ticId}...`);
+    const result = await runTransitDetection(lightCurve, ticInfo);
 
-  if (!hasDetection) {
     return {
-      detection: false,
-      confidence: 0.1 + Math.random() * 0.3,
-      period_days: null,
-      depth_ppm: null,
-      duration_hours: null,
-      processing_time_seconds: 25 + Math.random() * 20,
+      detection: result.detection,
+      confidence: result.confidence,
+      period_days: result.period_days,
+      depth_ppm: result.depth_ppm,
+      duration_hours: result.duration_hours,
+      epoch_btjd: result.epoch_btjd,
+      snr: result.snr,
+      vetting: result.vetting ? {
+        disposition: result.vetting.disposition,
+        confidence: result.vetting.confidence,
+        odd_even: result.vetting.odd_even,
+        v_shape: result.vetting.v_shape,
+        secondary_eclipse: result.vetting.secondary_eclipse,
+      } : undefined,
+      sectors_used: result.sectors_used,
+      processing_time_seconds: result.processing_time_seconds,
     };
+  } catch (error) {
+    console.error(`Detection error for TIC ${ticId}:`, error);
+    throw error;
   }
-
-  // Random detection
-  const snr = 7 + Math.random() * 15;
-  const confidence = Math.min(0.95, 0.5 + (snr / 30));
-  const period = 0.5 + Math.random() * 20;
-  const depth = 200 + Math.random() * 2000;
-
-  const vettingPassed = Math.random() > 0.3;
-
-  return {
-    detection: true,
-    confidence,
-    period_days: Number(period.toFixed(4)),
-    depth_ppm: Number(depth.toFixed(0)),
-    duration_hours: Number((1 + Math.random() * 5).toFixed(2)),
-    epoch_btjd: Number((1300 + Math.random() * 100).toFixed(2)),
-    snr: Number(snr.toFixed(1)),
-    vetting: {
-      disposition: vettingPassed ? 'PLANET_CANDIDATE' : 'INCONCLUSIVE',
-      confidence: vettingPassed ? 0.7 + Math.random() * 0.25 : 0.3 + Math.random() * 0.3,
-      odd_even: {
-        flag: Math.random() > 0.2 ? 'PASS' : 'WARNING',
-        message: `Odd/even depth difference: ${(Math.random() * 3).toFixed(1)} sigma`,
-        confidence: 0.6 + Math.random() * 0.35,
-      },
-      v_shape: {
-        flag: Math.random() > 0.3 ? 'PASS' : 'WARNING',
-        message: Math.random() > 0.3 ? 'Transit shape consistent with planetary' : 'Slightly V-shaped transit',
-        confidence: 0.5 + Math.random() * 0.45,
-      },
-      secondary_eclipse: {
-        flag: Math.random() > 0.1 ? 'PASS' : 'FAIL',
-        message: Math.random() > 0.1 ? 'No secondary eclipse detected' : 'Possible secondary eclipse at phase 0.5',
-        confidence: 0.7 + Math.random() * 0.25,
-      },
-    },
-    sectors_used: [1, 2].filter(() => Math.random() > 0.3),
-    processing_time_seconds: Number((25 + Math.random() * 35).toFixed(1)),
-  };
 }
 
 /**
  * Process analysis in background
  *
- * This runs the mock detection and updates the analysis record.
+ * This runs the real detection pipeline and updates the analysis record.
  */
 export async function processAnalysis(analysisId: string): Promise<void> {
   const analysis = getAnalysis(analysisId);
@@ -264,8 +183,8 @@ export async function processAnalysis(analysisId: string): Promise<void> {
   });
 
   try {
-    // Run detection
-    const result = await runMockDetection(analysis.tic_id);
+    // Run real detection pipeline
+    const result = await runDetection(analysis.tic_id);
 
     // Update with results
     updateAnalysis(analysisId, {
