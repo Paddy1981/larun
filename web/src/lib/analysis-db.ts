@@ -2,7 +2,8 @@
  * Analysis Database Service
  *
  * Supabase-based storage for analyses that works in serverless environments.
- * Replaces the in-memory store for production use.
+ * Falls back to in-memory store when Supabase is unavailable, so analyses
+ * still run without a database (results won't persist across restarts).
  */
 
 import { createServerSupabaseClient } from './supabase';
@@ -48,15 +49,22 @@ export interface Analysis {
   error?: string;
 }
 
+// In-memory fallback store for when Supabase is unavailable
+const memoryStore = new Map<string, Analysis>();
+
+function isSupabaseAvailable(): boolean {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 /**
- * Create a new analysis in Supabase
+ * Create a new analysis record.
+ * Tries Supabase first, falls back to in-memory store.
  */
 export async function createAnalysisInDB(
   userId: string,
   userEmail: string,
   ticId: string
 ): Promise<Analysis> {
-  const supabase = createServerSupabaseClient();
   const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const analysis: Analysis = {
@@ -67,62 +75,86 @@ export async function createAnalysisInDB(
     created_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase.from('analyses').insert({
-    id: analysis.id,
-    user_id: analysis.user_id,
-    user_email: userEmail,
-    tic_id: analysis.tic_id,
-    status: analysis.status,
-    created_at: analysis.created_at,
-  });
+  if (isSupabaseAvailable()) {
+    try {
+      const supabase = createServerSupabaseClient();
+      const { error } = await supabase.from('analyses').insert({
+        id: analysis.id,
+        user_id: analysis.user_id,
+        user_email: userEmail,
+        tic_id: analysis.tic_id,
+        status: analysis.status,
+        created_at: analysis.created_at,
+      });
 
-  if (error) {
-    console.error('Error creating analysis:', error);
-    throw new Error('Failed to create analysis record');
+      if (error) {
+        console.error('Supabase insert error, using memory store:', error);
+        memoryStore.set(id, analysis);
+      }
+    } catch (err) {
+      console.error('Supabase unavailable, using memory store:', err);
+      memoryStore.set(id, analysis);
+    }
+  } else {
+    memoryStore.set(id, analysis);
   }
 
   return analysis;
 }
 
 /**
- * Get analysis by ID from Supabase
+ * Get analysis by ID.
+ * Checks Supabase first, then in-memory store.
  */
 export async function getAnalysisFromDB(
   analysisId: string,
   userId?: string
 ): Promise<Analysis | null> {
-  const supabase = createServerSupabaseClient();
+  // Try Supabase first
+  if (isSupabaseAvailable()) {
+    try {
+      const supabase = createServerSupabaseClient();
+      let query = supabase
+        .from('analyses')
+        .select('*')
+        .eq('id', analysisId);
 
-  let query = supabase
-    .from('analyses')
-    .select('*')
-    .eq('id', analysisId);
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
 
-  if (userId) {
-    query = query.eq('user_id', userId);
+      const { data, error } = await query.single();
+
+      if (!error && data) {
+        return {
+          id: data.id,
+          user_id: data.user_id,
+          tic_id: data.tic_id,
+          status: data.status,
+          created_at: data.created_at,
+          started_at: data.started_at,
+          completed_at: data.completed_at,
+          result: data.result as AnalysisResult | undefined,
+          error: data.error_message,
+        };
+      }
+    } catch (err) {
+      console.error('Supabase read error, checking memory store:', err);
+    }
   }
 
-  const { data, error } = await query.single();
-
-  if (error || !data) {
-    return null;
+  // Fall back to memory store
+  const analysis = memoryStore.get(analysisId);
+  if (analysis && (!userId || analysis.user_id === userId)) {
+    return analysis;
   }
 
-  return {
-    id: data.id,
-    user_id: data.user_id,
-    tic_id: data.tic_id,
-    status: data.status,
-    created_at: data.created_at,
-    started_at: data.started_at,
-    completed_at: data.completed_at,
-    result: data.result as AnalysisResult | undefined,
-    error: data.error_message,
-  };
+  return null;
 }
 
 /**
- * Update analysis in Supabase
+ * Update analysis record.
+ * Tries Supabase first, falls back to in-memory store.
  */
 export async function updateAnalysisInDB(
   analysisId: string,
@@ -134,74 +166,109 @@ export async function updateAnalysisInDB(
     error?: string;
   }
 ): Promise<void> {
-  const supabase = createServerSupabaseClient();
+  // Always update memory store if entry exists
+  const memEntry = memoryStore.get(analysisId);
+  if (memEntry) {
+    if (updates.status) memEntry.status = updates.status;
+    if (updates.started_at) memEntry.started_at = updates.started_at;
+    if (updates.completed_at) memEntry.completed_at = updates.completed_at;
+    if (updates.result) memEntry.result = updates.result;
+    if (updates.error) memEntry.error = updates.error;
+    memoryStore.set(analysisId, memEntry);
+  }
 
-  const dbUpdates: Record<string, unknown> = {};
+  // Try Supabase
+  if (isSupabaseAvailable()) {
+    try {
+      const supabase = createServerSupabaseClient();
+      const dbUpdates: Record<string, unknown> = {};
 
-  if (updates.status) dbUpdates.status = updates.status;
-  if (updates.started_at) dbUpdates.started_at = updates.started_at;
-  if (updates.completed_at) dbUpdates.completed_at = updates.completed_at;
-  if (updates.result) dbUpdates.result = updates.result;
-  if (updates.error) dbUpdates.error_message = updates.error;
+      if (updates.status) dbUpdates.status = updates.status;
+      if (updates.started_at) dbUpdates.started_at = updates.started_at;
+      if (updates.completed_at) dbUpdates.completed_at = updates.completed_at;
+      if (updates.result) dbUpdates.result = updates.result;
+      if (updates.error) dbUpdates.error_message = updates.error;
 
-  const { error } = await supabase
-    .from('analyses')
-    .update(dbUpdates)
-    .eq('id', analysisId);
+      const { error } = await supabase
+        .from('analyses')
+        .update(dbUpdates)
+        .eq('id', analysisId);
 
-  if (error) {
-    console.error('Error updating analysis:', error);
-    throw new Error('Failed to update analysis');
+      if (error) {
+        console.error('Supabase update error (memory store used):', error);
+      }
+    } catch (err) {
+      console.error('Supabase unavailable for update (memory store used):', err);
+    }
   }
 }
 
 /**
- * List analyses for a user from Supabase
+ * List analyses for a user.
+ * Merges Supabase results with in-memory entries.
  */
 export async function listAnalysesFromDB(
   userId: string,
   options?: { status?: AnalysisStatus; limit?: number; offset?: number }
 ): Promise<{ analyses: Analysis[]; total: number }> {
-  const supabase = createServerSupabaseClient();
+  let dbAnalyses: Analysis[] = [];
 
-  let query = supabase
-    .from('analyses')
-    .select('*', { count: 'exact' })
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  // Try Supabase
+  if (isSupabaseAvailable()) {
+    try {
+      const supabase = createServerSupabaseClient();
+      let query = supabase
+        .from('analyses')
+        .select('*', { count: 'exact' })
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-  if (options?.status) {
-    query = query.eq('status', options.status);
+      if (options?.status) {
+        query = query.eq('status', options.status);
+      }
+
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+
+      if (options?.offset) {
+        query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+      }
+
+      const { data, error } = await query;
+
+      if (!error && data) {
+        dbAnalyses = data.map((row) => ({
+          id: row.id,
+          user_id: row.user_id,
+          tic_id: row.tic_id,
+          status: row.status,
+          created_at: row.created_at,
+          started_at: row.started_at,
+          completed_at: row.completed_at,
+          result: row.result as AnalysisResult | undefined,
+          error: row.error_message,
+        }));
+      }
+    } catch (err) {
+      console.error('Supabase list error, using memory store only:', err);
+    }
   }
 
-  if (options?.limit) {
-    query = query.limit(options.limit);
-  }
+  // Merge in-memory analyses for this user (deduplicating by ID)
+  const dbIds = new Set(dbAnalyses.map(a => a.id));
+  const memAnalyses = Array.from(memoryStore.values())
+    .filter(a => a.user_id === userId && !dbIds.has(a.id))
+    .filter(a => !options?.status || a.status === options.status);
 
-  if (options?.offset) {
-    query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
-  }
+  const allAnalyses = [...dbAnalyses, ...memAnalyses]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const { data, error, count } = await query;
+  const offset = options?.offset || 0;
+  const limit = options?.limit || allAnalyses.length;
+  const paged = allAnalyses.slice(offset, offset + limit);
 
-  if (error) {
-    console.error('Error listing analyses:', error);
-    return { analyses: [], total: 0 };
-  }
-
-  const analyses: Analysis[] = (data || []).map((row) => ({
-    id: row.id,
-    user_id: row.user_id,
-    tic_id: row.tic_id,
-    status: row.status,
-    created_at: row.created_at,
-    started_at: row.started_at,
-    completed_at: row.completed_at,
-    result: row.result as AnalysisResult | undefined,
-    error: row.error_message,
-  }));
-
-  return { analyses, total: count || 0 };
+  return { analyses: paged, total: allAnalyses.length };
 }
 
 /**
@@ -272,23 +339,28 @@ export async function runAnalysisWithDB(analysisId: string): Promise<AnalysisRes
 }
 
 /**
- * Increment user's analysis count
+ * Increment user's analysis count.
+ * Best-effort — never throws. Count is tracked in JWT session as fallback.
  */
 export async function incrementUserAnalysisCount(userEmail: string): Promise<void> {
-  const supabase = createServerSupabaseClient();
+  if (!isSupabaseAvailable()) return;
 
-  // First get current count
-  const { data: user } = await supabase
-    .from('users')
-    .select('analyses_this_month')
-    .eq('email', userEmail)
-    .single();
-
-  if (user) {
-    const newCount = (user.analyses_this_month || 0) + 1;
-    await supabase
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: user } = await supabase
       .from('users')
-      .update({ analyses_this_month: newCount })
-      .eq('email', userEmail);
+      .select('analyses_this_month')
+      .eq('email', userEmail)
+      .single();
+
+    if (user) {
+      const newCount = (user.analyses_this_month || 0) + 1;
+      await supabase
+        .from('users')
+        .update({ analyses_this_month: newCount })
+        .eq('email', userEmail);
+    }
+  } catch (err) {
+    console.error('Failed to increment analysis count (non-fatal):', err);
   }
 }
