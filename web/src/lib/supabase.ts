@@ -15,30 +15,44 @@ export const createServerSupabaseClient = () => {
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.warn('Supabase environment variables not configured');
-    // Return a mock client that logs operations (for build time)
-    return {
-      from: (table: string) => ({
+    // Return a mock client with chainable builder pattern (for build/dev without Supabase)
+    const mockQueryBuilder = (table: string) => {
+      const builder: Record<string, unknown> = {
+        select: (..._args: unknown[]) => builder,
         insert: async (data: unknown) => {
           console.log(`[Supabase Mock] Insert into ${table}:`, data);
-          return { error: null };
+          return { data: null, error: null };
         },
-        update: (data: unknown) => ({
-          eq: async (column: string, value: unknown) => {
-            console.log(`[Supabase Mock] Update ${table} where ${column}=${value}:`, data);
-            return { error: null };
-          },
-        }),
-        select: () => ({
-          eq: async (column: string, value: unknown) => {
-            console.log(`[Supabase Mock] Select from ${table} where ${column}=${value}`);
-            return { data: null, error: null };
-          },
-          single: async () => {
-            console.log(`[Supabase Mock] Select single from ${table}`);
-            return { data: null, error: null };
-          },
-        }),
-      }),
+        update: (data: unknown) => {
+          console.log(`[Supabase Mock] Update ${table}:`, data);
+          return builder;
+        },
+        upsert: async (data: unknown) => {
+          console.log(`[Supabase Mock] Upsert into ${table}:`, data);
+          return { data: null, error: null };
+        },
+        delete: () => builder,
+        eq: (_column: string, _value: unknown) => builder,
+        neq: (_column: string, _value: unknown) => builder,
+        gt: (_column: string, _value: unknown) => builder,
+        lt: (_column: string, _value: unknown) => builder,
+        gte: (_column: string, _value: unknown) => builder,
+        lte: (_column: string, _value: unknown) => builder,
+        like: (_column: string, _value: unknown) => builder,
+        in: (_column: string, _values: unknown[]) => builder,
+        order: (_column: string, _options?: unknown) => builder,
+        limit: (_count: number) => builder,
+        range: (_from: number, _to: number) => builder,
+        single: async () => ({ data: null, error: null }),
+        maybeSingle: async () => ({ data: null, error: null }),
+        then: (resolve: (value: { data: null; error: null; count: null }) => void) =>
+          Promise.resolve({ data: null, error: null, count: null }).then(resolve),
+      };
+      return builder;
+    };
+
+    return {
+      from: (table: string) => mockQueryBuilder(table),
     } as unknown as SupabaseClient;
   }
 
