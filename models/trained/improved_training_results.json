@@ -1,0 +1,27 @@
+{
+  "SUPERNOVA-001": {
+    "accuracy": 1.0,
+    "size_kb": 2.51171875,
+    "training_time": 2.0634520053863525,
+    "classes": [
+      "no_transient",
+      "sn_type_i",
+      "sn_type_ii",
+      "other"
+    ]
+  },
+  "GALAXY-001": {
+    "accuracy": 0.9985714285714286,
+    "size_kb": 3.8193359375,
+    "training_time": 2.9799864292144775,
+    "classes": [
+      "elliptical",
+      "spiral",
+      "barred_spiral",
+      "irregular",
+      "merger",
+      "edge_on",
+      "unknown"
+    ]
+  }
+}
