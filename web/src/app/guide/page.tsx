@@ -159,21 +159,27 @@ export default function GuidePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4">
                   <div className="w-12 h-12 bg-[#e8f0fe] rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-[#1a73e8] text-xl">🔭</span>
+                    <svg className="w-6 h-6 text-[#1a73e8]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
                   </div>
                   <h4 className="font-medium text-[#202124] mb-1">Search</h4>
                   <p className="text-sm text-[#5f6368]">Analyze light curves for transit signals</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="w-12 h-12 bg-[#e6f4ea] rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-[#1e8e3e] text-xl">✓</span>
+                    <svg className="w-6 h-6 text-[#1e8e3e]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
                   </div>
                   <h4 className="font-medium text-[#202124] mb-1">Vet</h4>
                   <p className="text-sm text-[#5f6368]">Validate candidates with diagnostic tests</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="w-12 h-12 bg-[#fef7e0] rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-[#f9ab00] text-xl">📊</span>
+                    <svg className="w-6 h-6 text-[#f9ab00]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                    </svg>
                   </div>
                   <h4 className="font-medium text-[#202124] mb-1">Analyze</h4>
                   <p className="text-sm text-[#5f6368]">Assess habitability potential</p>
