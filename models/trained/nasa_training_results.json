@@ -1,0 +1,13 @@
+{
+  "model": "EXOPLANET-001 (NASA parameters)",
+  "accuracy": 0.9672222222222222,
+  "n_samples": 9000,
+  "n_planets_used": 496,
+  "features": 45,
+  "classes": [
+    "no_transit",
+    "transit",
+    "eclipsing_binary"
+  ],
+  "training_type": "realistic_synthetic_from_nasa"
+}
