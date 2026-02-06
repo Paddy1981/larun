@@ -28,10 +28,10 @@ const detectionModels: ModelCard[] = [
   {
     id: 'exoplanet-001',
     name: 'EXOPLANET-001',
-    description: 'Primary exoplanet transit detection. Feature-based classifier distinguishing transits, eclipsing binaries, and noise.',
-    accuracy: '100.0%',
-    size: '5KB',
-    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/EXOPLANET-001_weights.npz',
+    description: 'Primary exoplanet transit detection trained on real Kepler/TESS light curves. Feature-based classifier distinguishing transits, eclipsing binaries, and noise.',
+    accuracy: '98.0%',
+    size: '43KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/EXOPLANET-001_real_weights.npz',
     trained: true,
   },
   {
@@ -165,9 +165,9 @@ export default function ModelsPage() {
             <div className="text-3xl font-bold text-[#202124]">9</div>
             <div className="text-sm text-[#5f6368] mt-1">Trained Models</div>
           </div>
-          <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">99.8%</div>
-            <div className="text-sm text-[#5f6368] mt-1">Best Accuracy</div>
+          <div className="bg-white p-5 rounded-xl border border-[#1a73e8] text-center">
+            <div className="text-3xl font-bold text-[#1a73e8]">98.0%</div>
+            <div className="text-sm text-[#5f6368] mt-1">Real Data Accuracy</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
             <div className="text-3xl font-bold text-[#202124]">&lt;35KB</div>

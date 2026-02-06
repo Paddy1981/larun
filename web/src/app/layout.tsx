@@ -4,7 +4,7 @@ import { AuthProvider } from "@/lib/auth-provider";
 
 export const metadata: Metadata = {
   title: "LARUN - Discover Exoplanets with AI",
-  description: "Analyze NASA TESS and Kepler data using TinyML-powered transit detection. 81.8% accuracy. No PhD required.",
+  description: "Analyze NASA TESS and Kepler data using TinyML-powered transit detection. 98% accuracy on real Kepler/TESS data. No PhD required.",
   keywords: ["exoplanet", "astronomy", "AI", "TinyML", "light curve", "transit detection", "Kepler", "TESS", "NASA"],
 };
 

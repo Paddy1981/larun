@@ -36,7 +36,7 @@ export async function GET() {
       'calibration_db.json'
     );
 
-    let accuracy = 81.8;
+    let accuracy = 98.0;
     let lastCalibration: string | null = null;
     let driftDetected = false;
     let referenceCount = 0;
