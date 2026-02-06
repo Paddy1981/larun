@@ -326,7 +326,7 @@ def validate_model(
 
         # Predict
         if model.norm_mean is not None:
-            pred_class, confidence = model.predict_from_raw(features.reshape(1, -1))
+            pred_class, confidence, _ = model.predict_from_raw(features.reshape(1, -1))
         else:
             pred_class, confidence = model.predict(features.reshape(1, -1))
 
@@ -361,7 +361,7 @@ def validate_model(
 
         # Predict
         if model.norm_mean is not None:
-            pred_class, confidence = model.predict_from_raw(features.reshape(1, -1))
+            pred_class, confidence, _ = model.predict_from_raw(features.reshape(1, -1))
         else:
             pred_class, confidence = model.predict(features.reshape(1, -1))
 
