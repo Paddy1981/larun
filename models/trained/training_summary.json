@@ -1,0 +1,95 @@
+{
+  "total_time": 2658.2988154888153,
+  "epochs": 30,
+  "samples": 3000,
+  "models": [
+    {
+      "model_id": "EXOPLANET-001",
+      "name": "ExoplanetDetector",
+      "accuracy": 0.8017,
+      "best_accuracy": 0.8017,
+      "epochs_trained": 30,
+      "training_time": 1932.3,
+      "size_kb": 11.4,
+      "parameters": 11654,
+      "status": "success"
+    },
+    {
+      "model_id": "VSTAR-001",
+      "name": "VariableStarClassifier",
+      "accuracy": 0.9983,
+      "best_accuracy": 0.9983,
+      "epochs_trained": 17,
+      "training_time": 973.0,
+      "size_kb": 27.2,
+      "parameters": 27831,
+      "status": "success"
+    },
+    {
+      "model_id": "FLARE-001",
+      "name": "FlareDetector",
+      "accuracy": 0.8417,
+      "best_accuracy": 0.8417,
+      "epochs_trained": 30,
+      "training_time": 364.6,
+      "size_kb": 2.7,
+      "parameters": 2773,
+      "status": "success"
+    },
+    {
+      "model_id": "ASTERO-001",
+      "name": "AsteroseismologyAnalyzer",
+      "accuracy": 0.9983,
+      "best_accuracy": 0.9983,
+      "epochs_trained": 28,
+      "training_time": 1287.6,
+      "size_kb": 21.0,
+      "parameters": 21478,
+      "status": "success"
+    },
+    {
+      "model_id": "SUPERNOVA-001",
+      "name": "SupernovaDetector",
+      "accuracy": 0.6477,
+      "best_accuracy": 0.6477,
+      "epochs_trained": 17,
+      "training_time": 292.5,
+      "size_kb": 30.0,
+      "parameters": 30695,
+      "status": "success"
+    },
+    {
+      "model_id": "GALAXY-001",
+      "name": "GalaxyClassifier",
+      "accuracy": 0.2521,
+      "best_accuracy": 0.2521,
+      "epochs_trained": 11,
+      "training_time": 1455.6,
+      "size_kb": 26.6,
+      "parameters": 27207,
+      "status": "success"
+    },
+    {
+      "model_id": "SPECTYPE-001",
+      "name": "SpectralTypeClassifier",
+      "accuracy": 0.95,
+      "best_accuracy": 0.95,
+      "epochs_trained": 30,
+      "training_time": 0.9,
+      "size_kb": 4.6,
+      "parameters": 4744,
+      "status": "success"
+    },
+    {
+      "model_id": "MICROLENS-001",
+      "name": "MicrolensingDetector",
+      "accuracy": 0.8483,
+      "best_accuracy": 0.8483,
+      "epochs_trained": 28,
+      "training_time": 1683.8,
+      "size_kb": 31.8,
+      "parameters": 32526,
+      "status": "success"
+    }
+  ]
+}
