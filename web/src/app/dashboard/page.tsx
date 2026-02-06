@@ -26,6 +26,8 @@ interface StatsData {
   modelAccuracy: number;
   vettedCandidates: number;
   sessionDuration: string;
+  lastCalibration: string | null;
+  driftDetected: boolean;
 }
 
 // Confirmed exoplanets - demonstrates model accuracy
@@ -89,7 +91,7 @@ const products = [
     icon: 'code',
     filled: true,
     href: '/models',
-    stats: [{ value: '<100KB', label: 'Size' }, { value: '96%', label: 'Accuracy' }, { value: 'INT8', label: 'Quantized' }],
+    stats: [{ value: '<100KB', label: 'Size' }, { value: '81.8%', label: 'Accuracy' }, { value: 'INT8', label: 'Quantized' }],
   },
   {
     name: 'Vetting',
@@ -109,9 +111,11 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<StatsData>({
     objectsProcessed: 0,
     detections: 0,
-    modelAccuracy: 81.8,
+    modelAccuracy: 0,
     vettedCandidates: 0,
     sessionDuration: '0h 0m',
+    lastCalibration: null,
+    driftDetected: false,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -139,14 +143,50 @@ export default function DashboardPage() {
     return '?';
   };
 
+  const formatTimeSince = (isoDate: string | null): string => {
+    if (!isoDate) return 'Not yet calibrated';
+    try {
+      const then = new Date(isoDate);
+      const now = new Date();
+      const diffMs = now.getTime() - then.getTime();
+      const diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 1) return 'Just now';
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHrs = Math.floor(diffMin / 60);
+      if (diffHrs < 24) return `${diffHrs}h ago`;
+      const diffDays = Math.floor(diffHrs / 24);
+      return `${diffDays}d ago`;
+    } catch {
+      return 'Unknown';
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
       setError(null);
-      const analysesRes = await fetch('/api/v1/analyses');
+
+      // Fetch analyses and calibration status in parallel
+      const [analysesRes, calibrationRes] = await Promise.all([
+        fetch('/api/v1/analyses'),
+        fetch('/api/v1/calibration/status'),
+      ]);
+
       if (analysesRes.status === 401 || analysesRes.status === 403) {
         router.push('/auth/login?callbackUrl=/dashboard');
         return;
       }
+
+      // Parse calibration data
+      let modelAccuracy = 81.8;
+      let lastCalibration: string | null = null;
+      let driftDetected = false;
+      if (calibrationRes.ok) {
+        const calData = await calibrationRes.json();
+        modelAccuracy = calData.accuracy ?? 81.8;
+        lastCalibration = calData.last_calibration ?? null;
+        driftDetected = calData.drift_detected ?? false;
+      }
+
       if (analysesRes.ok) {
         const data = await analysesRes.json();
         setAnalyses(data.analyses || []);
@@ -156,9 +196,11 @@ export default function DashboardPage() {
         setStats({
           objectsProcessed: completed.length,
           detections: detections.length,
-          modelAccuracy: 81.8,
+          modelAccuracy,
           vettedCandidates: candidates.length,
-          sessionDuration: '1h 23m',
+          sessionDuration: completed.length > 0 ? `${completed.length} analyses` : '0 analyses',
+          lastCalibration,
+          driftDetected,
         });
       } else {
         setError('Failed to load dashboard data. Please try again.');
@@ -503,7 +545,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
               <h4 className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Objects Processed</h4>
               <div className="text-[32px] font-medium text-[#202124]">{stats.objectsProcessed}</div>
-              <div className="text-xs text-[#5f6368] mt-1">{stats.objectsProcessed > 0 ? `${stats.sessionDuration} this session` : 'Run an analysis to start'}</div>
+              <div className="text-xs text-[#5f6368] mt-1">{stats.objectsProcessed > 0 ? stats.sessionDuration : 'Run an analysis to start'}</div>
             </div>
 
             <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
@@ -514,8 +556,11 @@ export default function DashboardPage() {
 
             <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
               <h4 className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Model Accuracy</h4>
-              <div className="text-[32px] font-medium text-[#202124]">{stats.modelAccuracy}%</div>
-              <div className="text-xs text-[#5f6368] mt-1">Calibrated 2h ago</div>
+              <div className={`text-[32px] font-medium ${stats.driftDetected ? 'text-[#b06000]' : 'text-[#202124]'}`}>{stats.modelAccuracy}%</div>
+              <div className="text-xs text-[#5f6368] mt-1">
+                {stats.driftDetected && <span className="text-[#b06000] font-medium">Drift detected · </span>}
+                {stats.lastCalibration ? `Calibrated ${formatTimeSince(stats.lastCalibration)}` : 'Calibration pending'}
+              </div>
             </div>
 
             <div className="bg-white rounded-lg p-6 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)]">
