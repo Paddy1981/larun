@@ -40,6 +40,28 @@ export default function ResultsPage() {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackNote, setFeedbackNote] = useState('');
+
+  const handleFeedback = async (isCorrect: boolean) => {
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+
+    try {
+      await fetch('/api/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysis_id: analysisId,
+          is_correct: isCorrect,
+          note: feedbackNote,
+        }),
+      });
+      setFeedbackSubmitted(true);
+    } catch (err) {
+      console.error('Failed to submit feedback:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -277,7 +299,7 @@ export default function ResultsPage() {
               </Card>
 
               {/* Actions */}
-              <Card className="p-6">
+              <Card className="p-6 mb-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Actions</h2>
                 <div className="flex flex-wrap gap-4">
                   <Button variant="secondary">
@@ -290,6 +312,62 @@ export default function ResultsPage() {
                     View on ExoFOP
                   </Button>
                 </div>
+              </Card>
+
+              {/* User Feedback */}
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold text-white mb-2">Help Improve Our Models</h2>
+                <p className="text-gray-400 text-sm mb-4">
+                  Your feedback helps train better models. Was this prediction accurate?
+                </p>
+
+                {feedbackSubmitted ? (
+                  <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg text-center">
+                    <p className="text-green-400 font-medium">Thank you for your feedback!</p>
+                    <p className="text-gray-400 text-sm mt-1">Your input helps improve detection accuracy for everyone.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleFeedback(true)}
+                        className={`flex-1 py-3 px-4 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+                          feedback === 'correct'
+                            ? 'bg-green-500/20 border-green-500 text-green-400'
+                            : 'border-gray-600 text-gray-300 hover:border-green-500/50 hover:text-green-400'
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Correct Prediction
+                      </button>
+                      <button
+                        onClick={() => handleFeedback(false)}
+                        className={`flex-1 py-3 px-4 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+                          feedback === 'incorrect'
+                            ? 'bg-red-500/20 border-red-500 text-red-400'
+                            : 'border-gray-600 text-gray-300 hover:border-red-500/50 hover:text-red-400'
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Incorrect Prediction
+                      </button>
+                    </div>
+                    <div>
+                      <label className="text-gray-400 text-sm block mb-2">Additional notes (optional)</label>
+                      <textarea
+                        value={feedbackNote}
+                        onChange={(e) => setFeedbackNote(e.target.value)}
+                        placeholder="e.g., This is a confirmed planet, or This appears to be an eclipsing binary..."
+                        className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                )}
               </Card>
             </>
           )}

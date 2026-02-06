@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createServerSupabaseClient } from '@/lib/supabase';
 
-// LemonSqueezy Variant IDs
+// LemonSqueezy Variant IDs (maps variant ID to plan name)
 const VARIANT_IDS = {
-  '810886': 'monthly',
-  '810889': 'annual',
+  '1278367': 'monthly',
+  '1278370': 'annual',
 } as const;
 
 const PLAN_LIMITS = {
-  free: 3,
+  free: 5,
   monthly: 50,
   annual: -1, // unlimited
 };

@@ -143,6 +143,22 @@ export default function ModelsPage() {
           </div>
         </div>
 
+        {/* Subscription Info */}
+        <div className="bg-[#fef7e0] border border-[#f9e79f] rounded-xl p-4 mb-8">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-[#b7950b] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="text-sm text-[#7d6608] font-medium">All models are available to all users</p>
+              <p className="text-xs text-[#9a7d0a] mt-1">
+                Subscription tiers limit the number of analyses per month: Free (5), Monthly (50), Annual (Unlimited).
+                <Link href="/settings/subscription" className="ml-1 underline hover:no-underline">View plans</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
@@ -158,8 +174,8 @@ export default function ModelsPage() {
             <div className="text-sm text-[#5f6368] mt-1">Avg Model Size</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">&lt;50ms</div>
-            <div className="text-sm text-[#5f6368] mt-1">Inference Time</div>
+            <div className="text-3xl font-bold text-[#202124]">&lt;20ms</div>
+            <div className="text-sm text-[#5f6368] mt-1">Avg. Inference</div>
           </div>
         </div>
 

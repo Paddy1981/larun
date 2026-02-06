@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getAnalysis } from '@/lib/analysis-store';
+import { getAnalysisFromDB } from '@/lib/analysis-db';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -11,7 +11,7 @@ interface RouteParams {
  * GET /api/v1/analyze/[id]
  *
  * Get the status and results of a submitted analysis.
- * Requires authentication and ownership.
+ * Fetches from Supabase for serverless compatibility.
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -32,8 +32,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { id: analysisId } = await params;
 
-    // Get analysis (checks ownership via userId)
-    const analysis = getAnalysis(analysisId, session.user.id);
+    // Get analysis from Supabase (checks ownership via userId)
+    const analysis = await getAnalysisFromDB(analysisId, session.user.id);
 
     if (!analysis) {
       return NextResponse.json(
@@ -52,15 +52,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       id: analysis.id,
       tic_id: analysis.tic_id,
       status: analysis.status,
-      created_at: analysis.created_at.toISOString(),
+      created_at: analysis.created_at,
     };
 
     if (analysis.started_at) {
-      response.started_at = analysis.started_at.toISOString();
+      response.started_at = analysis.started_at;
     }
 
     if (analysis.completed_at) {
-      response.completed_at = analysis.completed_at.toISOString();
+      response.completed_at = analysis.completed_at;
     }
 
     // Add result if completed
@@ -71,9 +71,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         period_days: analysis.result.period_days,
         depth_ppm: analysis.result.depth_ppm,
         duration_hours: analysis.result.duration_hours,
+        epoch_btjd: analysis.result.epoch_btjd,
+        snr: analysis.result.snr,
+        sectors_used: analysis.result.sectors_used,
+        processing_time_seconds: analysis.result.processing_time_seconds,
         vetting: analysis.result.vetting
           ? {
               disposition: analysis.result.vetting.disposition,
+              confidence: analysis.result.vetting.confidence,
               odd_even: analysis.result.vetting.odd_even,
               v_shape: analysis.result.vetting.v_shape,
               secondary_eclipse: analysis.result.vetting.secondary_eclipse,

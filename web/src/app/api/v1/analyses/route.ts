@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { listAnalyses, type AnalysisStatus } from '@/lib/analysis-store';
+import { listAnalysesFromDB, type AnalysisStatus } from '@/lib/analysis-db';
 
 /**
  * GET /api/v1/analyses
  *
  * List user's analyses with pagination.
- * Requires authentication.
- *
- * Query parameters:
- * - page: Page number (default 1)
- * - per_page: Items per page (default 10, max 100)
- * - status: Filter by status (pending, processing, completed, failed)
+ * Fetches from Supabase for serverless compatibility.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -51,8 +46,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get analyses
-    const { analyses, total } = listAnalyses(session.user.id, {
+    // Get analyses from Supabase
+    const { analyses, total } = await listAnalysesFromDB(session.user.id, {
       status: statusFilter || undefined,
       limit: perPage,
       offset: (page - 1) * perPage,
@@ -64,11 +59,11 @@ export async function GET(request: NextRequest) {
         id: analysis.id,
         tic_id: analysis.tic_id,
         status: analysis.status,
-        created_at: analysis.created_at.toISOString(),
+        created_at: analysis.created_at,
       };
 
       if (analysis.completed_at) {
-        item.completed_at = analysis.completed_at.toISOString();
+        item.completed_at = analysis.completed_at;
       }
 
       if (analysis.status === 'completed' && analysis.result) {
@@ -78,6 +73,9 @@ export async function GET(request: NextRequest) {
           period_days: analysis.result.period_days,
           depth_ppm: analysis.result.depth_ppm,
           duration_hours: analysis.result.duration_hours,
+          vetting: analysis.result.vetting
+            ? { disposition: analysis.result.vetting.disposition }
+            : undefined,
         };
       }
 

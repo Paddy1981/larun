@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// LemonSqueezy Variant IDs
+// LemonSqueezy Variant IDs from environment variables
 const VARIANT_IDS = {
-  monthly: '810886',
-  annual: '810889',
+  monthly: process.env.LEMONSQUEEZY_VARIANT_MONTHLY || '',
+  annual: process.env.LEMONSQUEEZY_VARIANT_ANNUAL || '',
 };
 
 const LEMONSQUEEZY_API_URL = 'https://api.lemonsqueezy.com/v1';

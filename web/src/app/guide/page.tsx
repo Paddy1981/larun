@@ -213,7 +213,7 @@ export default function GuidePage() {
                 <div>
                   <h4 className="font-medium text-[#202124] mb-2">Run Detection</h4>
                   <p className="text-sm text-[#5f6368] mb-3">
-                    Click "Run Detection" to fetch the light curve data and analyze it with our TinyML model.
+                    Click &quot;Run Detection&quot; to fetch the light curve data and analyze it with our TinyML model.
                     Processing typically takes 10-30 seconds depending on data size.
                   </p>
                 </div>
@@ -239,7 +239,7 @@ export default function GuidePage() {
           <section id="understanding-results" className="mb-12">
             <h2 className="text-2xl font-normal text-[#202124] mb-4 pt-6 border-t border-[#dadce0]">Understanding Results</h2>
             <p className="text-[#3c4043] mb-6">
-              Learn how to interpret the output from Larun's detection system.
+              Learn how to interpret the output from Larun&apos;s detection system.
             </p>
 
             <div className="bg-white border border-[#dadce0] rounded-lg overflow-hidden mb-6">
@@ -254,7 +254,7 @@ export default function GuidePage() {
                 <tbody>
                   <tr className="border-t border-[#dadce0]">
                     <td className="p-4 font-medium text-[#202124]">Confidence</td>
-                    <td className="p-4 text-[#5f6368]">Model's certainty that a transit is present</td>
+                    <td className="p-4 text-[#5f6368]">Model&apos;s certainty that a transit is present</td>
                     <td className="p-4 text-[#5f6368]">0-100%</td>
                   </tr>
                   <tr className="border-t border-[#dadce0]">
@@ -457,7 +457,7 @@ export default function GuidePage() {
               </div>
               <div className="p-4">
                 <dt className="font-medium text-[#202124]">Light Curve</dt>
-                <dd className="text-sm text-[#5f6368] mt-1">A graph of brightness vs. time showing how a star's light varies</dd>
+                <dd className="text-sm text-[#5f6368] mt-1">A graph of brightness vs. time showing how a star&apos;s light varies</dd>
               </div>
               <div className="p-4">
                 <dt className="font-medium text-[#202124]">Transit</dt>
@@ -477,7 +477,7 @@ export default function GuidePage() {
               </div>
               <div className="p-4">
                 <dt className="font-medium text-[#202124]">MAST</dt>
-                <dd className="text-sm text-[#5f6368] mt-1">Mikulski Archive for Space Telescopes - NASA's data archive</dd>
+                <dd className="text-sm text-[#5f6368] mt-1">Mikulski Archive for Space Telescopes - NASA&apos;s data archive</dd>
               </div>
             </div>
           </section>

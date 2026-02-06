@@ -36,7 +36,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'How accurate is the detection?',
-        answer: 'The EXOPLANET-001 model achieves 81.8% accuracy on the validation set. This is sufficient to identify promising candidates, but all detections should be verified through the vetting process.',
+        answer: 'The EXOPLANET-001 model achieves 82% accuracy on the validation set. This is sufficient to identify promising candidates, but all detections should be verified through the vetting process.',
       },
       {
         question: 'What is a false positive?',
@@ -74,7 +74,7 @@ const faqData: FAQSection[] = [
     items: [
       {
         question: 'Is Larun free?',
-        answer: 'Yes! The free tier includes 3 analyses per month, which is enough for casual exploration. Paid tiers offer more analyses, API access, and additional features. See the Pricing page for details.',
+        answer: 'Yes! The free tier includes 5 analyses per month, which is enough for casual exploration. Paid tiers offer more analyses, API access, and additional features. See the Pricing page for details.',
       },
       {
         question: 'What\'s included in paid plans?',
@@ -173,7 +173,7 @@ export default function FAQPage() {
         <div className="mt-12 p-6 bg-white border border-[#dadce0] rounded-lg text-center">
           <h3 className="text-lg font-medium text-[#202124] mb-2">Still have questions?</h3>
           <p className="text-[#5f6368] text-sm mb-4">
-            Can't find the answer you're looking for? Check out our documentation or reach out to support.
+            Can&apos;t find the answer you&apos;re looking for? Check out our documentation or reach out to support.
           </p>
           <div className="flex justify-center gap-3">
             <Link

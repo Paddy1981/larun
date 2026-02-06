@@ -110,7 +110,7 @@ export default function ChatPage() {
     }, 1000 + Math.random() * 1000);
   };
 
-  const useSuggestedPrompt = (prompt: string) => {
+  const handleSuggestedPrompt = (prompt: string) => {
     setInputValue(prompt);
     inputRef.current?.focus();
   };
@@ -244,7 +244,7 @@ export default function ChatPage() {
                   {suggestedPrompts.map((prompt, index) => (
                     <button
                       key={index}
-                      onClick={() => useSuggestedPrompt(prompt.text)}
+                      onClick={() => handleSuggestedPrompt(prompt.text)}
                       className="bg-white border border-[#dadce0] rounded-xl p-4 text-left flex items-start gap-3 hover:border-[#1a73e8] hover:shadow-md transition-all"
                     >
                       <svg className="w-5 h-5 text-[#5f6368] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -346,7 +346,7 @@ export default function ChatPage() {
               {quickActions.map((action, index) => (
                 <button
                   key={index}
-                  onClick={() => action.action === 'upload' ? setShowUploadModal(true) : useSuggestedPrompt(action.prompt || '')}
+                  onClick={() => action.action === 'upload' ? setShowUploadModal(true) : handleSuggestedPrompt(action.prompt || '')}
                   className="text-xs text-[#5f6368] px-2.5 py-1 bg-white border border-[#dadce0] rounded-full hover:border-[#1a73e8] hover:text-[#1a73e8] transition-colors"
                 >
                   {action.label}
