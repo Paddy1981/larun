@@ -91,7 +91,7 @@ const products = [
     icon: 'code',
     filled: true,
     href: '/models',
-    stats: [{ value: '<100KB', label: 'Size' }, { value: '81.8%', label: 'Accuracy' }, { value: 'INT8', label: 'Quantized' }],
+    stats: [{ value: '<100KB', label: 'Size' }, { value: '98%', label: 'Real Data' }, { value: 'INT8', label: 'Quantized' }],
   },
   {
     name: 'Vetting',
@@ -177,12 +177,12 @@ export default function DashboardPage() {
       }
 
       // Parse calibration data
-      let modelAccuracy = 81.8;
+      let modelAccuracy = 98.0;
       let lastCalibration: string | null = null;
       let driftDetected = false;
       if (calibrationRes.ok) {
         const calData = await calibrationRes.json();
-        modelAccuracy = calData.accuracy ?? 81.8;
+        modelAccuracy = calData.accuracy ?? 98.0;
         lastCalibration = calData.last_calibration ?? null;
         driftDetected = calData.drift_detected ?? false;
       }

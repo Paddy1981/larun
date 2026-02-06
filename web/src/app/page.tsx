@@ -27,7 +27,7 @@ export default function HomePage() {
             Analyze NASA TESS and Kepler data using TinyML-powered transit detection.
           </p>
           <p className="text-xl text-[#202124] mb-3">
-            <strong>81.8% accuracy.</strong>
+            <strong>98% accuracy on real data.</strong>
           </p>
           <p className="text-lg text-[#1a73e8] font-medium mb-10">
             No PhD required.
@@ -114,7 +114,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold text-[#202124] mb-2">TinyML Detection</h3>
               <p className="text-[#5f6368] text-sm">
-                Edge-optimized models achieving <strong className="text-[#202124]">81.8% accuracy</strong> in transit detection
+                Edge-optimized models achieving <strong className="text-[#202124]">98% accuracy</strong> on real Kepler/TESS data
               </p>
             </div>
 

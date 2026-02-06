@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "accuracy": 0.85,
+  "n_samples": 200,
+  "model_path": "models/trained/EXOPLANET-001_real_weights.npz",
+  "collection_metadata": {
+    "confirmed_planets": 0,
+    "false_positives": 0,
+    "field_stars": 0,
+    "failed_downloads": 0,
+    "sources": [],
+    "synthetic_supplement": 200
+  },
+  "config": {
+    "use_kepler": true,
+    "use_tess": true,
+    "use_k2": false,
+    "n_confirmed_planets": 50,
+    "n_false_positives": 50,
+    "n_field_stars": 100,
+    "target_length": 1024,
+    "min_snr": 5.0,
+    "epochs": 100,
+    "batch_size": 64,
+    "learning_rate": 0.05,
+    "val_split": 0.2,
+    "cache_dir": "data/real_exoplanets",
+    "output_dir": "models/trained"
+  }
+}

@@ -1,0 +1,3493 @@
+{
+  "count": 496,
+  "planets": [
+    {
+      "pl_name": "WD 1856+534 b",
+      "pl_orbper": 1.4079405,
+      "pl_trandep": 56.65,
+      "pl_trandur": 0.1333,
+      "pl_rade": 10.4
+    },
+    {
+      "pl_name": "TOI-6894 b",
+      "pl_orbper": 3.37077196,
+      "pl_trandep": 16.65899107,
+      "pl_trandur": 1.422,
+      "pl_rade": 9.5836785
+    },
+    {
+      "pl_name": "TOI-7149 b",
+      "pl_orbper": 2.65206166,
+      "pl_trandep": 12.6188,
+      "pl_trandur": 1.7256,
+      "pl_rade": 13.2
+    },
+    {
+      "pl_name": "TOI-519 b",
+      "pl_orbper": 1.2652328,
+      "pl_trandep": 11.02156795,
+      "pl_trandur": 1.236,
+      "pl_rade": 11.54525012
+    },
+    {
+      "pl_name": "HIP 65 A b",
+      "pl_orbper": 0.9809734,
+      "pl_trandep": 8.2,
+      "pl_trandur": 0.78576,
+      "pl_rade": 22.75427
+    },
+    {
+      "pl_name": "TOI-3235 b",
+      "pl_orbper": 2.59261842,
+      "pl_trandep": 7.821,
+      "pl_trandur": 1.48,
+      "pl_rade": 11.39953337
+    },
+    {
+      "pl_name": "TOI-5205 b",
+      "pl_orbper": 1.630757,
+      "pl_trandep": 6.805,
+      "pl_trandur": 1.4,
+      "pl_rade": 11.6
+    },
+    {
+      "pl_name": "TOI-4860 b",
+      "pl_orbper": 1.5227591,
+      "pl_trandep": 5.806,
+      "pl_trandur": 1.231,
+      "pl_rade": 8.7
+    },
+    {
+      "pl_name": "TOI-5293 A b",
+      "pl_orbper": 2.930289,
+      "pl_trandep": 5.083,
+      "pl_trandur": 1.94,
+      "pl_rade": 11.9
+    },
+    {
+      "pl_name": "TOI-6034 b",
+      "pl_orbper": 2.576184,
+      "pl_trandep": 4.99042529,
+      "pl_trandur": 1.56,
+      "pl_rade": 11.92
+    },
+    {
+      "pl_name": "TOI-3714 b",
+      "pl_orbper": 2.154849,
+      "pl_trandep": 4.95521823,
+      "pl_trandur": 1.66,
+      "pl_rade": 11.32107051
+    },
+    {
+      "pl_name": "TOI-6383 A b",
+      "pl_orbper": 1.79058695,
+      "pl_trandep": 4.7315,
+      "pl_trandur": 1.54,
+      "pl_rade": 11.29
+    },
+    {
+      "pl_name": "TOI-4666 b",
+      "pl_orbper": 2.9089168,
+      "pl_trandep": 4.516,
+      "pl_trandur": 2.37,
+      "pl_rade": 12.44196858
+    },
+    {
+      "pl_name": "K2-419 A b",
+      "pl_orbper": 20.35847252,
+      "pl_trandep": 3.912,
+      "pl_trandur": 3.574,
+      "pl_rade": 10.55
+    },
+    {
+      "pl_name": "TOI-1899 b",
+      "pl_orbper": 29.090312,
+      "pl_trandep": 3.75623333,
+      "pl_trandur": 4.7,
+      "pl_rade": 11.09689089
+    },
+    {
+      "pl_name": "TOI-4201 b",
+      "pl_orbper": 3.5819194,
+      "pl_trandep": 3.685,
+      "pl_trandur": 2.231,
+      "pl_rade": 13.67495645
+    },
+    {
+      "pl_name": "TOI-3884 b",
+      "pl_orbper": 4.5445828,
+      "pl_trandep": 3.55986327,
+      "pl_trandur": 1.6,
+      "pl_rade": 6.43
+    },
+    {
+      "pl_name": "TOI-6478 b",
+      "pl_orbper": 34.005019,
+      "pl_trandep": 3.4206,
+      "pl_trandur": 2.9,
+      "pl_rade": 4.6
+    },
+    {
+      "pl_name": "TOI-6330 b",
+      "pl_orbper": 6.8500246,
+      "pl_trandep": 3.3133,
+      "pl_trandur": 2.23,
+      "pl_rade": 10.89
+    },
+    {
+      "pl_name": "TOI-3757 b",
+      "pl_orbper": 3.438753,
+      "pl_trandep": 3.29144087,
+      "pl_trandur": 1.92,
+      "pl_rade": 12.0
+    },
+    {
+      "pl_name": "TOI-6303 b",
+      "pl_orbper": 9.485236,
+      "pl_trandep": 3.2417,
+      "pl_trandur": 2.918,
+      "pl_rade": 11.59
+    },
+    {
+      "pl_name": "TOI-2379 b",
+      "pl_orbper": 5.4693827,
+      "pl_trandep": 3.2411856,
+      "pl_trandur": 1.867,
+      "pl_rade": 11.72459381
+    },
+    {
+      "pl_name": "Kepler-45 b",
+      "pl_orbper": 2.455239,
+      "pl_trandep": 3.204,
+      "pl_trandur": 1.72722,
+      "pl_rade": 10.76
+    },
+    {
+      "pl_name": "TOI-3288 b",
+      "pl_orbper": 1.4338635,
+      "pl_trandep": 3.136,
+      "pl_trandur": 1.93,
+      "pl_rade": 11.2089807
+    },
+    {
+      "pl_name": "TOI-762 A b",
+      "pl_orbper": 3.4716826,
+      "pl_trandep": 3.06246435,
+      "pl_trandur": 1.389,
+      "pl_rade": 8.33948164
+    },
+    {
+      "pl_name": "Kepler-785 b",
+      "pl_orbper": 1.973760926,
+      "pl_trandep": 3.02224,
+      "pl_trandur": 1.82916,
+      "pl_rade": 13.02
+    },
+    {
+      "pl_name": "TOI-2384 b",
+      "pl_orbper": 2.13570304,
+      "pl_trandep": 2.92726185,
+      "pl_trandur": 1.891,
+      "pl_rade": 11.48920522
+    },
+    {
+      "pl_name": "K2-371 b",
+      "pl_orbper": 3.114905,
+      "pl_trandep": 2.846,
+      "pl_trandur": 2.3592,
+      "pl_rade": 13.024
+    },
+    {
+      "pl_name": "TOI-5634 A b",
+      "pl_orbper": 2.2035373,
+      "pl_trandep": 2.828,
+      "pl_trandur": 1.67,
+      "pl_rade": 10.42
+    },
+    {
+      "pl_name": "TOI-2989 b",
+      "pl_orbper": 3.122832,
+      "pl_trandep": 2.806,
+      "pl_trandur": 2.68,
+      "pl_rade": 12.55405838
+    },
+    {
+      "pl_name": "TOI-1259 A b",
+      "pl_orbper": 3.477978,
+      "pl_trandep": 2.6759,
+      "pl_trandur": 2.4754,
+      "pl_rade": 11.45557828
+    },
+    {
+      "pl_name": "TOI-5349 b",
+      "pl_orbper": 3.317921,
+      "pl_trandep": 2.501,
+      "pl_trandur": 1.95,
+      "pl_rade": 10.2
+    },
+    {
+      "pl_name": "TOI-5616 b",
+      "pl_orbper": 2.002849,
+      "pl_trandep": 2.466,
+      "pl_trandur": 1.66,
+      "pl_rade": 10.78
+    },
+    {
+      "pl_name": "TOI-5300 b",
+      "pl_orbper": 2.262196,
+      "pl_trandep": 2.447,
+      "pl_trandur": 2.36,
+      "pl_rade": 9.86390302
+    },
+    {
+      "pl_name": "TOI-5344 b",
+      "pl_orbper": 3.792622,
+      "pl_trandep": 2.444,
+      "pl_trandur": 1.773,
+      "pl_rade": 10.60369574
+    },
+    {
+      "pl_name": "TOI-5688 A b",
+      "pl_orbper": 2.94815527,
+      "pl_trandep": 2.409,
+      "pl_trandur": 1.68,
+      "pl_rade": 10.3
+    },
+    {
+      "pl_name": "K2-45 b",
+      "pl_orbper": 1.7292684,
+      "pl_trandep": 2.406,
+      "pl_trandur": 1.689,
+      "pl_rade": 6.71
+    },
+    {
+      "pl_name": "TOI-530 b",
+      "pl_orbper": 6.387597,
+      "pl_trandep": 2.3994296,
+      "pl_trandur": 2.5660579,
+      "pl_rade": 9.30345398
+    },
+    {
+      "pl_name": "Kepler-468 b",
+      "pl_orbper": 38.478757067,
+      "pl_trandep": 2.353,
+      "pl_trandur": 5.05845,
+      "pl_rade": 13.34
+    },
+    {
+      "pl_name": "TOI-5573 b",
+      "pl_orbper": 8.79758977,
+      "pl_trandep": 2.309,
+      "pl_trandur": 2.76,
+      "pl_rade": 9.75
+    },
+    {
+      "pl_name": "TOI-2969 b",
+      "pl_orbper": 1.8237146,
+      "pl_trandep": 2.292,
+      "pl_trandur": 1.846,
+      "pl_rade": 12.32987877
+    },
+    {
+      "pl_name": "TOI-2796 b",
+      "pl_orbper": 4.8084983,
+      "pl_trandep": 2.24,
+      "pl_trandur": 1.96,
+      "pl_rade": 17.26183028
+    },
+    {
+      "pl_name": "Kepler-428 b",
+      "pl_orbper": 3.52563254,
+      "pl_trandep": 2.2335,
+      "pl_trandur": 2.614,
+      "pl_rade": 12.11
+    },
+    {
+      "pl_name": "K2-295 b",
+      "pl_orbper": 4.024867,
+      "pl_trandep": 2.1878,
+      "pl_trandur": 2.4984,
+      "pl_rade": 10.054473
+    },
+    {
+      "pl_name": "Kepler-17 b",
+      "pl_orbper": 1.4857108,
+      "pl_trandep": 2.18019,
+      "pl_trandur": 2.2764,
+      "pl_rade": 14.68
+    },
+    {
+      "pl_name": "TOI-3984 A b",
+      "pl_orbper": 4.353326,
+      "pl_trandep": 2.174,
+      "pl_trandur": 2.01,
+      "pl_rade": 7.9
+    },
+    {
+      "pl_name": "TOI-3693 b",
+      "pl_orbper": 9.088516,
+      "pl_trandep": 2.134,
+      "pl_trandur": 3.5568,
+      "pl_rade": 12.59889431
+    },
+    {
+      "pl_name": "TOI-2107 b",
+      "pl_orbper": 2.4545467,
+      "pl_trandep": 2.131,
+      "pl_trandur": 2.5956,
+      "pl_rade": 13.57407563
+    },
+    {
+      "pl_name": "TOI-1227 b",
+      "pl_orbper": 27.36397,
+      "pl_trandep": 2.06906684,
+      "pl_trandur": 4.831,
+      "pl_rade": 9.57246952
+    },
+    {
+      "pl_name": "TOI-4145 A b",
+      "pl_orbper": 4.0664428,
+      "pl_trandep": 2.015,
+      "pl_trandur": 2.106,
+      "pl_rade": 13.30506009
+    },
+    {
+      "pl_name": "TOI-2202 b",
+      "pl_orbper": 11.9126075,
+      "pl_trandep": 1.93042778,
+      "pl_trandur": 3.768,
+      "pl_rade": 10.95117414
+    },
+    {
+      "pl_name": "TOI-5218 b",
+      "pl_orbper": 4.291452,
+      "pl_trandep": 1.91807234,
+      "pl_trandur": 2.38,
+      "pl_rade": 9.86
+    },
+    {
+      "pl_name": "K2-29 b",
+      "pl_orbper": 3.2588321,
+      "pl_trandep": 1.9011,
+      "pl_trandur": 2.22,
+      "pl_rade": 13.33871
+    },
+    {
+      "pl_name": "TOI-2886 b",
+      "pl_orbper": 1.60200105,
+      "pl_trandep": 1.897,
+      "pl_trandur": 2.784,
+      "pl_rade": 18.6405349
+    },
+    {
+      "pl_name": "LP 791-18 c",
+      "pl_orbper": 4.9899093,
+      "pl_trandep": 1.89314106,
+      "pl_trandur": 1.167,
+      "pl_rade": 2.438
+    },
+    {
+      "pl_name": "TOI-2406 b",
+      "pl_orbper": 3.0766891,
+      "pl_trandep": 1.88485607,
+      "pl_trandur": 1.2491751,
+      "pl_rade": 2.86
+    },
+    {
+      "pl_name": "Kepler-723 b",
+      "pl_orbper": 4.082275068,
+      "pl_trandep": 1.88151,
+      "pl_trandur": 3.23796,
+      "pl_rade": 12.19
+    },
+    {
+      "pl_name": "WASP-85 A b",
+      "pl_orbper": 2.6556777,
+      "pl_trandep": 1.87,
+      "pl_trandur": 2.59584,
+      "pl_rade": 13.89916
+    },
+    {
+      "pl_name": "TOI-216.01",
+      "pl_orbper": 34.525528,
+      "pl_trandep": 1.831,
+      "pl_trandur": 3.8206653,
+      "pl_rade": 10.1
+    },
+    {
+      "pl_name": "TOI-2537 b",
+      "pl_orbper": 94.1022,
+      "pl_trandep": 1.791,
+      "pl_trandur": 4.937,
+      "pl_rade": 11.25381662
+    },
+    {
+      "pl_name": "TOI-2803 A b",
+      "pl_orbper": 1.96229325,
+      "pl_trandep": 1.781,
+      "pl_trandur": 3.091,
+      "pl_rade": 18.11371281
+    },
+    {
+      "pl_name": "Kepler-75 b",
+      "pl_orbper": 8.8849116,
+      "pl_trandep": 1.76704,
+      "pl_trandur": 2.0778,
+      "pl_rade": 11.77
+    },
+    {
+      "pl_name": "TOI-1811 b",
+      "pl_orbper": 3.7130765,
+      "pl_trandep": 1.761,
+      "pl_trandur": 1.951,
+      "pl_rade": 11.14172682
+    },
+    {
+      "pl_name": "KOI-217 b",
+      "pl_orbper": 3.90512,
+      "pl_trandep": 1.756,
+      "pl_trandur": 2.85516,
+      "pl_rade": 12.442
+    },
+    {
+      "pl_name": "Kepler-485 b",
+      "pl_orbper": 3.243259796,
+      "pl_trandep": 1.75123,
+      "pl_trandur": 3.03598,
+      "pl_rade": 14.41
+    },
+    {
+      "pl_name": "Kepler-731 b",
+      "pl_orbper": 3.855603551,
+      "pl_trandep": 1.74707,
+      "pl_trandur": 3.20969,
+      "pl_rade": 13.88
+    },
+    {
+      "pl_name": "TOI-1516 b",
+      "pl_orbper": 2.056014,
+      "pl_trandep": 1.7453,
+      "pl_trandur": 2.826,
+      "pl_rade": 15.24421375
+    },
+    {
+      "pl_name": "TOI-905 b",
+      "pl_orbper": 3.739494,
+      "pl_trandep": 1.718,
+      "pl_trandur": 2.028,
+      "pl_rade": 13.125739
+    },
+    {
+      "pl_name": "Kepler-670 b",
+      "pl_orbper": 2.816504852,
+      "pl_trandep": 1.68137,
+      "pl_trandur": 2.50522,
+      "pl_rade": 13.18
+    },
+    {
+      "pl_name": "Kepler-12 b",
+      "pl_orbper": 4.4379629,
+      "pl_trandep": 1.67211,
+      "pl_trandur": 4.69813,
+      "pl_rade": 19.660586
+    },
+    {
+      "pl_name": "TOI-1130 c",
+      "pl_orbper": 8.3501898,
+      "pl_trandep": 1.668,
+      "pl_trandur": 2.02,
+      "pl_rade": 13.0
+    },
+    {
+      "pl_name": "Kepler-445 d",
+      "pl_orbper": 8.15275,
+      "pl_trandep": 1.6536,
+      "pl_trandur": 1.386,
+      "pl_rade": 1.25
+    },
+    {
+      "pl_name": "TOI-2046 b",
+      "pl_orbper": 1.4971842,
+      "pl_trandep": 1.62662492,
+      "pl_trandur": 2.41,
+      "pl_rade": 16.14093221
+    },
+    {
+      "pl_name": "Kepler-30 c",
+      "pl_orbper": 60.323105,
+      "pl_trandep": 1.62,
+      "pl_trandur": 5.7408,
+      "pl_rade": 12.3
+    },
+    {
+      "pl_name": "TOI-4515 b",
+      "pl_orbper": 15.266446,
+      "pl_trandep": 1.6186173,
+      "pl_trandur": 3.24,
+      "pl_rade": 12.17
+    },
+    {
+      "pl_name": "TOI-3135 b",
+      "pl_orbper": 3.7065585,
+      "pl_trandep": 1.616,
+      "pl_trandur": 2.23,
+      "pl_rade": 13.65253849
+    },
+    {
+      "pl_name": "NGTS-35 b",
+      "pl_orbper": 25.241192,
+      "pl_trandep": 1.6102969,
+      "pl_trandur": 2.958,
+      "pl_rade": 10.9
+    },
+    {
+      "pl_name": "Kepler-548 b",
+      "pl_orbper": 4.454194338,
+      "pl_trandep": 1.60415,
+      "pl_trandur": 2.3198,
+      "pl_rade": 11.99
+    },
+    {
+      "pl_name": "K2-115 b",
+      "pl_orbper": 20.2729914,
+      "pl_trandep": 1.603,
+      "pl_trandur": 3.8736,
+      "pl_rade": 11.80305668
+    },
+    {
+      "pl_name": "K2-30 b",
+      "pl_orbper": 4.098503,
+      "pl_trandep": 1.603,
+      "pl_trandur": 2.3208,
+      "pl_rade": 11.646151
+    },
+    {
+      "pl_name": "Kepler-423 b",
+      "pl_orbper": 2.6843285,
+      "pl_trandep": 1.5872,
+      "pl_trandur": 2.722,
+      "pl_rade": 13.361
+    },
+    {
+      "pl_name": "TOI-2525 c",
+      "pl_orbper": 49.2519,
+      "pl_trandep": 1.56064615,
+      "pl_trandur": 5.502,
+      "pl_rade": 10.13291855
+    },
+    {
+      "pl_name": "TOI-3331 A b",
+      "pl_orbper": 2.0180231,
+      "pl_trandep": 1.559,
+      "pl_trandur": 2.12304,
+      "pl_rade": 12.97999965
+    },
+    {
+      "pl_name": "K2-140 b",
+      "pl_orbper": 6.569188,
+      "pl_trandep": 1.557,
+      "pl_trandur": 3.81,
+      "pl_rade": 13.56286665
+    },
+    {
+      "pl_name": "TOI-3629 b",
+      "pl_orbper": 3.936551,
+      "pl_trandep": 1.5461,
+      "pl_trandur": 2.2,
+      "pl_rade": 8.29464572
+    },
+    {
+      "pl_name": "TOI-4961 b",
+      "pl_orbper": 7.479182,
+      "pl_trandep": 1.541,
+      "pl_trandur": 3.528,
+      "pl_rade": 12.34108775
+    },
+    {
+      "pl_name": "Kepler-167 e",
+      "pl_orbper": 1071.23205,
+      "pl_trandep": 1.54,
+      "pl_trandur": 16.1784,
+      "pl_rade": 10.16
+    },
+    {
+      "pl_name": "Kepler-693 b",
+      "pl_orbper": 15.37563332,
+      "pl_trandep": 1.5337,
+      "pl_trandur": 3.2673,
+      "pl_rade": 10.18
+    },
+    {
+      "pl_name": "TOI-3486 b",
+      "pl_orbper": 2.21778105,
+      "pl_trandep": 1.515,
+      "pl_trandur": 1.717,
+      "pl_rade": 10.5700688
+    },
+    {
+      "pl_name": "K2-127 b",
+      "pl_orbper": 3.588163,
+      "pl_trandep": 1.512,
+      "pl_trandur": 2.3208,
+      "pl_rade": 8.37
+    },
+    {
+      "pl_name": "Kepler-686 b",
+      "pl_orbper": 1.594745463,
+      "pl_trandep": 1.50445,
+      "pl_trandur": 1.9561,
+      "pl_rade": 12.15
+    },
+    {
+      "pl_name": "NGTS-33 b",
+      "pl_orbper": 2.827972,
+      "pl_trandep": 1.4846,
+      "pl_trandur": 2.62,
+      "pl_rade": 18.38272835
+    },
+    {
+      "pl_name": "Kepler-487 b",
+      "pl_orbper": 15.358768403,
+      "pl_trandep": 1.46381,
+      "pl_trandur": 4.1452,
+      "pl_rade": 11.42
+    },
+    {
+      "pl_name": "Kepler-425 b",
+      "pl_orbper": 3.79701816,
+      "pl_trandep": 1.44312,
+      "pl_trandur": 2.353,
+      "pl_rade": 10.962
+    },
+    {
+      "pl_name": "WASP-108 b",
+      "pl_orbper": 2.67555212374,
+      "pl_trandep": 1.43409909,
+      "pl_trandur": 3.2277336,
+      "pl_rade": 15.13212395
+    },
+    {
+      "pl_name": "Kepler-426 b",
+      "pl_orbper": 3.21751883,
+      "pl_trandep": 1.43194,
+      "pl_trandur": 2.191,
+      "pl_rade": 12.22
+    },
+    {
+      "pl_name": "Kepler-718 b",
+      "pl_orbper": 2.052349905,
+      "pl_trandep": 1.42806,
+      "pl_trandur": 2.0801,
+      "pl_rade": 16.56
+    },
+    {
+      "pl_name": "K2-237 b",
+      "pl_orbper": 2.18053332,
+      "pl_trandep": 1.416,
+      "pl_trandur": 2.92728,
+      "pl_rade": 16.06246934
+    },
+    {
+      "pl_name": "TOI-1937 A b",
+      "pl_orbper": 0.94667944,
+      "pl_trandep": 1.41,
+      "pl_trandur": 1.377,
+      "pl_rade": 13.97759893
+    },
+    {
+      "pl_name": "K2-387 b",
+      "pl_orbper": 28.735327,
+      "pl_trandep": 1.398,
+      "pl_trandur": 2.9904,
+      "pl_rade": 7.322
+    },
+    {
+      "pl_name": "TOI-3856 b",
+      "pl_orbper": 2.04360352,
+      "pl_trandep": 1.397,
+      "pl_trandur": 1.825,
+      "pl_rade": 13.59649359
+    },
+    {
+      "pl_name": "TOI-1420 b",
+      "pl_orbper": 6.9561063,
+      "pl_trandep": 1.396,
+      "pl_trandur": 3.372,
+      "pl_rade": 11.89
+    },
+    {
+      "pl_name": "TOI-7384 b",
+      "pl_orbper": 6.2340258,
+      "pl_trandep": 1.38993556,
+      "pl_trandur": 1.452,
+      "pl_rade": 3.56
+    },
+    {
+      "pl_name": "Kepler-762 b",
+      "pl_orbper": 3.770552098,
+      "pl_trandep": 1.38917,
+      "pl_trandur": 3.8277,
+      "pl_rade": 12.68
+    },
+    {
+      "pl_name": "TOI-674 b",
+      "pl_orbper": 1.977143,
+      "pl_trandep": 1.3877306,
+      "pl_trandur": 1.1104153,
+      "pl_rade": 5.25
+    },
+    {
+      "pl_name": "Kepler-553 c",
+      "pl_orbper": 328.24017,
+      "pl_trandep": 1.387,
+      "pl_trandur": 12.25,
+      "pl_rade": 11.57887706
+    },
+    {
+      "pl_name": "TOI-2981 b",
+      "pl_orbper": 3.601501,
+      "pl_trandep": 1.363,
+      "pl_trandur": 3.07,
+      "pl_rade": 13.4
+    },
+    {
+      "pl_name": "K2-114 b",
+      "pl_orbper": 11.390931,
+      "pl_trandep": 1.361,
+      "pl_trandur": 3.9696,
+      "pl_rade": 10.59248676
+    },
+    {
+      "pl_name": "TOI-3807 b",
+      "pl_orbper": 2.8989727,
+      "pl_trandep": 1.36,
+      "pl_trandur": 1.78,
+      "pl_rade": 18.49481816
+    },
+    {
+      "pl_name": "Kepler-1624 b",
+      "pl_orbper": 3.290304518,
+      "pl_trandep": 1.35526,
+      "pl_trandur": 1.7505,
+      "pl_rade": 5.7
+    },
+    {
+      "pl_name": "TOI-4465 b",
+      "pl_orbper": 101.94054,
+      "pl_trandep": 1.352,
+      "pl_trandur": 12.002,
+      "pl_rade": 14.01122587
+    },
+    {
+      "pl_name": "TOI-6130 b",
+      "pl_orbper": 2.392679,
+      "pl_trandep": 1.3405,
+      "pl_trandur": 2.42,
+      "pl_rade": 14.3474953
+    },
+    {
+      "pl_name": "Kepler-816 b",
+      "pl_orbper": 10.506825646,
+      "pl_trandep": 1.33555,
+      "pl_trandur": 3.7432,
+      "pl_rade": 10.24
+    },
+    {
+      "pl_name": "K2-121 b",
+      "pl_orbper": 5.185738,
+      "pl_trandep": 1.3112,
+      "pl_trandur": 2.0304,
+      "pl_rade": 7.16
+    },
+    {
+      "pl_name": "TOI-4463 A b",
+      "pl_orbper": 2.8807198,
+      "pl_trandep": 1.311,
+      "pl_trandur": 1.85,
+      "pl_rade": 13.26022417
+    },
+    {
+      "pl_name": "TOI-4504 c",
+      "pl_orbper": 82.97213,
+      "pl_trandep": 1.30677332,
+      "pl_trandur": 7.4967507,
+      "pl_rade": 11.09689089
+    },
+    {
+      "pl_name": "TOI-2570 b",
+      "pl_orbper": 2.9887615,
+      "pl_trandep": 1.304,
+      "pl_trandur": 3.00648,
+      "pl_rade": 13.64132951
+    },
+    {
+      "pl_name": "TOI-2818 b",
+      "pl_orbper": 4.039709,
+      "pl_trandep": 1.3,
+      "pl_trandur": 3.804,
+      "pl_rade": 15.27784069
+    },
+    {
+      "pl_name": "KOI-3680 b",
+      "pl_orbper": 141.241671,
+      "pl_trandep": 1.29905,
+      "pl_trandur": 6.7368,
+      "pl_rade": 11.09691
+    },
+    {
+      "pl_name": "TOI-4914 b",
+      "pl_orbper": 10.60057,
+      "pl_trandep": 1.292,
+      "pl_trandur": 2.9,
+      "pl_rade": 12.87
+    },
+    {
+      "pl_name": "NGTS-31 b",
+      "pl_orbper": 4.162734,
+      "pl_trandep": 1.287,
+      "pl_trandur": 3.319,
+      "pl_rade": 18.04645893
+    },
+    {
+      "pl_name": "TOI-2368 b",
+      "pl_orbper": 5.1750073,
+      "pl_trandep": 1.283,
+      "pl_trandur": 2.025,
+      "pl_rade": 10.83908434
+    },
+    {
+      "pl_name": "TOI-157 b",
+      "pl_orbper": 2.0845435,
+      "pl_trandep": 1.283,
+      "pl_trandur": 2.14584,
+      "pl_rade": 14.414774
+    },
+    {
+      "pl_name": "Kepler-725 b",
+      "pl_orbper": 39.64372,
+      "pl_trandep": 1.266,
+      "pl_trandur": 6.504,
+      "pl_rade": 10.8
+    },
+    {
+      "pl_name": "TOI-2977 b",
+      "pl_orbper": 2.3505614,
+      "pl_trandep": 1.265,
+      "pl_trandur": 2.934,
+      "pl_rade": 13.15934334
+    },
+    {
+      "pl_name": "TOI-5592 b",
+      "pl_orbper": 2.6085846,
+      "pl_trandep": 1.26,
+      "pl_trandur": 1.985,
+      "pl_rade": 17.14974047
+    },
+    {
+      "pl_name": "K2-253 b",
+      "pl_orbper": 4.00167,
+      "pl_trandep": 1.259,
+      "pl_trandur": 2.1,
+      "pl_rade": 12.67
+    },
+    {
+      "pl_name": "TOI-1696 b",
+      "pl_orbper": 2.500311,
+      "pl_trandep": 1.25793505,
+      "pl_trandur": 1.0,
+      "pl_rade": 3.09
+    },
+    {
+      "pl_name": "TOI-1883 b",
+      "pl_orbper": 4.50638,
+      "pl_trandep": 1.25229614,
+      "pl_trandur": 2.0392007,
+      "pl_rade": 5.65
+    },
+    {
+      "pl_name": "Kepler-289 c",
+      "pl_orbper": 125.8723,
+      "pl_trandep": 1.23895,
+      "pl_trandur": 9.0191,
+      "pl_rade": 11.23
+    },
+    {
+      "pl_name": "K2-281 b",
+      "pl_orbper": 8.687721,
+      "pl_trandep": 1.2388,
+      "pl_trandur": 2.7504,
+      "pl_rade": 8.18
+    },
+    {
+      "pl_name": "TOI-199 b",
+      "pl_orbper": 104.854,
+      "pl_trandep": 1.2183,
+      "pl_trandur": 6.554,
+      "pl_rade": 9.07927437
+    },
+    {
+      "pl_name": "TOI-3593 b",
+      "pl_orbper": 3.8212867,
+      "pl_trandep": 1.21,
+      "pl_trandur": 2.486,
+      "pl_rade": 11.02963701
+    },
+    {
+      "pl_name": "TOI-615 b",
+      "pl_orbper": 4.6615983,
+      "pl_trandep": 1.1972,
+      "pl_trandur": 4.241,
+      "pl_rade": 18.97680433
+    },
+    {
+      "pl_name": "TOI-5386 A b",
+      "pl_orbper": 3.62156552,
+      "pl_trandep": 1.172,
+      "pl_trandur": 2.223,
+      "pl_rade": 14.70618268
+    },
+    {
+      "pl_name": "TOI-2010 b",
+      "pl_orbper": 141.834025,
+      "pl_trandep": 1.16,
+      "pl_trandur": 8.681,
+      "pl_rade": 11.81426566
+    },
+    {
+      "pl_name": "Kepler-51 d",
+      "pl_orbper": 130.194,
+      "pl_trandep": 1.15709,
+      "pl_trandur": 8.4534,
+      "pl_rade": 9.7
+    },
+    {
+      "pl_name": "TOI-4087 b",
+      "pl_orbper": 3.1774835,
+      "pl_trandep": 1.1565,
+      "pl_trandur": 2.9842,
+      "pl_rade": 13.04725353
+    },
+    {
+      "pl_name": "K2-25 b",
+      "pl_orbper": 3.48456408,
+      "pl_trandep": 1.155,
+      "pl_trandur": 0.7637,
+      "pl_rade": 3.44
+    },
+    {
+      "pl_name": "TOI-2338 b",
+      "pl_orbper": 22.65398,
+      "pl_trandep": 1.153,
+      "pl_trandur": 3.468,
+      "pl_rade": 11.2089807
+    },
+    {
+      "pl_name": "TOI-5261 b",
+      "pl_orbper": 4.1509768,
+      "pl_trandep": 1.153,
+      "pl_trandur": 2.3592,
+      "pl_rade": 11.60129502
+    },
+    {
+      "pl_name": "TOI-3474 b",
+      "pl_orbper": 3.8795105,
+      "pl_trandep": 1.148,
+      "pl_trandur": 3.799,
+      "pl_rade": 14.67255574
+    },
+    {
+      "pl_name": "TOI-2346 b",
+      "pl_orbper": 3.3312029,
+      "pl_trandep": 1.147,
+      "pl_trandur": 3.797,
+      "pl_rade": 16.11851425
+    },
+    {
+      "pl_name": "TOI-2154 b",
+      "pl_orbper": 3.8240801,
+      "pl_trandep": 1.143,
+      "pl_trandur": 2.465,
+      "pl_rade": 16.28664896
+    },
+    {
+      "pl_name": "TOI-2328 b",
+      "pl_orbper": 17.10197,
+      "pl_trandep": 1.143,
+      "pl_trandur": 3.357,
+      "pl_rade": 9.97599282
+    },
+    {
+      "pl_name": "Kepler-695 b",
+      "pl_orbper": 3.040330424,
+      "pl_trandep": 1.14054,
+      "pl_trandur": 1.8394,
+      "pl_rade": 9.21
+    },
+    {
+      "pl_name": "TOI-5143 c",
+      "pl_orbper": 5.2097118,
+      "pl_trandep": 1.13944692,
+      "pl_trandur": 1.6975678,
+      "pl_rade": 16.25302201
+    },
+    {
+      "pl_name": "TOI-2374 b",
+      "pl_orbper": 4.31361,
+      "pl_trandep": 1.12718587,
+      "pl_trandur": 1.38,
+      "pl_rade": 6.81
+    },
+    {
+      "pl_name": "Kepler-15 b",
+      "pl_orbper": 4.942782,
+      "pl_trandep": 1.1265,
+      "pl_trandur": 3.5,
+      "pl_rade": 10.76
+    },
+    {
+      "pl_name": "TOI-2524 b",
+      "pl_orbper": 7.18585,
+      "pl_trandep": 1.11924995,
+      "pl_trandur": 4.2542613,
+      "pl_rade": 11.2089807
+    },
+    {
+      "pl_name": "TOI-5542 b",
+      "pl_orbper": 75.12375,
+      "pl_trandep": 1.1171,
+      "pl_trandur": 8.599,
+      "pl_rade": 11.30986153
+    },
+    {
+      "pl_name": "K2-139 b",
+      "pl_orbper": 28.380619,
+      "pl_trandep": 1.1093,
+      "pl_trandur": 4.9392,
+      "pl_rade": 9.11
+    },
+    {
+      "pl_name": "Kepler-41 b",
+      "pl_orbper": 1.8555582,
+      "pl_trandep": 1.10373,
+      "pl_trandur": 2.4341,
+      "pl_rade": 14.46
+    },
+    {
+      "pl_name": "TOI-2031 A b",
+      "pl_orbper": 5.71548654,
+      "pl_trandep": 1.101,
+      "pl_trandur": 4.027,
+      "pl_rade": 14.20177855
+    },
+    {
+      "pl_name": "Kepler-1628 b",
+      "pl_orbper": 76.378033,
+      "pl_trandep": 1.1004,
+      "pl_trandur": 4.952,
+      "pl_rade": 6.43
+    },
+    {
+      "pl_name": "TOI-5322 b",
+      "pl_orbper": 5.4233207,
+      "pl_trandep": 1.086,
+      "pl_trandur": 5.111,
+      "pl_rade": 16.6117094
+    },
+    {
+      "pl_name": "HD 2685 b",
+      "pl_orbper": 4.12688,
+      "pl_trandep": 1.0831,
+      "pl_trandur": 4.405,
+      "pl_rade": 16.14096
+    },
+    {
+      "pl_name": "Kepler-6 b",
+      "pl_orbper": 3.2346996,
+      "pl_trandep": 1.08141,
+      "pl_trandur": 3.59385,
+      "pl_rade": 14.616536
+    },
+    {
+      "pl_name": "TOI-2295 b",
+      "pl_orbper": 30.033302,
+      "pl_trandep": 1.07,
+      "pl_trandur": 3.01,
+      "pl_rade": 16.47720163
+    },
+    {
+      "pl_name": "Kepler-422 b",
+      "pl_orbper": 7.8914483,
+      "pl_trandep": 1.06126,
+      "pl_trandur": 4.2854,
+      "pl_rade": 12.89
+    },
+    {
+      "pl_name": "TOI-2714 b",
+      "pl_orbper": 2.499387,
+      "pl_trandep": 1.061,
+      "pl_trandur": 3.14,
+      "pl_rade": 13.72
+    },
+    {
+      "pl_name": "TIC 393818343 b",
+      "pl_orbper": 16.24921,
+      "pl_trandep": 1.06,
+      "pl_trandur": 4.1506,
+      "pl_rade": 12.18416202
+    },
+    {
+      "pl_name": "Kepler-412 b",
+      "pl_orbper": 1.7208604,
+      "pl_trandep": 1.05413,
+      "pl_trandur": 2.03459,
+      "pl_rade": 15.031269
+    },
+    {
+      "pl_name": "Kepler-489 b",
+      "pl_orbper": 17.276296119,
+      "pl_trandep": 1.0458,
+      "pl_trandur": 3.94332,
+      "pl_rade": 7.72
+    },
+    {
+      "pl_name": "K2-329 b",
+      "pl_orbper": 12.4551225,
+      "pl_trandep": 1.03526424,
+      "pl_trandur": 3.621,
+      "pl_rade": 8.675766
+    },
+    {
+      "pl_name": "Kepler-148 d",
+      "pl_orbper": 51.84688575,
+      "pl_trandep": 1.03136,
+      "pl_trandur": 4.7788,
+      "pl_rade": 8.68
+    },
+    {
+      "pl_name": "TOI-5398 b",
+      "pl_orbper": 10.590547,
+      "pl_trandep": 1.029,
+      "pl_trandur": 4.258,
+      "pl_rade": 10.3
+    },
+    {
+      "pl_name": "TOI-2876 b",
+      "pl_orbper": 6.2996431,
+      "pl_trandep": 1.025,
+      "pl_trandur": 2.249,
+      "pl_rade": 9.6397234
+    },
+    {
+      "pl_name": "TOI-3523 A b",
+      "pl_orbper": 2.30458952,
+      "pl_trandep": 1.022,
+      "pl_trandur": 3.65,
+      "pl_rade": 15.9727975
+    },
+    {
+      "pl_name": "TOI-2449 b",
+      "pl_orbper": 106.14468,
+      "pl_trandep": 1.0168,
+      "pl_trandur": 8.26,
+      "pl_rade": 11.24
+    },
+    {
+      "pl_name": "Kepler-490 b",
+      "pl_orbper": 3.268695154,
+      "pl_trandep": 1.00914,
+      "pl_trandur": 3.45315,
+      "pl_rade": 11.65
+    },
+    {
+      "pl_name": "NGTS-30 b",
+      "pl_orbper": 98.29838,
+      "pl_trandep": 1.0056,
+      "pl_trandur": 6.13,
+      "pl_rade": 10.40193409
+    },
+    {
+      "pl_name": "TOI-4562 b",
+      "pl_orbper": 225.1064,
+      "pl_trandep": 0.9961,
+      "pl_trandur": 4.32,
+      "pl_rade": 12.53
+    },
+    {
+      "pl_name": "TOI-2580 b",
+      "pl_orbper": 3.39775,
+      "pl_trandep": 0.996,
+      "pl_trandur": 8.38,
+      "pl_rade": 17.37392009
+    },
+    {
+      "pl_name": "TOI-1775 b",
+      "pl_orbper": 10.2405549,
+      "pl_trandep": 0.995,
+      "pl_trandur": 3.6638722,
+      "pl_rade": 8.04728896
+    },
+    {
+      "pl_name": "NGTS-11 b",
+      "pl_orbper": 35.45533,
+      "pl_trandep": 0.989,
+      "pl_trandur": 3.59,
+      "pl_rade": 9.157753
+    },
+    {
+      "pl_name": "Kepler-77 b",
+      "pl_orbper": 3.57878087,
+      "pl_trandep": 0.9849,
+      "pl_trandur": 2.93376,
+      "pl_rade": 10.761
+    },
+    {
+      "pl_name": "Kepler-1976 b",
+      "pl_orbper": 4.959319244,
+      "pl_trandep": 0.9802,
+      "pl_trandur": 2.22739,
+      "pl_rade": 12.21
+    },
+    {
+      "pl_name": "Kepler-702 b",
+      "pl_orbper": 10.526294063,
+      "pl_trandep": 0.9768,
+      "pl_trandur": 2.5212,
+      "pl_rade": 9.17
+    },
+    {
+      "pl_name": "TOI-858 B b",
+      "pl_orbper": 3.2797178,
+      "pl_trandep": 0.974,
+      "pl_trandur": 3.6024,
+      "pl_rade": 14.06727078
+    },
+    {
+      "pl_name": "TOI-3321 b",
+      "pl_orbper": 3.6525145,
+      "pl_trandep": 0.966,
+      "pl_trandur": 4.31,
+      "pl_rade": 15.55806521
+    },
+    {
+      "pl_name": "K2-232 b",
+      "pl_orbper": 11.168454,
+      "pl_trandep": 0.966,
+      "pl_trandur": 5.03016,
+      "pl_rade": 11.209
+    },
+    {
+      "pl_name": "Kepler-427 b",
+      "pl_orbper": 10.290994,
+      "pl_trandep": 0.96557,
+      "pl_trandur": 4.286,
+      "pl_rade": 13.79
+    },
+    {
+      "pl_name": "TOI-1278 b",
+      "pl_orbper": 14.47567,
+      "pl_trandep": 0.96185799,
+      "pl_trandur": 1.6182484,
+      "pl_rade": 12.21778896
+    },
+    {
+      "pl_name": "TOI-1823 b",
+      "pl_orbper": 38.8,
+      "pl_trandep": 0.9593,
+      "pl_trandur": 5.923377,
+      "pl_rade": 7.5406241
+    },
+    {
+      "pl_name": "Kepler-493 b",
+      "pl_orbper": 3.003876581,
+      "pl_trandep": 0.95322,
+      "pl_trandur": 3.2585,
+      "pl_rade": 15.13
+    },
+    {
+      "pl_name": "K2-14 b",
+      "pl_orbper": 8.36802,
+      "pl_trandep": 0.943,
+      "pl_trandur": 2.3304,
+      "pl_rade": 4.81
+    },
+    {
+      "pl_name": "TOI-677 b",
+      "pl_orbper": 11.2365985,
+      "pl_trandep": 0.9414,
+      "pl_trandur": 2.535,
+      "pl_rade": 13.11450742
+    },
+    {
+      "pl_name": "TOI-5027 b",
+      "pl_orbper": 10.24368,
+      "pl_trandep": 0.941,
+      "pl_trandur": 2.999,
+      "pl_rade": 10.76062147
+    },
+    {
+      "pl_name": "TOI-6628 b",
+      "pl_orbper": 18.18424,
+      "pl_trandep": 0.9343,
+      "pl_trandur": 3.696,
+      "pl_rade": 10.98480109
+    },
+    {
+      "pl_name": "TOI-4153 b",
+      "pl_orbper": 4.6174141,
+      "pl_trandep": 0.9323,
+      "pl_trandur": 4.5122,
+      "pl_rade": 16.11851425
+    },
+    {
+      "pl_name": "TOI-3785 b",
+      "pl_orbper": 4.6747373,
+      "pl_trandep": 0.9254,
+      "pl_trandur": 1.7,
+      "pl_rade": 5.14
+    },
+    {
+      "pl_name": "K2-260 b",
+      "pl_orbper": 2.62669762,
+      "pl_trandep": 0.925,
+      "pl_trandur": 4.19904,
+      "pl_rade": 18.41635529
+    },
+    {
+      "pl_name": "TOI-564 b",
+      "pl_orbper": 1.651144,
+      "pl_trandep": 0.92,
+      "pl_trandur": 1.0272,
+      "pl_rade": 11.43318
+    },
+    {
+      "pl_name": "Kepler-8 b",
+      "pl_orbper": 3.5224991,
+      "pl_trandep": 0.91457,
+      "pl_trandur": 3.19061,
+      "pl_rade": 15.871944
+    },
+    {
+      "pl_name": "TOI-4184 b",
+      "pl_orbper": 4.9019804,
+      "pl_trandep": 0.9115,
+      "pl_trandur": 1.3,
+      "pl_rade": 2.43
+    },
+    {
+      "pl_name": "TOI-5350 b",
+      "pl_orbper": 7.581367,
+      "pl_trandep": 0.911,
+      "pl_trandur": 4.4856,
+      "pl_rade": 12.41955062
+    },
+    {
+      "pl_name": "KOI-12 b",
+      "pl_orbper": 17.855182,
+      "pl_trandep": 0.90652,
+      "pl_trandur": 7.42939,
+      "pl_rade": 13.78707
+    },
+    {
+      "pl_name": "TOI-3894 b",
+      "pl_orbper": 4.33454,
+      "pl_trandep": 0.8978,
+      "pl_trandur": 3.595,
+      "pl_rade": 15.27784069
+    },
+    {
+      "pl_name": "TOI-6016 b",
+      "pl_orbper": 4.023687,
+      "pl_trandep": 0.8925,
+      "pl_trandur": 5.7,
+      "pl_rade": 13.67495645
+    },
+    {
+      "pl_name": "Kepler-39 b",
+      "pl_orbper": 21.08721,
+      "pl_trandep": 0.88947,
+      "pl_trandur": 5.96,
+      "pl_rade": 13.9
+    },
+    {
+      "pl_name": "TOI-2589 b",
+      "pl_orbper": 61.6277,
+      "pl_trandep": 0.8878,
+      "pl_trandur": 6.401,
+      "pl_rade": 12.10569916
+    },
+    {
+      "pl_name": "TOI-3912 b",
+      "pl_orbper": 3.4936264,
+      "pl_trandep": 0.885,
+      "pl_trandur": 3.557,
+      "pl_rade": 14.28024141
+    },
+    {
+      "pl_name": "TOI-3160 A b",
+      "pl_orbper": 3.971281,
+      "pl_trandep": 0.878,
+      "pl_trandur": 2.995,
+      "pl_rade": 13.7646283
+    },
+    {
+      "pl_name": "TOI-2447 b",
+      "pl_orbper": 69.33684,
+      "pl_trandep": 0.8735,
+      "pl_trandur": 7.16,
+      "pl_rade": 9.60609646
+    },
+    {
+      "pl_name": "Kepler-856 b",
+      "pl_orbper": 8.027680595,
+      "pl_trandep": 0.87254,
+      "pl_trandur": 3.1401,
+      "pl_rade": 9.3
+    },
+    {
+      "pl_name": "TOI-2015 b",
+      "pl_orbper": 3.348237,
+      "pl_trandep": 0.87,
+      "pl_trandur": 0.9876,
+      "pl_rade": 3.309
+    },
+    {
+      "pl_name": "Kepler-74 b",
+      "pl_orbper": 7.340711,
+      "pl_trandep": 0.86795,
+      "pl_trandur": 3.082,
+      "pl_rade": 10.76
+    },
+    {
+      "pl_name": "TOI-2842 b",
+      "pl_orbper": 3.5514058,
+      "pl_trandep": 0.867,
+      "pl_trandur": 2.575,
+      "pl_rade": 12.84549188
+    },
+    {
+      "pl_name": "TOI-672 b",
+      "pl_orbper": 3.633575,
+      "pl_trandep": 0.8668442,
+      "pl_trandur": 1.8069693,
+      "pl_rade": 5.2604
+    },
+    {
+      "pl_name": "TOI-2120 b",
+      "pl_orbper": 5.7998164,
+      "pl_trandep": 0.8567339,
+      "pl_trandur": 1.014374,
+      "pl_rade": 2.122
+    },
+    {
+      "pl_name": "Kepler-688 b",
+      "pl_orbper": 3.895936844,
+      "pl_trandep": 0.85448,
+      "pl_trandur": 2.3389,
+      "pl_rade": 9.76
+    },
+    {
+      "pl_name": "TOI-3688 A b",
+      "pl_orbper": 3.246075,
+      "pl_trandep": 0.85,
+      "pl_trandur": 3.482,
+      "pl_rade": 13.08088048
+    },
+    {
+      "pl_name": "K2-113 b",
+      "pl_orbper": 5.817685,
+      "pl_trandep": 0.8378,
+      "pl_trandur": 3.0744,
+      "pl_rade": 12.14
+    },
+    {
+      "pl_name": "KOI-351 h",
+      "pl_orbper": 331.60296,
+      "pl_trandep": 0.83221,
+      "pl_trandur": 14.404,
+      "pl_rade": 11.252
+    },
+    {
+      "pl_name": "Kepler-30 d",
+      "pl_orbper": 143.34394,
+      "pl_trandep": 0.83,
+      "pl_trandur": 7.728,
+      "pl_rade": 8.8
+    },
+    {
+      "pl_name": "TOI-559 b",
+      "pl_orbper": 6.9839095,
+      "pl_trandep": 0.8276,
+      "pl_trandur": 5.1502,
+      "pl_rade": 12.22899794
+    },
+    {
+      "pl_name": "TOI-1173 b",
+      "pl_orbper": 7.06466,
+      "pl_trandep": 0.8268,
+      "pl_trandur": 2.586,
+      "pl_rade": 9.19
+    },
+    {
+      "pl_name": "Kepler-418 b",
+      "pl_orbper": 86.67856,
+      "pl_trandep": 0.82441,
+      "pl_trandur": 10.224,
+      "pl_rade": 13.45
+    },
+    {
+      "pl_name": "TOI-4794 b",
+      "pl_orbper": 3.5658116,
+      "pl_trandep": 0.823,
+      "pl_trandur": 4.015,
+      "pl_rade": 14.35870428
+    },
+    {
+      "pl_name": "TOI-2373 b",
+      "pl_orbper": 13.33668,
+      "pl_trandep": 0.821,
+      "pl_trandur": 4.384,
+      "pl_rade": 10.42435205
+    },
+    {
+      "pl_name": "TOI-1268 b",
+      "pl_orbper": 8.1577094,
+      "pl_trandep": 0.8186,
+      "pl_trandur": 4.001,
+      "pl_rade": 9.1
+    },
+    {
+      "pl_name": "PH2 b",
+      "pl_orbper": 282.52542,
+      "pl_trandep": 0.8154,
+      "pl_trandur": 10.81,
+      "pl_rade": 9.33708092
+    },
+    {
+      "pl_name": "TOI-3023 b",
+      "pl_orbper": 3.9014971,
+      "pl_trandep": 0.815,
+      "pl_trandur": 4.961,
+      "pl_rade": 16.43236571
+    },
+    {
+      "pl_name": "Kepler-302 c",
+      "pl_orbper": 127.282184,
+      "pl_trandep": 0.80886,
+      "pl_trandur": 7.16,
+      "pl_rade": 12.45
+    },
+    {
+      "pl_name": "TOI-2583 A b",
+      "pl_orbper": 4.5207265,
+      "pl_trandep": 0.806,
+      "pl_trandur": 4.406,
+      "pl_rade": 14.4595851
+    },
+    {
+      "pl_name": "Kepler-539 b",
+      "pl_orbper": 125.63243,
+      "pl_trandep": 0.80459,
+      "pl_trandur": 9.299,
+      "pl_rade": 8.373123
+    },
+    {
+      "pl_name": "Kepler-43 b",
+      "pl_orbper": 3.0240949,
+      "pl_trandep": 0.80048,
+      "pl_trandur": 2.9,
+      "pl_rade": 13.663771
+    },
+    {
+      "pl_name": "Kepler-685 b",
+      "pl_orbper": 1.6255222,
+      "pl_trandep": 0.7969,
+      "pl_trandur": 2.38785,
+      "pl_rade": 10.58
+    },
+    {
+      "pl_name": "TOI-1295 b",
+      "pl_orbper": 3.1968838,
+      "pl_trandep": 0.79589807,
+      "pl_trandur": 6.2,
+      "pl_rade": 15.69257298
+    },
+    {
+      "pl_name": "TOI-2364 b",
+      "pl_orbper": 4.0197517,
+      "pl_trandep": 0.794,
+      "pl_trandur": 2.7751,
+      "pl_rade": 8.60849718
+    },
+    {
+      "pl_name": "Kepler-720 b",
+      "pl_orbper": 4.708326542,
+      "pl_trandep": 0.79127,
+      "pl_trandur": 3.17455,
+      "pl_rade": 8.41
+    },
+    {
+      "pl_name": "TIC 257060897 b",
+      "pl_orbper": 3.66003639,
+      "pl_trandep": 0.785,
+      "pl_trandur": 4.74168,
+      "pl_rade": 17.26183028
+    },
+    {
+      "pl_name": "TOI-532 b",
+      "pl_orbper": 2.3266508,
+      "pl_trandep": 0.78447831,
+      "pl_trandur": 1.75,
+      "pl_rade": 5.82
+    },
+    {
+      "pl_name": "TIC 237913194 b",
+      "pl_orbper": 15.168865,
+      "pl_trandep": 0.78185476,
+      "pl_trandur": 2.0633315,
+      "pl_rade": 12.520453
+    },
+    {
+      "pl_name": "Kepler-1514 b",
+      "pl_orbper": 217.83184,
+      "pl_trandep": 0.7805,
+      "pl_trandur": 21.32688,
+      "pl_rade": 12.419572
+    },
+    {
+      "pl_name": "TOI-3837 b",
+      "pl_orbper": 11.88865,
+      "pl_trandep": 0.78,
+      "pl_trandur": 4.803,
+      "pl_rade": 10.87271128
+    },
+    {
+      "pl_name": "Kepler-1513 b",
+      "pl_orbper": 160.8842,
+      "pl_trandep": 0.77295,
+      "pl_trandur": 10.7536,
+      "pl_rade": 8.594
+    },
+    {
+      "pl_name": "Kepler-1314 b",
+      "pl_orbper": 5.424749281,
+      "pl_trandep": 0.768,
+      "pl_trandur": 1.1431,
+      "pl_rade": 5.11
+    },
+    {
+      "pl_name": "TOI-778 b",
+      "pl_orbper": 4.633611,
+      "pl_trandep": 0.766,
+      "pl_trandur": 3.76,
+      "pl_rade": 15.4
+    },
+    {
+      "pl_name": "Kepler-719 b",
+      "pl_orbper": 5.007317779,
+      "pl_trandep": 0.76301,
+      "pl_trandur": 4.2223,
+      "pl_rade": 8.52
+    },
+    {
+      "pl_name": "K2-289 b",
+      "pl_orbper": 13.156969,
+      "pl_trandep": 0.7619,
+      "pl_trandur": 4.032,
+      "pl_rade": 9.1
+    },
+    {
+      "pl_name": "Kepler-7 b",
+      "pl_orbper": 4.8854892,
+      "pl_trandep": 0.75693,
+      "pl_trandur": 5.1313,
+      "pl_rade": 18.180998
+    },
+    {
+      "pl_name": "Kepler-491 b",
+      "pl_orbper": 4.225384512,
+      "pl_trandep": 0.7563,
+      "pl_trandur": 2.81829,
+      "pl_rade": 8.92
+    },
+    {
+      "pl_name": "TOI-892 b",
+      "pl_orbper": 10.62656,
+      "pl_trandep": 0.753,
+      "pl_trandur": 5.415,
+      "pl_rade": 11.99363
+    },
+    {
+      "pl_name": "TOI-4773 b",
+      "pl_orbper": 1.7452851,
+      "pl_trandep": 0.751,
+      "pl_trandur": 1.9608,
+      "pl_rade": 15.22179579
+    },
+    {
+      "pl_name": "TOI-169 b",
+      "pl_orbper": 2.2554477,
+      "pl_trandep": 0.75,
+      "pl_trandur": 1.7064,
+      "pl_rade": 12.172974
+    },
+    {
+      "pl_name": "K2-34 b",
+      "pl_orbper": 2.9956348,
+      "pl_trandep": 0.7493,
+      "pl_trandur": 2.4768,
+      "pl_rade": 13.75
+    },
+    {
+      "pl_name": "TOI-4137 b",
+      "pl_orbper": 3.8016122,
+      "pl_trandep": 0.749,
+      "pl_trandur": 3.4296,
+      "pl_rade": 13.57407563
+    },
+    {
+      "pl_name": "TOI-4127 b",
+      "pl_orbper": 56.39879,
+      "pl_trandep": 0.746,
+      "pl_trandur": 4.069,
+      "pl_rade": 12.28504285
+    },
+    {
+      "pl_name": "K2-238 b",
+      "pl_orbper": 3.20466,
+      "pl_trandep": 0.7448,
+      "pl_trandur": 3.331,
+      "pl_rade": 14.5717
+    },
+    {
+      "pl_name": "Kepler-46 b",
+      "pl_orbper": 33.60134,
+      "pl_trandep": 0.74259,
+      "pl_trandur": 4.4539,
+      "pl_rade": 9.057
+    },
+    {
+      "pl_name": "TOI-640 b",
+      "pl_orbper": 5.003777,
+      "pl_trandep": 0.739,
+      "pl_trandur": 3.696,
+      "pl_rade": 19.2794468
+    },
+    {
+      "pl_name": "K2-31 b",
+      "pl_orbper": 1.25785,
+      "pl_trandep": 0.73853107,
+      "pl_trandur": 0.9816,
+      "pl_rade": 11.88154
+    },
+    {
+      "pl_name": "Kepler-950 b",
+      "pl_orbper": 98.7180406,
+      "pl_trandep": 0.732,
+      "pl_trandur": 6.4184,
+      "pl_rade": 8.98
+    },
+    {
+      "pl_name": "KOI-1257 b",
+      "pl_orbper": 86.647661,
+      "pl_trandep": 0.73116,
+      "pl_trandur": 4.2624,
+      "pl_rade": 10.54
+    },
+    {
+      "pl_name": "TOI-181 b",
+      "pl_orbper": 4.532,
+      "pl_trandep": 0.73,
+      "pl_trandur": 1.99,
+      "pl_rade": 6.9559
+    },
+    {
+      "pl_name": "TOI-163 b",
+      "pl_orbper": 4.231306,
+      "pl_trandep": 0.72612759,
+      "pl_trandur": 4.93,
+      "pl_rade": 16.690201
+    },
+    {
+      "pl_name": "Kepler-5 b",
+      "pl_orbper": 3.5484657,
+      "pl_trandep": 0.72515,
+      "pl_trandur": 4.56904,
+      "pl_rade": 15.984034
+    },
+    {
+      "pl_name": "TOI-6448 b",
+      "pl_orbper": 14.844261,
+      "pl_trandep": 0.7245,
+      "pl_trandur": 3.528,
+      "pl_rade": 8.47398941
+    },
+    {
+      "pl_name": "Kepler-730 b",
+      "pl_orbper": 6.491682808,
+      "pl_trandep": 0.71633,
+      "pl_trandur": 4.33,
+      "pl_rade": 12.3299
+    },
+    {
+      "pl_name": "TOI-1181 b",
+      "pl_orbper": 2.103189,
+      "pl_trandep": 0.7142,
+      "pl_trandur": 4.1218716,
+      "pl_rade": 17.02644168
+    },
+    {
+      "pl_name": "TOI-1855 b",
+      "pl_orbper": 1.36414864,
+      "pl_trandep": 0.707,
+      "pl_trandur": 1.194,
+      "pl_rade": 18.49481816
+    },
+    {
+      "pl_name": "TOI-2236 b",
+      "pl_orbper": 3.5315902,
+      "pl_trandep": 0.7011,
+      "pl_trandur": 3.048,
+      "pl_rade": 14.36991326
+    },
+    {
+      "pl_name": "Kepler-44 b",
+      "pl_orbper": 3.2467293,
+      "pl_trandep": 0.69982,
+      "pl_trandur": 3.124,
+      "pl_rade": 12.22
+    },
+    {
+      "pl_name": "TOI-3919 b",
+      "pl_orbper": 7.433234,
+      "pl_trandep": 0.695,
+      "pl_trandur": 3.854,
+      "pl_rade": 12.31866979
+    },
+    {
+      "pl_name": "TOI-4600 c",
+      "pl_orbper": 482.8191,
+      "pl_trandep": 0.69281446,
+      "pl_trandur": 11.14,
+      "pl_rade": 9.42
+    },
+    {
+      "pl_name": "Kepler-714 b",
+      "pl_orbper": 8.098887986,
+      "pl_trandep": 0.69111,
+      "pl_trandur": 4.21479,
+      "pl_rade": 9.67
+    },
+    {
+      "pl_name": "TOI-3568 b",
+      "pl_orbper": 4.417965,
+      "pl_trandep": 0.67901682,
+      "pl_trandur": 2.45,
+      "pl_rade": 5.3
+    },
+    {
+      "pl_name": "Kepler-471 b",
+      "pl_orbper": 5.014234575,
+      "pl_trandep": 0.67886,
+      "pl_trandur": 4.61153,
+      "pl_rade": 14.96
+    },
+    {
+      "pl_name": "TOI-7166 b",
+      "pl_orbper": 12.92063621,
+      "pl_trandep": 0.6776,
+      "pl_trandur": 1.75,
+      "pl_rade": 2.01
+    },
+    {
+      "pl_name": "K2-332 b",
+      "pl_orbper": 17.70632,
+      "pl_trandep": 0.677,
+      "pl_trandur": 2.03,
+      "pl_rade": 2.2
+    },
+    {
+      "pl_name": "K2-28 b",
+      "pl_orbper": 2.260455,
+      "pl_trandep": 0.675,
+      "pl_trandur": 0.9816,
+      "pl_rade": 2.32
+    },
+    {
+      "pl_name": "TOI-1296 b",
+      "pl_orbper": 3.9443736,
+      "pl_trandep": 0.67324885,
+      "pl_trandur": 4.8636539,
+      "pl_rade": 14.11645916
+    },
+    {
+      "pl_name": "TOI-1194 b",
+      "pl_orbper": 2.3106446,
+      "pl_trandep": 0.6717,
+      "pl_trandur": 1.6276453,
+      "pl_rade": 8.71664516
+    },
+    {
+      "pl_name": "TOI-3980 b",
+      "pl_orbper": 3.6089254,
+      "pl_trandep": 0.67,
+      "pl_trandur": 2.359,
+      "pl_rade": 14.4595851
+    },
+    {
+      "pl_name": "TOI-4487 A b",
+      "pl_orbper": 3.9540709,
+      "pl_trandep": 0.669,
+      "pl_trandur": 4.27,
+      "pl_rade": 14.60530185
+    },
+    {
+      "pl_name": "Kepler-855 b",
+      "pl_orbper": 7.886631104,
+      "pl_trandep": 0.66815,
+      "pl_trandur": 5.21906,
+      "pl_rade": 8.35
+    },
+    {
+      "pl_name": "K2-19 b",
+      "pl_orbper": 7.9222,
+      "pl_trandep": 0.6673,
+      "pl_trandur": 3.237,
+      "pl_rade": 7.0
+    },
+    {
+      "pl_name": "Kepler-9 b",
+      "pl_orbper": 19.23891,
+      "pl_trandep": 0.66605,
+      "pl_trandur": 4.243,
+      "pl_rade": 8.29
+    },
+    {
+      "pl_name": "TOI-2992 b",
+      "pl_orbper": 3.007812,
+      "pl_trandep": 0.666,
+      "pl_trandur": 3.84,
+      "pl_rade": 13.75341932
+    },
+    {
+      "pl_name": "TOI-2152 A b",
+      "pl_orbper": 3.3773512,
+      "pl_trandep": 0.666,
+      "pl_trandur": 3.715,
+      "pl_rade": 14.35870428
+    },
+    {
+      "pl_name": "K2-107 b",
+      "pl_orbper": 3.313959,
+      "pl_trandep": 0.6658,
+      "pl_trandur": 3.2232,
+      "pl_rade": 15.98
+    },
+    {
+      "pl_name": "TOI-2109 b",
+      "pl_orbper": 0.67247414,
+      "pl_trandep": 0.6651,
+      "pl_trandur": 1.801,
+      "pl_rade": 15.098497
+    },
+    {
+      "pl_name": "K2-43 b",
+      "pl_orbper": 3.471149,
+      "pl_trandep": 0.665,
+      "pl_trandur": 2.0448,
+      "pl_rade": 4.51
+    },
+    {
+      "pl_name": "TOI-6223 b",
+      "pl_orbper": 3.855219,
+      "pl_trandep": 0.6624,
+      "pl_trandur": 2.0141,
+      "pl_rade": 5.07
+    },
+    {
+      "pl_name": "TOI-5210 b",
+      "pl_orbper": 4.5661061,
+      "pl_trandep": 0.662,
+      "pl_trandur": 3.71,
+      "pl_rade": 10.72699453
+    },
+    {
+      "pl_name": "TOI-628 b",
+      "pl_orbper": 3.4095675,
+      "pl_trandep": 0.657,
+      "pl_trandur": 3.7824,
+      "pl_rade": 11.88154
+    },
+    {
+      "pl_name": "TOI-4791 b",
+      "pl_orbper": 4.28088,
+      "pl_trandep": 0.655,
+      "pl_trandur": 3.334,
+      "pl_rade": 12.44196858
+    },
+    {
+      "pl_name": "TOI-3464 b",
+      "pl_orbper": 3.6515568,
+      "pl_trandep": 0.654,
+      "pl_trandur": 2.508,
+      "pl_rade": 13.7646283
+    },
+    {
+      "pl_name": "TOI-4600 b",
+      "pl_orbper": 82.6869,
+      "pl_trandep": 0.65295765,
+      "pl_trandur": 7.54,
+      "pl_rade": 6.8
+    },
+    {
+      "pl_name": "TOI-2416 b",
+      "pl_orbper": 8.275479,
+      "pl_trandep": 0.651,
+      "pl_trandur": 3.755,
+      "pl_rade": 9.86390302
+    },
+    {
+      "pl_name": "TOI-6420 b",
+      "pl_orbper": 6.961508,
+      "pl_trandep": 0.649,
+      "pl_trandur": 2.7504,
+      "pl_rade": 11.93756445
+    },
+    {
+      "pl_name": "BD-14 3065 b",
+      "pl_orbper": 4.2889731,
+      "pl_trandep": 0.649,
+      "pl_trandur": 3.086,
+      "pl_rade": 21.59
+    },
+    {
+      "pl_name": "TOI-150.01",
+      "pl_orbper": 5.857487,
+      "pl_trandep": 0.64897302,
+      "pl_trandur": 5.12,
+      "pl_rade": 14.067295
+    },
+    {
+      "pl_name": "TOI-2525 b",
+      "pl_orbper": 23.2856,
+      "pl_trandep": 0.64736022,
+      "pl_trandur": 4.05,
+      "pl_rade": 8.67575106
+    },
+    {
+      "pl_name": "Kepler-445 c",
+      "pl_orbper": 4.871229,
+      "pl_trandep": 0.6462,
+      "pl_trandur": 1.2287,
+      "pl_rade": 2.51
+    },
+    {
+      "pl_name": "TOI-5181 A b",
+      "pl_orbper": 3.8922295,
+      "pl_trandep": 0.64,
+      "pl_trandur": 2.945,
+      "pl_rade": 13.34989601
+    },
+    {
+      "pl_name": "K2-287 b",
+      "pl_orbper": 14.893291,
+      "pl_trandep": 0.64,
+      "pl_trandur": 3.5,
+      "pl_rade": 9.494023
+    },
+    {
+      "pl_name": "TOI-2096 c",
+      "pl_orbper": 6.38784,
+      "pl_trandep": 0.636,
+      "pl_trandur": 1.354,
+      "pl_rade": 1.914
+    },
+    {
+      "pl_name": "TOI-201 b",
+      "pl_orbper": 52.977946,
+      "pl_trandep": 0.63472691,
+      "pl_trandur": 4.79,
+      "pl_rade": 11.82547464
+    },
+    {
+      "pl_name": "K2-52 b",
+      "pl_orbper": 3.535055,
+      "pl_trandep": 0.6314,
+      "pl_trandur": 5.328,
+      "pl_rade": 18.0
+    },
+    {
+      "pl_name": "TOI-2382 b",
+      "pl_orbper": 4.6612061,
+      "pl_trandep": 0.628,
+      "pl_trandur": 2.27,
+      "pl_rade": 12.25141591
+    },
+    {
+      "pl_name": "Kepler-951 b",
+      "pl_orbper": 71.52530845,
+      "pl_trandep": 0.62794,
+      "pl_trandur": 5.9273,
+      "pl_rade": 5.59
+    },
+    {
+      "pl_name": "K2-308 b",
+      "pl_orbper": 3.38628,
+      "pl_trandep": 0.62598518,
+      "pl_trandur": 3.09,
+      "pl_rade": 9.916
+    },
+    {
+      "pl_name": "TOI-3364 b",
+      "pl_orbper": 5.8768918,
+      "pl_trandep": 0.624,
+      "pl_trandur": 4.646,
+      "pl_rade": 12.22899794
+    },
+    {
+      "pl_name": "K2-242 b",
+      "pl_orbper": 6.51389,
+      "pl_trandep": 0.624,
+      "pl_trandur": 2.0,
+      "pl_rade": 2.54
+    },
+    {
+      "pl_name": "K2-22 b",
+      "pl_orbper": 0.381073,
+      "pl_trandep": 0.624,
+      "pl_trandur": 0.5856,
+      "pl_rade": 2.3
+    },
+    {
+      "pl_name": "LP 890-9 b",
+      "pl_orbper": 2.7299025,
+      "pl_trandep": 0.6238,
+      "pl_trandur": 0.8457,
+      "pl_rade": 1.32
+    },
+    {
+      "pl_name": "Kepler-51 b",
+      "pl_orbper": 45.154,
+      "pl_trandep": 0.62087,
+      "pl_trandur": 5.797,
+      "pl_rade": 7.1
+    },
+    {
+      "pl_name": "Kepler-9 c",
+      "pl_orbper": 38.9853,
+      "pl_trandep": 0.61591,
+      "pl_trandur": 4.565,
+      "pl_rade": 8.08
+    },
+    {
+      "pl_name": "Kepler-817 b",
+      "pl_orbper": 3.990106229,
+      "pl_trandep": 0.61549,
+      "pl_trandur": 2.4269,
+      "pl_rade": 9.03
+    },
+    {
+      "pl_name": "TOI-1820 b",
+      "pl_orbper": 4.860674,
+      "pl_trandep": 0.614,
+      "pl_trandur": 2.92,
+      "pl_rade": 12.778238
+    },
+    {
+      "pl_name": "IRAS 04125+2902 b",
+      "pl_orbper": 8.834978,
+      "pl_trandep": 0.61322553,
+      "pl_trandur": 5.995,
+      "pl_rade": 10.73820351
+    },
+    {
+      "pl_name": "TOI-3819 b",
+      "pl_orbper": 3.2443141,
+      "pl_trandep": 0.613,
+      "pl_trandur": 2.779,
+      "pl_rade": 13.13692538
+    },
+    {
+      "pl_name": "TOI-4379 b",
+      "pl_orbper": 3.25352,
+      "pl_trandep": 0.61150131,
+      "pl_trandur": 5.1923833,
+      "pl_rade": 16.69017226
+    },
+    {
+      "pl_name": "TOI-4507 b",
+      "pl_orbper": 104.61611,
+      "pl_trandep": 0.61114633,
+      "pl_trandur": 9.3317949,
+      "pl_rade": 8.2
+    },
+    {
+      "pl_name": "Kepler-682 b",
+      "pl_orbper": 12.611906672,
+      "pl_trandep": 0.61056,
+      "pl_trandur": 5.1636,
+      "pl_rade": 7.37
+    },
+    {
+      "pl_name": "Kepler-1321 b",
+      "pl_orbper": 11.12830484,
+      "pl_trandep": 0.6057,
+      "pl_trandur": 2.7717,
+      "pl_rade": 4.92
+    },
+    {
+      "pl_name": "TOI-1107 b",
+      "pl_orbper": 4.0782387,
+      "pl_trandep": 0.6046696,
+      "pl_trandur": 4.8475616,
+      "pl_rade": 14.57167491
+    },
+    {
+      "pl_name": "TOI-1670 c",
+      "pl_orbper": 40.74976,
+      "pl_trandep": 0.6026,
+      "pl_trandur": 5.4,
+      "pl_rade": 11.06326395
+    },
+    {
+      "pl_name": "Kepler-424 b",
+      "pl_orbper": 3.3118644,
+      "pl_trandep": 0.59765,
+      "pl_trandur": 1.3944,
+      "pl_rade": 9.98
+    },
+    {
+      "pl_name": "TOI-2134 c",
+      "pl_orbper": 95.5,
+      "pl_trandep": 0.5975,
+      "pl_trandur": 5.267,
+      "pl_rade": 7.27
+    },
+    {
+      "pl_name": "TOI-5153 b",
+      "pl_orbper": 20.33003,
+      "pl_trandep": 0.5936,
+      "pl_trandur": 4.87,
+      "pl_rade": 11.88151954
+    },
+    {
+      "pl_name": "Kepler-76 b",
+      "pl_orbper": 1.5449298,
+      "pl_trandep": 0.5915,
+      "pl_trandur": 1.42784,
+      "pl_rade": 15.24424
+    },
+    {
+      "pl_name": "Kepler-890 b",
+      "pl_orbper": 52.75875577,
+      "pl_trandep": 0.58058,
+      "pl_trandur": 6.6068,
+      "pl_rade": 8.89
+    },
+    {
+      "pl_name": "TOI-277 b",
+      "pl_orbper": 3.994,
+      "pl_trandep": 0.58018957,
+      "pl_trandur": 1.9693065,
+      "pl_rade": 2.65
+    },
+    {
+      "pl_name": "TOI-1431 b",
+      "pl_orbper": 2.650237,
+      "pl_trandep": 0.5797,
+      "pl_trandur": 2.489,
+      "pl_rade": 16.70138124
+    },
+    {
+      "pl_name": "TOI-7510 c",
+      "pl_orbper": 22.5687423,
+      "pl_trandep": 0.5726021,
+      "pl_trandur": 5.2019019,
+      "pl_rade": 10.81
+    },
+    {
+      "pl_name": "TOI-4329 b",
+      "pl_orbper": 2.9223,
+      "pl_trandep": 0.57240177,
+      "pl_trandur": 5.5560255,
+      "pl_rade": 16.81347105
+    },
+    {
+      "pl_name": "TOI-1135 b",
+      "pl_orbper": 8.0277283,
+      "pl_trandep": 0.5705,
+      "pl_trandur": 4.339,
+      "pl_rade": 9.34085
+    },
+    {
+      "pl_name": "Kepler-117 c",
+      "pl_orbper": 50.790391,
+      "pl_trandep": 0.56711,
+      "pl_trandur": 10.883,
+      "pl_rade": 12.341
+    },
+    {
+      "pl_name": "Kepler-561 b",
+      "pl_orbper": 58.3620495,
+      "pl_trandep": 0.56353,
+      "pl_trandur": 6.2859,
+      "pl_rade": 6.96
+    },
+    {
+      "pl_name": "TOI-5340 b",
+      "pl_orbper": 4.9394392,
+      "pl_trandep": 0.563,
+      "pl_trandur": 4.98,
+      "pl_rade": 15.07607904
+    },
+    {
+      "pl_name": "TOI-3976 A b",
+      "pl_orbper": 6.607662,
+      "pl_trandep": 0.562,
+      "pl_trandur": 4.517,
+      "pl_rade": 12.27383387
+    },
+    {
+      "pl_name": "KOI-94 d",
+      "pl_orbper": 22.342989,
+      "pl_trandep": 0.56128,
+      "pl_trandur": 6.68603,
+      "pl_rade": 11.27
+    },
+    {
+      "pl_name": "NGTS-27 b",
+      "pl_orbper": 3.3704181,
+      "pl_trandep": 0.561,
+      "pl_trandur": 4.888,
+      "pl_rade": 15.64773706
+    },
+    {
+      "pl_name": "TOI-122 b",
+      "pl_orbper": 5.07803,
+      "pl_trandep": 0.56,
+      "pl_trandur": 1.2100353,
+      "pl_rade": 2.72
+    },
+    {
+      "pl_name": "TOI-1248 b",
+      "pl_orbper": 4.3601561,
+      "pl_trandep": 0.55922909,
+      "pl_trandur": 2.3141338,
+      "pl_rade": 6.8084859
+    },
+    {
+      "pl_name": "TOI-2025 b",
+      "pl_orbper": 8.8720982,
+      "pl_trandep": 0.5578,
+      "pl_trandur": 3.601,
+      "pl_rade": 11.89272852
+    },
+    {
+      "pl_name": "TOI-558 b",
+      "pl_orbper": 14.574071,
+      "pl_trandep": 0.557,
+      "pl_trandur": 2.705,
+      "pl_rade": 12.17295304
+    },
+    {
+      "pl_name": "TOI-1333 b",
+      "pl_orbper": 4.720219,
+      "pl_trandep": 0.555,
+      "pl_trandur": 4.6416,
+      "pl_rade": 15.647764
+    },
+    {
+      "pl_name": "K2-124 b",
+      "pl_orbper": 6.413651,
+      "pl_trandep": 0.553,
+      "pl_trandur": 1.68,
+      "pl_rade": 2.9
+    },
+    {
+      "pl_name": "K2-271 b",
+      "pl_orbper": 8.562421,
+      "pl_trandep": 0.5513,
+      "pl_trandur": 3.24,
+      "pl_rade": 7.28
+    },
+    {
+      "pl_name": "LP 714-47 b",
+      "pl_orbper": 4.052037,
+      "pl_trandep": 0.55124033,
+      "pl_trandur": 1.5605128,
+      "pl_rade": 4.7
+    },
+    {
+      "pl_name": "TOI-4994 b",
+      "pl_orbper": 21.491984,
+      "pl_trandep": 0.551,
+      "pl_trandur": 4.452,
+      "pl_rade": 8.54124329
+    },
+    {
+      "pl_name": "TOI-3877 b",
+      "pl_orbper": 4.123596,
+      "pl_trandep": 0.55,
+      "pl_trandur": 2.784,
+      "pl_rade": 11.67975789
+    },
+    {
+      "pl_name": "TOI-1224 c",
+      "pl_orbper": 17.945466,
+      "pl_trandep": 0.54806849,
+      "pl_trandur": 3.0740072,
+      "pl_rade": 2.884
+    },
+    {
+      "pl_name": "TOI-4406 b",
+      "pl_orbper": 30.08364,
+      "pl_trandep": 0.54392108,
+      "pl_trandur": 3.9858103,
+      "pl_rade": 11.2089807
+    },
+    {
+      "pl_name": "TOI-1728 b",
+      "pl_orbper": 3.49151,
+      "pl_trandep": 0.54,
+      "pl_trandur": 1.96,
+      "pl_rade": 5.05
+    },
+    {
+      "pl_name": "Kepler-957 b",
+      "pl_orbper": 5.907413537,
+      "pl_trandep": 0.5383,
+      "pl_trandur": 1.0864,
+      "pl_rade": 5.5
+    },
+    {
+      "pl_name": "Kepler-118 c",
+      "pl_orbper": 20.17202,
+      "pl_trandep": 0.53681,
+      "pl_trandur": 3.108,
+      "pl_rade": 7.68
+    },
+    {
+      "pl_name": "TOI-1859 b",
+      "pl_orbper": 63.48347,
+      "pl_trandep": 0.5357,
+      "pl_trandur": 5.457,
+      "pl_rade": 9.75181321
+    },
+    {
+      "pl_name": "K2-95 b",
+      "pl_orbper": 10.1346454,
+      "pl_trandep": 0.5276,
+      "pl_trandur": 2.856,
+      "pl_rade": 3.31
+    },
+    {
+      "pl_name": "KOI-134 b",
+      "pl_orbper": 67.1277,
+      "pl_trandep": 0.52759,
+      "pl_trandur": 11.3,
+      "pl_rade": 12.03844527
+    },
+    {
+      "pl_name": "Kepler-673 b",
+      "pl_orbper": 3.728731093,
+      "pl_trandep": 0.52265,
+      "pl_trandur": 2.6734,
+      "pl_rade": 6.54
+    },
+    {
+      "pl_name": "TOI-2407 b",
+      "pl_orbper": 2.702969,
+      "pl_trandep": 0.51326783,
+      "pl_trandur": 1.7,
+      "pl_rade": 4.26
+    },
+    {
+      "pl_name": "Kepler-952 b",
+      "pl_orbper": 130.3546919,
+      "pl_trandep": 0.51287,
+      "pl_trandur": 6.382,
+      "pl_rade": 7.65
+    },
+    {
+      "pl_name": "Kepler-433 b",
+      "pl_orbper": 5.33408384,
+      "pl_trandep": 0.51061,
+      "pl_trandur": 6.178,
+      "pl_rade": 16.25
+    },
+    {
+      "pl_name": "Kepler-1654 b",
+      "pl_orbper": 1047.8356,
+      "pl_trandep": 0.5096,
+      "pl_trandur": 22.992,
+      "pl_rade": 9.180171
+    },
+    {
+      "pl_name": "TOI-2158 b",
+      "pl_orbper": 8.60077,
+      "pl_trandep": 0.509,
+      "pl_trandur": 3.77,
+      "pl_rade": 10.76062147
+    },
+    {
+      "pl_name": "Kepler-27 c",
+      "pl_orbper": 31.3309,
+      "pl_trandep": 0.50738,
+      "pl_trandur": 4.75,
+      "pl_rade": 4.9
+    },
+    {
+      "pl_name": "Kepler-1704 b",
+      "pl_orbper": 988.88112,
+      "pl_trandep": 0.506,
+      "pl_trandur": 6.007,
+      "pl_rade": 11.94877343
+    },
+    {
+      "pl_name": "TOI-4010 d",
+      "pl_orbper": 14.70886,
+      "pl_trandep": 0.50479326,
+      "pl_trandur": 3.6,
+      "pl_rade": 6.18
+    },
+    {
+      "pl_name": "KOI-1783.01",
+      "pl_orbper": 134.4628,
+      "pl_trandep": 0.5044,
+      "pl_trandur": 5.874,
+      "pl_rade": 8.86
+    },
+    {
+      "pl_name": "Kepler-397 c",
+      "pl_orbper": 135.498527,
+      "pl_trandep": 0.50381,
+      "pl_trandur": 6.901,
+      "pl_rade": 6.18
+    },
+    {
+      "pl_name": "Kepler-799 b",
+      "pl_orbper": 133.4605235,
+      "pl_trandep": 0.50329,
+      "pl_trandur": 11.611,
+      "pl_rade": 6.88
+    },
+    {
+      "pl_name": "Kepler-1519 b",
+      "pl_orbper": 240.7989397,
+      "pl_trandep": 0.50229,
+      "pl_trandur": 16.442,
+      "pl_rade": 7.06
+    },
+    {
+      "pl_name": "HIP 41378 f",
+      "pl_orbper": 542.07975,
+      "pl_trandep": 0.5,
+      "pl_trandur": 18.998,
+      "pl_rade": 9.2
+    },
+    {
+      "pl_name": "V1298 Tau b",
+      "pl_orbper": 24.1396,
+      "pl_trandep": 0.5,
+      "pl_trandur": 6.42,
+      "pl_rade": 10.27
+    },
+    {
+      "pl_name": "TOI-4010 c",
+      "pl_orbper": 5.414654,
+      "pl_trandep": 0.49830756,
+      "pl_trandur": 2.77,
+      "pl_rade": 5.93
+    },
+    {
+      "pl_name": "TOI-1806.01",
+      "pl_orbper": 15.1454693,
+      "pl_trandep": 0.49553043,
+      "pl_trandur": 2.5830151,
+      "pl_rade": 3.4095367
+    },
+    {
+      "pl_name": "TOI-1231 b",
+      "pl_orbper": 24.245586,
+      "pl_trandep": 0.492,
+      "pl_trandur": 3.24,
+      "pl_rade": 3.65
+    },
+    {
+      "pl_name": "Kepler-229 c",
+      "pl_orbper": 16.068638,
+      "pl_trandep": 0.49143,
+      "pl_trandur": 3.546,
+      "pl_rade": 4.92
+    },
+    {
+      "pl_name": "Kepler-857 b",
+      "pl_orbper": 85.35129427,
+      "pl_trandep": 0.48748,
+      "pl_trandur": 6.7568,
+      "pl_rade": 6.8
+    },
+    {
+      "pl_name": "HD 332231 b",
+      "pl_orbper": 18.712024,
+      "pl_trandep": 0.4867,
+      "pl_trandur": 6.1681657,
+      "pl_rade": 9.07303305
+    },
+    {
+      "pl_name": "TOI-1273 b",
+      "pl_orbper": 4.631296,
+      "pl_trandep": 0.486,
+      "pl_trandur": 1.435,
+      "pl_rade": 11.09689089
+    },
+    {
+      "pl_name": "Kepler-87 b",
+      "pl_orbper": 114.73635,
+      "pl_trandep": 0.485,
+      "pl_trandur": 11.878,
+      "pl_rade": 13.49
+    },
+    {
+      "pl_name": "TOI-5232 b",
+      "pl_orbper": 4.0966692,
+      "pl_trandep": 0.48,
+      "pl_trandur": 4.783,
+      "pl_rade": 12.778238
+    },
+    {
+      "pl_name": "TOI-2485 b",
+      "pl_orbper": 11.23479,
+      "pl_trandep": 0.478,
+      "pl_trandur": 6.567,
+      "pl_rade": 12.1393261
+    },
+    {
+      "pl_name": "K2-60 b",
+      "pl_orbper": 3.00265,
+      "pl_trandep": 0.4774,
+      "pl_trandur": 3.08,
+      "pl_rade": 7.655747
+    },
+    {
+      "pl_name": "TOI-269 b",
+      "pl_orbper": 3.6977104,
+      "pl_trandep": 0.47556707,
+      "pl_trandur": 0.9308263,
+      "pl_rade": 2.77
+    },
+    {
+      "pl_name": "TOI-216.02",
+      "pl_orbper": 17.16073,
+      "pl_trandep": 0.475,
+      "pl_trandur": 2.062,
+      "pl_rade": 8.0
+    },
+    {
+      "pl_name": "TOI-2180 b",
+      "pl_orbper": 260.79,
+      "pl_trandep": 0.47479596,
+      "pl_trandur": 24.096,
+      "pl_rade": 11.32107051
+    },
+    {
+      "pl_name": "TOI-1448 b",
+      "pl_orbper": 8.112245,
+      "pl_trandep": 0.47230724,
+      "pl_trandur": 3.127852,
+      "pl_rade": 2.749
+    },
+    {
+      "pl_name": "TOI-4214 b",
+      "pl_orbper": 3.4913885,
+      "pl_trandep": 0.4663,
+      "pl_trandur": 3.254,
+      "pl_rade": 10.68215861
+    },
+    {
+      "pl_name": "Kepler-767 b",
+      "pl_orbper": 161.5280101,
+      "pl_trandep": 0.46536,
+      "pl_trandur": 3.6935,
+      "pl_rade": 6.64
+    },
+    {
+      "pl_name": "EPIC 246851721 b",
+      "pl_orbper": 6.180235,
+      "pl_trandep": 0.464,
+      "pl_trandur": 4.10808,
+      "pl_rade": 11.780659
+    },
+    {
+      "pl_name": "Kepler-747 b",
+      "pl_orbper": 35.61760587,
+      "pl_trandep": 0.46349,
+      "pl_trandur": 8.4208,
+      "pl_rade": 5.27
+    },
+    {
+      "pl_name": "TOI-1789 b",
+      "pl_orbper": 3.208664,
+      "pl_trandep": 0.463,
+      "pl_trandur": 2.3,
+      "pl_rade": 16.14093221
+    },
+    {
+      "pl_name": "Kepler-1520 b",
+      "pl_orbper": 0.653553572,
+      "pl_trandep": 0.45959,
+      "pl_trandur": 1.5399,
+      "pl_rade": 5.77
+    },
+    {
+      "pl_name": "KOI-13 b",
+      "pl_orbper": 1.763588,
+      "pl_trandep": 0.45906,
+      "pl_trandur": 3.16877,
+      "pl_rade": 16.948008
+    },
+    {
+      "pl_name": "TOI-481 b",
+      "pl_orbper": 10.33111,
+      "pl_trandep": 0.4577,
+      "pl_trandur": 5.626,
+      "pl_rade": 11.09691
+    },
+    {
+      "pl_name": "TOI-3682 b",
+      "pl_orbper": 3.3462406,
+      "pl_trandep": 0.4576,
+      "pl_trandur": 4.176,
+      "pl_rade": 12.80065596
+    },
+    {
+      "pl_name": "TOI-2000 c",
+      "pl_orbper": 9.127055,
+      "pl_trandep": 0.4568,
+      "pl_trandur": 3.654,
+      "pl_rade": 8.14
+    },
+    {
+      "pl_name": "Kepler-1515 b",
+      "pl_orbper": 214.3114164,
+      "pl_trandep": 0.45354,
+      "pl_trandur": 16.1734,
+      "pl_rade": 9.55
+    },
+    {
+      "pl_name": "TOI-837 b",
+      "pl_orbper": 8.3249113,
+      "pl_trandep": 0.4535,
+      "pl_trandur": 1.983,
+      "pl_rade": 9.16894621
+    },
+    {
+      "pl_name": "TOI-5319 b",
+      "pl_orbper": 4.07853,
+      "pl_trandep": 0.453,
+      "pl_trandur": 1.561,
+      "pl_rade": 2.83
+    },
+    {
+      "pl_name": "Kepler-435 b",
+      "pl_orbper": 8.6001536,
+      "pl_trandep": 0.45102,
+      "pl_trandur": 9.003,
+      "pl_rade": 22.31
+    },
+    {
+      "pl_name": "LHS 3844 b",
+      "pl_orbper": 0.46292913,
+      "pl_trandep": 0.45073269,
+      "pl_trandur": 0.5212,
+      "pl_rade": 1.303
+    },
+    {
+      "pl_name": "Kepler-419 b",
+      "pl_orbper": 69.7546,
+      "pl_trandep": 0.44912,
+      "pl_trandur": 3.7177,
+      "pl_rade": 10.8
+    },
+    {
+      "pl_name": "TOI-715 b",
+      "pl_orbper": 19.288004,
+      "pl_trandep": 0.448,
+      "pl_trandur": 1.98,
+      "pl_rade": 1.55
+    },
+    {
+      "pl_name": "Kepler-1625 b",
+      "pl_orbper": 287.378949,
+      "pl_trandep": 0.43769,
+      "pl_trandur": 18.886,
+      "pl_rade": 6.06
+    },
+    {
+      "pl_name": "K2-24 c",
+      "pl_orbper": 42.3391,
+      "pl_trandep": 0.4372,
+      "pl_trandur": 6.498,
+      "pl_rade": 7.5
+    },
+    {
+      "pl_name": "K2-384 f",
+      "pl_orbper": 13.62749,
+      "pl_trandep": 0.437,
+      "pl_trandur": 2.16,
+      "pl_rade": 2.222
+    },
+    {
+      "pl_name": "TOI-1694 b",
+      "pl_orbper": 3.770107,
+      "pl_trandep": 0.43611801,
+      "pl_trandur": 2.8696267,
+      "pl_rade": 5.3422266
+    },
+    {
+      "pl_name": "TOI-1199 b",
+      "pl_orbper": 3.671463,
+      "pl_trandep": 0.434,
+      "pl_trandur": 2.149,
+      "pl_rade": 10.5140239
+    },
+    {
+      "pl_name": "Kepler-297 d",
+      "pl_orbper": 150.0189511,
+      "pl_trandep": 0.43197,
+      "pl_trandur": 4.3823,
+      "pl_rade": 32.6
+    },
+    {
+      "pl_name": "TOI-2207 b",
+      "pl_orbper": 8.001968,
+      "pl_trandep": 0.4273,
+      "pl_trandur": 4.632,
+      "pl_rade": 11.1529358
+    },
+    {
+      "pl_name": "TIC 139270665 b",
+      "pl_orbper": 23.624,
+      "pl_trandep": 0.425,
+      "pl_trandur": 5.94,
+      "pl_rade": 7.22979255
+    },
+    {
+      "pl_name": "Kepler-703 b",
+      "pl_orbper": 4.583521756,
+      "pl_trandep": 0.42475,
+      "pl_trandur": 2.715,
+      "pl_rade": 8.2
+    },
+    {
+      "pl_name": "TOI-2529 b",
+      "pl_orbper": 64.5949,
+      "pl_trandep": 0.424,
+      "pl_trandur": 8.943,
+      "pl_rade": 11.54525012
+    },
+    {
+      "pl_name": "TOI-7510 d",
+      "pl_orbper": 48.864468,
+      "pl_trandep": 0.42205663,
+      "pl_trandur": 4.974589,
+      "pl_rade": 10.52
+    },
+    {
+      "pl_name": "TOI-1601 b",
+      "pl_orbper": 5.33175,
+      "pl_trandep": 0.422,
+      "pl_trandur": 6.4852265,
+      "pl_rade": 14.19902343
+    },
+    {
+      "pl_name": "HIP 67522 b",
+      "pl_orbper": 6.9594731,
+      "pl_trandep": 0.421,
+      "pl_trandur": 4.85,
+      "pl_rade": 9.9872018
+    },
+    {
+      "pl_name": "LP 791-18 b",
+      "pl_orbper": 0.9479981,
+      "pl_trandep": 0.42005289,
+      "pl_trandur": 0.6195,
+      "pl_rade": 1.212
+    },
+    {
+      "pl_name": "TOI-1298 b",
+      "pl_orbper": 4.537143,
+      "pl_trandep": 0.41997559,
+      "pl_trandur": 4.029272,
+      "pl_rade": 9.65807033
+    },
+    {
+      "pl_name": "TOI-2266 b",
+      "pl_orbper": 2.326318,
+      "pl_trandep": 0.41536144,
+      "pl_trandur": 0.98,
+      "pl_rade": 1.54
+    },
+    {
+      "pl_name": "TOI-2257 b",
+      "pl_orbper": 35.189346,
+      "pl_trandep": 0.413,
+      "pl_trandur": 3.846,
+      "pl_rade": 2.194
+    },
+    {
+      "pl_name": "Kepler-297 c",
+      "pl_orbper": 74.920137,
+      "pl_trandep": 0.41192,
+      "pl_trandur": 4.794,
+      "pl_rade": 6.54
+    },
+    {
+      "pl_name": "TOI-2587 A b",
+      "pl_orbper": 5.45664,
+      "pl_trandep": 0.411,
+      "pl_trandur": 4.162,
+      "pl_rade": 12.07207221
+    },
+    {
+      "pl_name": "Kepler-841 b",
+      "pl_orbper": 124.4198398,
+      "pl_trandep": 0.4107,
+      "pl_trandur": 3.6612,
+      "pl_rade": 5.23
+    },
+    {
+      "pl_name": "TOI-3362 b",
+      "pl_orbper": 18.09547,
+      "pl_trandep": 0.41,
+      "pl_trandur": 2.627,
+      "pl_rade": 12.80065596
+    },
+    {
+      "pl_name": "TOI-1680 b",
+      "pl_orbper": 4.8026345,
+      "pl_trandep": 0.407,
+      "pl_trandur": 1.186,
+      "pl_rade": 1.466
+    },
+    {
+      "pl_name": "TOI-4438 b",
+      "pl_orbper": 7.44628,
+      "pl_trandep": 0.40457242,
+      "pl_trandur": 2.021,
+      "pl_rade": 2.52
+    },
+    {
+      "pl_name": "Kepler-63 b",
+      "pl_orbper": 9.4341505,
+      "pl_trandep": 0.40243,
+      "pl_trandur": 2.903,
+      "pl_rade": 6.11
+    },
+    {
+      "pl_name": "Kepler-603 c",
+      "pl_orbper": 127.9075774,
+      "pl_trandep": 0.40206,
+      "pl_trandur": 13.498,
+      "pl_rade": 6.5
+    },
+    {
+      "pl_name": "TOI-782 b",
+      "pl_orbper": 8.0240015,
+      "pl_trandep": 0.40100578,
+      "pl_trandur": 1.7082731,
+      "pl_rade": 2.734
+    },
+    {
+      "pl_name": "K2-9 b",
+      "pl_orbper": 18.4498,
+      "pl_trandep": 0.399,
+      "pl_trandur": 2.8397,
+      "pl_rade": 2.25
+    },
+    {
+      "pl_name": "TOI-2169 A b",
+      "pl_orbper": 8.2148282,
+      "pl_trandep": 0.397,
+      "pl_trandur": 4.337,
+      "pl_rade": 12.50922246
+    },
+    {
+      "pl_name": "K2-55 b",
+      "pl_orbper": 2.849271,
+      "pl_trandep": 0.3954,
+      "pl_trandur": 2.006,
+      "pl_rade": 4.43
+    },
+    {
+      "pl_name": "TOI-620 b",
+      "pl_orbper": 5.0988179,
+      "pl_trandep": 0.393,
+      "pl_trandur": 1.36,
+      "pl_rade": 3.76
+    },
+    {
+      "pl_name": "TOI-7510 b",
+      "pl_orbper": 11.530869,
+      "pl_trandep": 0.38813139,
+      "pl_trandur": 4.8139956,
+      "pl_rade": 7.31
+    },
+    {
+      "pl_name": "TOI-2136 b",
+      "pl_orbper": 7.851928,
+      "pl_trandep": 0.38739591,
+      "pl_trandur": 1.66,
+      "pl_rade": 2.19
+    },
+    {
+      "pl_name": "TOI-6002 b",
+      "pl_orbper": 10.904821,
+      "pl_trandep": 0.387,
+      "pl_trandur": 1.657,
+      "pl_rade": 1.65
+    },
+    {
+      "pl_name": "Kepler-495 b",
+      "pl_orbper": 3.413036221,
+      "pl_trandep": 0.38687,
+      "pl_trandur": 2.60753,
+      "pl_rade": 5.23
+    },
+    {
+      "pl_name": "Kepler-434 b",
+      "pl_orbper": 12.8747099,
+      "pl_trandep": 0.38607,
+      "pl_trandur": 2.288,
+      "pl_rade": 12.67
+    },
+    {
+      "pl_name": "K2-146 b",
+      "pl_orbper": 2.6446,
+      "pl_trandep": 0.386,
+      "pl_trandur": 1.32,
+      "pl_rade": 2.05
+    },
+    {
+      "pl_name": "TOI-270 c",
+      "pl_orbper": 5.66051,
+      "pl_trandep": 0.38561061,
+      "pl_trandur": 1.682,
+      "pl_rade": 2.33
+    },
+    {
+      "pl_name": "TOI-622 b",
+      "pl_orbper": 6.402513,
+      "pl_trandep": 0.38149509,
+      "pl_trandur": 3.907,
+      "pl_rade": 9.2362001
+    },
+    {
+      "pl_name": "K2-32 b",
+      "pl_orbper": 8.992,
+      "pl_trandep": 0.3802,
+      "pl_trandur": 3.488,
+      "pl_rade": 5.299
+    },
+    {
+      "pl_name": "TOI-5005 b",
+      "pl_orbper": 6.3085044,
+      "pl_trandep": 0.38,
+      "pl_trandur": 3.144,
+      "pl_rade": 6.25
+    },
+    {
+      "pl_name": "KOI-351 g",
+      "pl_orbper": 210.73514,
+      "pl_trandep": 0.38,
+      "pl_trandur": 12.32,
+      "pl_rade": 7.718
+    },
+    {
+      "pl_name": "TOI-237 b",
+      "pl_orbper": 5.436098,
+      "pl_trandep": 0.38,
+      "pl_trandur": 1.5419673,
+      "pl_rade": 1.44
+    },
+    {
+      "pl_name": "HD 202772 A b",
+      "pl_orbper": 3.308958,
+      "pl_trandep": 0.3755,
+      "pl_trandur": 5.6304,
+      "pl_rade": 17.317905
+    },
+    {
+      "pl_name": "Kepler-40 b",
+      "pl_orbper": 6.87349,
+      "pl_trandep": 0.37538,
+      "pl_trandur": 6.86,
+      "pl_rade": 13.11
+    },
+    {
+      "pl_name": "NGTS-20 b",
+      "pl_orbper": 54.18915,
+      "pl_trandep": 0.3708,
+      "pl_trandur": 4.55,
+      "pl_rade": 11.99360935
+    },
+    {
+      "pl_name": "Kepler-546 b",
+      "pl_orbper": 4.147020258,
+      "pl_trandep": 0.36807,
+      "pl_trandur": 2.8969,
+      "pl_rade": 7.0
+    },
+    {
+      "pl_name": "G 9-40 b",
+      "pl_orbper": 5.7459982,
+      "pl_trandep": 0.365,
+      "pl_trandur": 1.693,
+      "pl_rade": 1.9
+    },
+    {
+      "pl_name": "Kepler-82 c",
+      "pl_orbper": 51.54,
+      "pl_trandep": 0.36443,
+      "pl_trandur": 6.3994,
+      "pl_rade": 5.34
+    },
+    {
+      "pl_name": "Kepler-177 c",
+      "pl_orbper": 49.40926,
+      "pl_trandep": 0.3643,
+      "pl_trandur": 5.243,
+      "pl_rade": 8.73
+    },
+    {
+      "pl_name": "Kepler-1085 b",
+      "pl_orbper": 219.3217528,
+      "pl_trandep": 0.36287,
+      "pl_trandur": 12.358,
+      "pl_rade": 7.22
+    },
+    {
+      "pl_name": "Kepler-700 b",
+      "pl_orbper": 80.8720639,
+      "pl_trandep": 0.36046,
+      "pl_trandur": 11.114,
+      "pl_rade": 5.99
+    },
+    {
+      "pl_name": "TOI-2567 b",
+      "pl_orbper": 5.983944,
+      "pl_trandep": 0.3537,
+      "pl_trandur": 5.4576,
+      "pl_rade": 10.92875618
+    },
+    {
+      "pl_name": "Kepler-943 b",
+      "pl_orbper": 49.7701438,
+      "pl_trandep": 0.35292,
+      "pl_trandur": 10.085,
+      "pl_rade": 5.93
+    },
+    {
+      "pl_name": "TOI-880 c",
+      "pl_orbper": 6.3872703,
+      "pl_trandep": 0.351,
+      "pl_trandur": 2.343,
+      "pl_rade": 4.95
+    },
+    {
+      "pl_name": "TOI-4336 A b",
+      "pl_orbper": 16.336334,
+      "pl_trandep": 0.3487,
+      "pl_trandur": 2.0897,
+      "pl_rade": 2.12
+    },
+    {
+      "pl_name": "TOI-4479 b",
+      "pl_orbper": 1.1589,
+      "pl_trandep": 0.34706759,
+      "pl_trandur": 1.1688702,
+      "pl_rade": 2.82
+    },
+    {
+      "pl_name": "K2-280 b",
+      "pl_orbper": 19.89526,
+      "pl_trandep": 0.3463,
+      "pl_trandur": 8.267,
+      "pl_rade": 7.5
+    },
+    {
+      "pl_name": "Kepler-891 b",
+      "pl_orbper": 53.44945593,
+      "pl_trandep": 0.3437,
+      "pl_trandur": 5.3228,
+      "pl_rade": 6.41
+    },
+    {
+      "pl_name": "Kepler-827 b",
+      "pl_orbper": 51.92927591,
+      "pl_trandep": 0.34258,
+      "pl_trandur": 5.3083,
+      "pl_rade": 5.63
+    },
+    {
+      "pl_name": "TOI-2986 b",
+      "pl_orbper": 3.2783662,
+      "pl_trandep": 0.3415,
+      "pl_trandur": 3.958,
+      "pl_rade": 9.292245
+    },
+    {
+      "pl_name": "Kepler-447 b",
+      "pl_orbper": 7.79430132,
+      "pl_trandep": 0.33874,
+      "pl_trandur": 1.135,
+      "pl_rade": 18.49
+    },
+    {
+      "pl_name": "TOI-2641 b",
+      "pl_orbper": 4.880974,
+      "pl_trandep": 0.33855527,
+      "pl_trandur": 1.68,
+      "pl_rade": 18.10250383
+    },
+    {
+      "pl_name": "LTT 3780 c",
+      "pl_orbper": 12.252284,
+      "pl_trandep": 0.3355,
+      "pl_trandur": 1.54,
+      "pl_rade": 2.39
+    },
+    {
+      "pl_name": "K2-403 b",
+      "pl_orbper": 33.589979,
+      "pl_trandep": 0.3352,
+      "pl_trandur": 6.385,
+      "pl_rade": 5.333
+    },
+    {
+      "pl_name": "TOI-1294 b",
+      "pl_orbper": 3.915292,
+      "pl_trandep": 0.335,
+      "pl_trandur": 3.0331397,
+      "pl_rade": 10.12369881
+    },
+    {
+      "pl_name": "Kepler-238 e",
+      "pl_orbper": 23.654,
+      "pl_trandep": 0.33418,
+      "pl_trandur": 8.2183,
+      "pl_rade": 5.6
+    },
+    {
+      "pl_name": "TOI-771 b",
+      "pl_orbper": 2.3260155,
+      "pl_trandep": 0.32797891,
+      "pl_trandur": 0.96,
+      "pl_rade": 1.36
+    },
+    {
+      "pl_name": "Kepler-18 d",
+      "pl_orbper": 14.85888,
+      "pl_trandep": 0.3265,
+      "pl_trandur": 3.679,
+      "pl_rade": 6.98
+    },
+    {
+      "pl_name": "TOI-5301 b",
+      "pl_orbper": 5.858858,
+      "pl_trandep": 0.325,
+      "pl_trandur": 3.938,
+      "pl_rade": 13.09208946
+    },
+    {
+      "pl_name": "Kepler-210 c",
+      "pl_orbper": 7.972513,
+      "pl_trandep": 0.3245,
+      "pl_trandur": 2.902,
+      "pl_rade": 3.62
+    },
+    {
+      "pl_name": "Kepler-111 c",
+      "pl_orbper": 224.77833,
+      "pl_trandep": 0.3226,
+      "pl_trandur": 11.13,
+      "pl_rade": 7.0840758
+    },
+    {
+      "pl_name": "TOI-5422 b",
+      "pl_orbper": 5.377219,
+      "pl_trandep": 0.3206,
+      "pl_trandur": 4.668,
+      "pl_rade": 9.10169233
+    },
+    {
+      "pl_name": "Kepler-636 b",
+      "pl_orbper": 16.080661147,
+      "pl_trandep": 0.31974,
+      "pl_trandur": 2.8707,
+      "pl_rade": 4.45
+    },
+    {
+      "pl_name": "TOI-1842 b",
+      "pl_orbper": 9.5739181,
+      "pl_trandep": 0.317,
+      "pl_trandur": 4.3070829,
+      "pl_rade": 12.3485023
+    },
+    {
+      "pl_name": "TOI-1803 c",
+      "pl_orbper": 12.885779,
+      "pl_trandep": 0.317,
+      "pl_trandur": 2.4,
+      "pl_rade": 4.29
+    },
+    {
+      "pl_name": "TOI-1266 b",
+      "pl_orbper": 10.8945,
+      "pl_trandep": 0.31683854,
+      "pl_trandur": 2.1288,
+      "pl_rade": 2.52
+    },
+    {
+      "pl_name": "EPIC 201238110 b",
+      "pl_orbper": 28.1656,
+      "pl_trandep": 0.316,
+      "pl_trandur": 3.36,
+      "pl_rade": 1.87
+    },
+    {
+      "pl_name": "Kepler-993 b",
+      "pl_orbper": 22.08557563,
+      "pl_trandep": 0.31574,
+      "pl_trandur": 2.1619,
+      "pl_rade": 2.97
+    },
+    {
+      "pl_name": "TOI-270 d",
+      "pl_orbper": 11.38194,
+      "pl_trandep": 0.31470462,
+      "pl_trandur": 2.117,
+      "pl_rade": 2.0
+    },
+    {
+      "pl_name": "Kepler-712 c",
+      "pl_orbper": 226.89047,
+      "pl_trandep": 0.31364,
+      "pl_trandur": 7.525,
+      "pl_rade": 4.85
+    },
+    {
+      "pl_name": "TOI-172 b",
+      "pl_orbper": 9.47725,
+      "pl_trandep": 0.312,
+      "pl_trandur": 4.7136,
+      "pl_rade": 10.816685
+    },
+    {
+      "pl_name": "K2-18 b",
+      "pl_orbper": 32.939623,
+      "pl_trandep": 0.3098,
+      "pl_trandur": 2.682,
+      "pl_rade": 2.37
+    },
+    {
+      "pl_name": "TOI-1452 b",
+      "pl_orbper": 11.06201,
+      "pl_trandep": 0.309,
+      "pl_trandur": 1.7587777,
+      "pl_rade": 1.672
+    },
+    {
+      "pl_name": "Kepler-27 b",
+      "pl_orbper": 15.3348,
+      "pl_trandep": 0.30814,
+      "pl_trandur": 3.47,
+      "pl_rade": 4.0
+    },
+    {
+      "pl_name": "Kepler-247 c",
+      "pl_orbper": 9.439452,
+      "pl_trandep": 0.30361,
+      "pl_trandur": 2.896,
+      "pl_rade": 4.09
+    },
+    {
+      "pl_name": "TOI-1898 b",
+      "pl_orbper": 45.52234,
+      "pl_trandep": 0.30285453,
+      "pl_trandur": 4.2704237,
+      "pl_rade": 9.39553231
+    },
+    {
+      "pl_name": "K2-33 b",
+      "pl_orbper": 5.424865,
+      "pl_trandep": 0.3018,
+      "pl_trandur": 4.08,
+      "pl_rade": 5.04
+    },
+    {
+      "pl_name": "TOI-5786 b",
+      "pl_orbper": 12.779107,
+      "pl_trandep": 0.3008,
+      "pl_trandur": 4.6,
+      "pl_rade": 8.54
+    },
+    {
+      "pl_name": "Kepler-562 b",
+      "pl_orbper": 18.009314436,
+      "pl_trandep": 0.30044,
+      "pl_trandur": 4.9713,
+      "pl_rade": 5.21
+    },
+    {
+      "pl_name": "Kepler-678 b",
+      "pl_orbper": 7.27503724,
+      "pl_trandep": 0.3001,
+      "pl_trandur": 7.5206,
+      "pl_rade": 5.14
+    },
+    {
+      "pl_name": "Kepler-497 b",
+      "pl_orbper": 3.573203671,
+      "pl_trandep": 0.2975,
+      "pl_trandur": 2.8837,
+      "pl_rade": 6.04
+    },
+    {
+      "pl_name": "TOI-1994 b",
+      "pl_orbper": 4.0337142,
+      "pl_trandep": 0.2969,
+      "pl_trandur": 4.044,
+      "pl_rade": 13.67495645
+    },
+    {
+      "pl_name": "Kepler-79 d",
+      "pl_orbper": 52.0902,
+      "pl_trandep": 0.2968,
+      "pl_trandur": 8.6329,
+      "pl_rade": 7.16
+    },
+    {
+      "pl_name": "Kepler-858 b",
+      "pl_orbper": 76.13602028,
+      "pl_trandep": 0.29495,
+      "pl_trandur": 7.9602,
+      "pl_rade": 4.87
+    }
+  ],
+  "statistics": {
+    "depth_ppm": {
+      "mean": 1.2292336067943546,
+      "std": 2.841552521551861,
+      "min": 0.29495,
+      "max": 56.65
+    },
+    "period_days": {
+      "mean": 32.3963925362656,
+      "std": 97.13943105398101
+    },
+    "duration_hours": {
+      "mean": 3.998456123991935,
+      "std": 3.0533983740330197
+    }
+  }
+}
