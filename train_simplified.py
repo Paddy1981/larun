@@ -103,11 +103,17 @@ def extract_lightcurve_features(lc: np.ndarray) -> np.ndarray:
 
 
 class SimpleClassifier:
-    """Feature-based classifier."""
+    """Feature-based classifier with normalization support."""
 
     def __init__(self, n_features: int, n_classes: int, hidden1: int = 64, hidden2: int = 32, seed: int = 42):
         self.weights = {}
         self.n_classes = n_classes
+        self.n_features = n_features
+
+        # Normalization parameters (set during training)
+        self.norm_mean = None
+        self.norm_std = None
+        self.class_labels = None
 
         np.random.seed(seed)
         self.weights["fc1_w"] = np.random.randn(n_features, hidden1).astype(np.float32) * np.sqrt(2/n_features)
@@ -116,6 +122,15 @@ class SimpleClassifier:
         self.weights["fc2_b"] = np.zeros(hidden2, dtype=np.float32)
         self.weights["out_w"] = np.random.randn(hidden2, n_classes).astype(np.float32) * np.sqrt(2/hidden2)
         self.weights["out_b"] = np.zeros(n_classes, dtype=np.float32)
+
+    def set_normalization(self, mean: np.ndarray, std: np.ndarray):
+        """Set normalization parameters from training data."""
+        self.norm_mean = mean.astype(np.float32)
+        self.norm_std = std.astype(np.float32)
+
+    def set_class_labels(self, labels: list):
+        """Set human-readable class labels."""
+        self.class_labels = labels
 
     def forward(self, x: np.ndarray) -> np.ndarray:
         h = x @ self.weights["fc1_w"] + self.weights["fc1_b"]
@@ -126,12 +141,53 @@ class SimpleClassifier:
         exp_logits = np.exp(logits - logits.max(axis=-1, keepdims=True))
         return exp_logits / exp_logits.sum(axis=-1, keepdims=True)
 
+    def normalize(self, x: np.ndarray) -> np.ndarray:
+        """Normalize features using stored parameters."""
+        if self.norm_mean is None or self.norm_std is None:
+            raise ValueError("Normalization parameters not set. Call set_normalization() first.")
+        return (x - self.norm_mean) / (self.norm_std + 1e-8)
+
     def predict(self, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         probs = self.forward(x)
         return np.argmax(probs, axis=-1), np.max(probs, axis=-1)
 
+    def predict_from_raw(self, features: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Predict from raw (unnormalized) features. Returns (class_ids, confidences, all_probs)."""
+        x = self.normalize(features)
+        probs = self.forward(x)
+        return np.argmax(probs, axis=-1), np.max(probs, axis=-1), probs
+
     def save(self, path: str):
-        np.savez(path, **self.weights)
+        """Save model weights and normalization parameters."""
+        save_dict = dict(self.weights)
+        if self.norm_mean is not None:
+            save_dict["_norm_mean"] = self.norm_mean
+            save_dict["_norm_std"] = self.norm_std
+        if self.class_labels is not None:
+            # Save labels as encoded string
+            save_dict["_class_labels"] = np.array(self.class_labels, dtype=object)
+        save_dict["_n_features"] = np.array([self.n_features])
+        save_dict["_n_classes"] = np.array([self.n_classes])
+        np.savez(path, **save_dict)
+
+    @classmethod
+    def load(cls, path: str) -> "SimpleClassifier":
+        """Load a trained model from file."""
+        data = np.load(path, allow_pickle=True)
+        n_features = int(data["_n_features"][0])
+        n_classes = int(data["_n_classes"][0])
+
+        model = cls(n_features, n_classes)
+        for key in data.files:
+            if not key.startswith("_"):
+                model.weights[key] = data[key]
+            elif key == "_norm_mean":
+                model.norm_mean = data[key]
+            elif key == "_norm_std":
+                model.norm_std = data[key]
+            elif key == "_class_labels":
+                model.class_labels = list(data[key])
+        return model
 
     def get_model_size(self) -> Dict[str, Any]:
         total = sum(w.size for w in self.weights.values())
@@ -247,8 +303,10 @@ def main():
     X = np.array(X_list, dtype=np.float32)
     y = np.array(y_list, dtype=np.int32)
 
-    # Normalize
-    X = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-8)
+    # Compute and save normalization parameters BEFORE normalizing
+    norm_mean = X.mean(axis=0)
+    norm_std = X.std(axis=0)
+    X = (X - norm_mean) / (norm_std + 1e-8)
 
     # Split
     np.random.seed(123)
@@ -263,6 +321,10 @@ def main():
     start = time.time()
     model = SimpleClassifier(X.shape[1], 3, hidden1=64, hidden2=32)
     acc = train_classifier(model, X_train, y_train, X_val, y_val, epochs=150)
+
+    # Set normalization and labels before saving
+    model.set_normalization(norm_mean, norm_std)
+    model.set_class_labels(["no_transit", "transit", "eclipsing_binary"])
     model.save(str(output_dir / "EXOPLANET-001_weights.npz"))
 
     results["EXOPLANET-001"] = {"accuracy": acc, "classes": 3}
@@ -304,7 +366,11 @@ def main():
 
     X = np.array(X_list, dtype=np.float32)
     y = np.array(y_list, dtype=np.int32)
-    X = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-8)
+
+    # Compute and save normalization parameters
+    norm_mean = X.mean(axis=0)
+    norm_std = X.std(axis=0)
+    X = (X - norm_mean) / (norm_std + 1e-8)
 
     np.random.seed(123)
     idx = np.random.permutation(len(X))
@@ -317,6 +383,10 @@ def main():
 
     model = SimpleClassifier(X.shape[1], 3, hidden1=64, hidden2=32)
     acc = train_classifier(model, X_train, y_train, X_val, y_val, epochs=150)
+
+    # Set normalization and labels before saving
+    model.set_normalization(norm_mean, norm_std)
+    model.set_class_labels(["no_flare", "flare", "strong_flare"])
     model.save(str(output_dir / "FLARE-001_weights.npz"))
 
     results["FLARE-001"] = {"accuracy": acc, "classes": 3}
@@ -362,7 +432,11 @@ def main():
 
     X = np.array(X_list, dtype=np.float32)
     y = np.array(y_list, dtype=np.int32)
-    X = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-8)
+
+    # Compute and save normalization parameters
+    norm_mean = X.mean(axis=0)
+    norm_std = X.std(axis=0)
+    X = (X - norm_mean) / (norm_std + 1e-8)
 
     np.random.seed(123)
     idx = np.random.permutation(len(X))
@@ -375,6 +449,10 @@ def main():
 
     model = SimpleClassifier(X.shape[1], 3, hidden1=64, hidden2=32)
     acc = train_classifier(model, X_train, y_train, X_val, y_val, epochs=150)
+
+    # Set normalization and labels before saving
+    model.set_normalization(norm_mean, norm_std)
+    model.set_class_labels(["no_event", "single_lens", "complex_event"])
     model.save(str(output_dir / "MICROLENS-001_weights.npz"))
 
     results["MICROLENS-001"] = {"accuracy": acc, "classes": 3}
