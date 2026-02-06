@@ -158,6 +158,11 @@ def extract_features_from_koi(koi: Dict, flux: Optional[np.ndarray] = None) -> n
     depth = (koi.get('koi_depth', 100.0) or 100.0) / 1e6  # ppm to relative
     duration = koi.get('koi_duration', 3.0) or 3.0
 
+    # Convert flux to regular numpy array if it's a MaskedArray
+    if flux is not None:
+        flux = np.array(flux, dtype=np.float64)
+        flux = flux[~np.isnan(flux)]  # Remove NaNs
+
     if flux is not None and len(flux) > 100:
         # Extract features from actual light curve
         features[0] = np.nanstd(flux)
