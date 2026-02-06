@@ -1,0 +1,14 @@
+{
+  "EXOPLANET-001": {
+    "accuracy": 1.0,
+    "classes": 3
+  },
+  "FLARE-001": {
+    "accuracy": 0.9672222222222222,
+    "classes": 3
+  },
+  "MICROLENS-001": {
+    "accuracy": 0.9938888888888889,
+    "classes": 3
+  }
+}

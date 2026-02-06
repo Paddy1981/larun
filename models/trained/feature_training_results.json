@@ -1,0 +1,23 @@
+{
+  "EXOPLANET-001": {
+    "accuracy": 0.7923333333333333,
+    "size_kb": 14.193359375,
+    "training_time": 18.58601427078247,
+    "n_features": 45,
+    "n_classes": 6
+  },
+  "FLARE-001": {
+    "accuracy": 0.8736666666666667,
+    "size_kb": 14.1298828125,
+    "training_time": 18.19462776184082,
+    "n_features": 45,
+    "n_classes": 5
+  },
+  "MICROLENS-001": {
+    "accuracy": 0.9076666666666666,
+    "size_kb": 14.193359375,
+    "training_time": 18.167426824569702,
+    "n_features": 45,
+    "n_classes": 6
+  }
+}
