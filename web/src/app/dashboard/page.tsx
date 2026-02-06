@@ -219,9 +219,24 @@ export default function DashboardPage() {
 
   const handleRefreshTargets = async () => {
     setIsRefreshingTargets(true);
-    // Simulate refresh delay for visual feedback
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await fetchDashboardData();
     setIsRefreshingTargets(false);
+  };
+
+  // Determine candidate status based on user's analyses
+  const getTargetStatus = (ticId: string) => {
+    const normalized = ticId.replace(/\D/g, '');
+    const match = analyses.find(a => a.tic_id === normalized);
+    if (!match) return { status: 'Candidate' as const, analysisId: null };
+    if (match.status === 'completed') {
+      const disposition = match.result?.vetting?.disposition;
+      if (disposition === 'PLANET_CANDIDATE') return { status: 'Planet Candidate' as const, analysisId: match.id };
+      if (disposition === 'LIKELY_FALSE_POSITIVE') return { status: 'False Positive' as const, analysisId: match.id };
+      return { status: 'Analyzed' as const, analysisId: match.id };
+    }
+    if (match.status === 'processing' || match.status === 'pending') return { status: 'Processing' as const, analysisId: match.id };
+    if (match.status === 'failed') return { status: 'Failed' as const, analysisId: match.id };
+    return { status: 'Candidate' as const, analysisId: null };
   };
 
   const handleRefreshActivity = async () => {
@@ -667,39 +682,59 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {toiCandidates.map((target, index) => (
-                    <tr key={index} className="hover:bg-[#f8f9fa] border-b border-[#f1f3f4]">
-                      <td className="py-2.5 px-3 text-[#202124] font-medium font-mono text-xs">{target.id}</td>
-                      <td className="py-2.5 px-3 text-[#3c4043]">{target.toi}</td>
-                      <td className="py-2.5 px-3 text-[#3c4043]">{target.period}</td>
-                      <td className="py-2.5 px-3 text-[#3c4043]">{target.depth}</td>
-                      <td className="py-2.5 px-3 text-[#3c4043]">{target.mag}</td>
-                      <td className="py-2.5 px-3">
-                        <span className="px-2 py-0.5 text-xs bg-[#fef7e0] text-[#b06000] rounded font-medium">
-                          {target.status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <button
-                          onClick={() => handleAnalyzeTarget(target.id.replace('TIC ', ''))}
-                          disabled={analyzingTarget !== null}
-                          className="inline-flex items-center gap-1.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:bg-[#93c5fd] text-white text-xs font-medium px-3 py-1 rounded transition-colors"
-                        >
-                          {analyzingTarget === target.id.replace('TIC ', '') ? (
-                            <>
-                              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Analyzing...
-                            </>
+                  {toiCandidates.map((target, index) => {
+                    const targetInfo = getTargetStatus(target.id);
+                    const statusStyles: Record<string, string> = {
+                      'Candidate': 'bg-[#fef7e0] text-[#b06000]',
+                      'Processing': 'bg-[#e8f0fe] text-[#1a73e8]',
+                      'Analyzed': 'bg-[#e8eaed] text-[#5f6368]',
+                      'Planet Candidate': 'bg-[#e6f4ea] text-[#137333]',
+                      'False Positive': 'bg-[#fce8e6] text-[#c5221f]',
+                      'Failed': 'bg-[#fce8e6] text-[#c5221f]',
+                    };
+                    return (
+                      <tr key={index} className="hover:bg-[#f8f9fa] border-b border-[#f1f3f4]">
+                        <td className="py-2.5 px-3 text-[#202124] font-medium font-mono text-xs">{target.id}</td>
+                        <td className="py-2.5 px-3 text-[#3c4043]">{target.toi}</td>
+                        <td className="py-2.5 px-3 text-[#3c4043]">{target.period}</td>
+                        <td className="py-2.5 px-3 text-[#3c4043]">{target.depth}</td>
+                        <td className="py-2.5 px-3 text-[#3c4043]">{target.mag}</td>
+                        <td className="py-2.5 px-3">
+                          <span className={`px-2 py-0.5 text-xs rounded font-medium ${statusStyles[targetInfo.status] || statusStyles['Candidate']}`}>
+                            {targetInfo.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          {targetInfo.analysisId && targetInfo.status !== 'Failed' ? (
+                            <Link
+                              href={`/results/${targetInfo.analysisId}`}
+                              className="inline-flex items-center gap-1.5 bg-white hover:bg-[#f1f3f4] text-[#1a73e8] text-xs font-medium px-3 py-1 rounded border border-[#dadce0] transition-colors"
+                            >
+                              View Results
+                            </Link>
                           ) : (
-                            'Analyze'
+                            <button
+                              onClick={() => handleAnalyzeTarget(target.id.replace('TIC ', ''))}
+                              disabled={analyzingTarget !== null}
+                              className="inline-flex items-center gap-1.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:bg-[#93c5fd] text-white text-xs font-medium px-3 py-1 rounded transition-colors"
+                            >
+                              {analyzingTarget === target.id.replace('TIC ', '') ? (
+                                <>
+                                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  Analyzing...
+                                </>
+                              ) : (
+                                targetInfo.status === 'Failed' ? 'Retry' : 'Analyze'
+                              )}
+                            </button>
                           )}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

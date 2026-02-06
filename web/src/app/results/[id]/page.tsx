@@ -6,6 +6,12 @@ import Link from 'next/link';
 import { Button, Card } from '@/components/ui';
 import { Header, Footer } from '@/components/layout';
 
+interface VettingTest {
+  flag: 'PASS' | 'FAIL' | 'WARNING';
+  message: string;
+  confidence?: number;
+}
+
 interface AnalysisResult {
   id: string;
   tic_id: string;
@@ -22,15 +28,13 @@ interface AnalysisResult {
     snr: number | null;
     vetting: {
       disposition: string;
-      odd_even_passed: boolean;
-      odd_even_sigma: number;
-      secondary_passed: boolean;
-      secondary_depth_ratio: number;
-      v_shape_passed: boolean;
-      v_shape_metric: number;
+      confidence: number;
+      odd_even: VettingTest;
+      v_shape: VettingTest;
+      secondary_eclipse: VettingTest;
     };
   };
-  error_message?: string;
+  error?: string;
 }
 
 export default function ResultsPage() {
@@ -64,14 +68,21 @@ export default function ResultsPage() {
   };
 
   useEffect(() => {
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
     const fetchAnalysis = async () => {
       try {
-        const res = await fetch(`/api/v1/analyses/${analysisId}`);
+        const res = await fetch(`/api/v1/analyze/${analysisId}`);
         if (!res.ok) {
           throw new Error('Analysis not found');
         }
         const data = await res.json();
         setAnalysis(data);
+
+        // Poll every 3s while analysis is still in progress
+        if (data.status === 'pending' || data.status === 'processing') {
+          pollTimer = setTimeout(fetchAnalysis, 3000);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load analysis');
       } finally {
@@ -82,6 +93,10 @@ export default function ResultsPage() {
     if (analysisId) {
       fetchAnalysis();
     }
+
+    return () => {
+      if (pollTimer) clearTimeout(pollTimer);
+    };
   }, [analysisId]);
 
   const getDispositionColor = (disposition: string) => {
@@ -90,10 +105,10 @@ export default function ResultsPage() {
     return 'text-yellow-400';
   };
 
-  const getTestBadge = (passed: boolean) => {
-    return passed
-      ? 'bg-green-500/20 text-green-400'
-      : 'bg-red-500/20 text-red-400';
+  const getTestBadge = (flag: string) => {
+    if (flag === 'PASS') return 'bg-green-500/20 text-green-400';
+    if (flag === 'FAIL') return 'bg-red-500/20 text-red-400';
+    return 'bg-yellow-500/20 text-yellow-400';
   };
 
   if (isLoading) {
@@ -169,7 +184,7 @@ export default function ResultsPage() {
           {analysis.status === 'failed' && (
             <Card className="p-6 mb-6 bg-red-900/20 border-red-500/30">
               <h3 className="text-lg font-semibold text-red-400 mb-2">Analysis Failed</h3>
-              <p className="text-gray-300">{analysis.error_message || 'An unknown error occurred during analysis.'}</p>
+              <p className="text-gray-300">{analysis.error || 'An unknown error occurred during analysis.'}</p>
             </Card>
           )}
 
@@ -251,11 +266,11 @@ export default function ResultsPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className={`px-3 py-1 rounded text-sm ${getTestBadge(analysis.result.vetting.odd_even_passed)}`}>
-                        {analysis.result.vetting.odd_even_passed ? 'PASSED' : 'FAILED'}
+                      <span className={`px-3 py-1 rounded text-sm ${getTestBadge(analysis.result.vetting.odd_even.flag)}`}>
+                        {analysis.result.vetting.odd_even.flag}
                       </span>
                       <p className="text-gray-400 text-sm mt-1">
-                        σ = {analysis.result.vetting.odd_even_sigma.toFixed(2)}
+                        {analysis.result.vetting.odd_even.message}
                       </p>
                     </div>
                   </div>
@@ -269,11 +284,11 @@ export default function ResultsPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className={`px-3 py-1 rounded text-sm ${getTestBadge(analysis.result.vetting.secondary_passed)}`}>
-                        {analysis.result.vetting.secondary_passed ? 'PASSED' : 'FAILED'}
+                      <span className={`px-3 py-1 rounded text-sm ${getTestBadge(analysis.result.vetting.secondary_eclipse.flag)}`}>
+                        {analysis.result.vetting.secondary_eclipse.flag}
                       </span>
                       <p className="text-gray-400 text-sm mt-1">
-                        Depth ratio: {analysis.result.vetting.secondary_depth_ratio.toFixed(2)}
+                        {analysis.result.vetting.secondary_eclipse.message}
                       </p>
                     </div>
                   </div>
@@ -287,11 +302,11 @@ export default function ResultsPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className={`px-3 py-1 rounded text-sm ${getTestBadge(analysis.result.vetting.v_shape_passed)}`}>
-                        {analysis.result.vetting.v_shape_passed ? 'PASSED' : 'FAILED'}
+                      <span className={`px-3 py-1 rounded text-sm ${getTestBadge(analysis.result.vetting.v_shape.flag)}`}>
+                        {analysis.result.vetting.v_shape.flag}
                       </span>
                       <p className="text-gray-400 text-sm mt-1">
-                        Metric: {analysis.result.vetting.v_shape_metric.toFixed(2)}
+                        {analysis.result.vetting.v_shape.message}
                       </p>
                     </div>
                   </div>
