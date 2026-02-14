@@ -22,9 +22,10 @@ export default function PricingPage() {
         'Community support',
         'FITS file upload',
       ],
-      cta: 'Go to Dashboard',
-      ctaLink: '/dashboard',
+      cta: 'Get Started Free',
+      ctaLink: '/cloud/auth/signup',
       highlighted: false,
+      isExternal: false,
     },
     {
       name: 'Monthly',
@@ -40,10 +41,11 @@ export default function PricingPage() {
         'Email support',
         'Cloud storage',
       ],
-      cta: 'Manage Plan',
-      ctaLink: process.env.NEXT_PUBLIC_LEMONSQUEEZY_MONTHLY_URL || '#',
+      cta: 'Subscribe Now',
+      ctaLink: 'https://larunspace.lemonsqueezy.com/checkout/buy/f35b9320-79ed-462d-bdf7-1ec4841eadbb',
       highlighted: true,
       badge: 'Popular',
+      isExternal: true,
     },
     {
       name: 'Annual',
@@ -59,10 +61,11 @@ export default function PricingPage() {
         'Advanced features',
         'Bulk processing',
       ],
-      cta: 'Manage Plan',
-      ctaLink: process.env.NEXT_PUBLIC_LEMONSQUEEZY_ANNUAL_URL || '#',
+      cta: 'Subscribe Now',
+      ctaLink: 'https://larunspace.lemonsqueezy.com/checkout/buy/ff35095c-0eac-427c-8309-8d55448979a2',
       highlighted: false,
       badge: 'Best value',
+      isExternal: true,
     },
   ]
 
@@ -121,14 +124,27 @@ export default function PricingPage() {
               </ul>
 
               {/* CTA */}
-              <Link
-                href={tier.ctaLink}
-                className={`btn w-full justify-center ${
-                  tier.highlighted ? 'btn-primary' : 'btn-outline'
-                }`}
-              >
-                {tier.cta}
-              </Link>
+              {tier.isExternal ? (
+                <a
+                  href={tier.ctaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`btn w-full justify-center ${
+                    tier.highlighted ? 'btn-primary' : 'btn-outline'
+                  }`}
+                >
+                  {tier.cta}
+                </a>
+              ) : (
+                <Link
+                  href={tier.ctaLink}
+                  className={`btn w-full justify-center ${
+                    tier.highlighted ? 'btn-primary' : 'btn-outline'
+                  }`}
+                >
+                  {tier.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>
