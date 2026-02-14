@@ -6,26 +6,25 @@ import Link from 'next/link';
 export default function PricingSection() {
   const { data: session, status } = useSession();
 
-  const getHref = () => {
-    if (session) return '/settings/subscription';
-    return '/auth/register';
+  const getHref = (tier: 'free' | 'monthly' | 'annual') => {
+    if (tier === 'free') {
+      return '/cloud/auth/signup';
+    }
+    return '/cloud/pricing';
   };
 
   const getButtonText = (tier: 'free' | 'monthly' | 'annual') => {
-    if (session) {
-      return tier === 'free' ? 'Go to Dashboard' : 'Manage Plan';
-    }
-    return tier === 'free' ? 'Get Started' : 'Subscribe';
+    return tier === 'free' ? 'Get Started Free' : 'View Plans';
   };
 
   return (
     <section id="pricing" className="py-20 bg-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-[#202124] text-center mb-4">
-          Simple Pricing
+          Cloud Platform Pricing
         </h2>
         <p className="text-[#5f6368] text-center mb-12">
-          Start free, upgrade when you need more
+          Upload FITS files and run TinyML inference in the cloud. Start free, upgrade when you need more.
         </p>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -55,7 +54,7 @@ export default function PricingSection() {
               </li>
             </ul>
             <Link
-              href={session ? '/dashboard' : '/auth/register'}
+              href={getHref('free')}
               className="block text-center bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium py-2.5 rounded-lg transition-colors"
             >
               {getButtonText('free')}
@@ -91,7 +90,7 @@ export default function PricingSection() {
               </li>
             </ul>
             <Link
-              href={getHref()}
+              href={getHref('monthly')}
               className="block text-center bg-white hover:bg-[#f1f3f4] text-[#1a73e8] font-medium py-2.5 rounded-lg transition-colors"
             >
               {getButtonText('monthly')}
@@ -124,7 +123,7 @@ export default function PricingSection() {
               </li>
             </ul>
             <Link
-              href={getHref()}
+              href={getHref('annual')}
               className="block text-center bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium py-2.5 rounded-lg transition-colors"
             >
               {getButtonText('annual')}

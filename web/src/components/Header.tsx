@@ -36,6 +36,9 @@ export default function Header() {
             <Link href="/models" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Models
             </Link>
+            <Link href="/cloud" className="text-[#1a73e8] hover:text-[#1557b0] text-sm font-semibold transition-colors">
+              Cloud ☁️
+            </Link>
             <Link href="/guide" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Guide
             </Link>
