@@ -115,19 +115,48 @@ export default function ModelsPage() {
           or analysis task. All models are under 100KB, enabling edge deployment and browser-based inference.
         </p>
 
-        {/* Download Section */}
-        <div className="bg-[#1a73e8] text-white rounded-xl p-6 mb-8">
+        {/* Try Cloud Platform CTA */}
+        <div className="bg-gradient-to-r from-[#1a73e8] to-[#174ea6] text-white rounded-xl p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold mb-2">Download All Models</h2>
-              <p className="text-blue-100 text-sm">Get the complete model bundle for local inference on your own hardware.</p>
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-3">
+                <span>✨</span>
+                <span>NEW: Cloud Platform</span>
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Try These Models Online</h2>
+              <p className="text-white/90 text-sm mb-2">Upload FITS files and run instant inference with any of these 8 models in the cloud.</p>
+              <p className="text-white/75 text-xs">5 free analyses per month • No setup required • Results in &lt;100ms</p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/cloud"
+                className="px-5 py-2.5 bg-white text-[#1a73e8] font-medium rounded-lg hover:bg-blue-50 transition-colors text-sm whitespace-nowrap"
+              >
+                Try Cloud Platform →
+              </Link>
+              <Link
+                href="/cloud/pricing"
+                className="px-5 py-2.5 bg-transparent border border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors text-sm whitespace-nowrap"
+              >
+                View Pricing
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Download Section */}
+        <div className="bg-white border-2 border-[#dadce0] rounded-xl p-6 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold text-[#202124] mb-2">Download Models for Local Use</h2>
+              <p className="text-[#5f6368] text-sm">Get the complete model bundle for local inference on your own hardware (free forever).</p>
             </div>
             <div className="flex gap-3">
               <a
                 href="https://github.com/Paddy1981/larun/releases/latest"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-2.5 bg-white text-[#1a73e8] font-medium rounded-lg hover:bg-blue-50 transition-colors text-sm"
+                className="px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors text-sm"
               >
                 Download Bundle
               </a>
@@ -135,7 +164,7 @@ export default function ModelsPage() {
                 href="https://github.com/Paddy1981/larun"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-2.5 bg-transparent border border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors text-sm"
+                className="px-5 py-2.5 bg-white hover:bg-[#f1f3f4] text-[#202124] font-medium rounded-lg border border-[#dadce0] transition-colors text-sm"
               >
                 View on GitHub
               </a>
@@ -143,17 +172,21 @@ export default function ModelsPage() {
           </div>
         </div>
 
-        {/* Subscription Info */}
-        <div className="bg-[#fef7e0] border border-[#f9e79f] rounded-xl p-4 mb-8">
+        {/* Usage Options Info */}
+        <div className="bg-[#e8f5e9] border border-[#a5d6a7] rounded-xl p-4 mb-8">
           <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-[#b7950b] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg className="w-5 h-5 text-[#2e7d32] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
             </svg>
             <div>
-              <p className="text-sm text-[#7d6608] font-medium">All models are available to all users</p>
-              <p className="text-xs text-[#9a7d0a] mt-1">
-                Subscription tiers limit the number of analyses per month: Free (5), Monthly (50), Annual (Unlimited).
-                <Link href="/settings/subscription" className="ml-1 underline hover:no-underline">View plans</Link>
+              <p className="text-sm text-[#1b5e20] font-medium">Two Ways to Use These Models</p>
+              <p className="text-xs text-[#2e7d32] mt-1">
+                <strong>Cloud Platform:</strong> Upload FITS files for instant inference (5 free/month, then $9/month for 50 analyses).
+                <Link href="/cloud/pricing" className="ml-1 underline hover:no-underline">View plans</Link>
+              </p>
+              <p className="text-xs text-[#2e7d32] mt-1">
+                <strong>Local Download:</strong> Download models and run unlimited inference on your own hardware (free forever).
+                <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="ml-1 underline hover:no-underline">Get started</a>
               </p>
             </div>
           </div>
@@ -223,18 +256,26 @@ export default function ModelsPage() {
                 <span>Accuracy: <strong className="text-[#202124]">{model.accuracy}</strong></span>
                 <span>Size: <strong className="text-[#202124]">{model.size}</strong></span>
               </div>
-              {model.downloadUrl ? (
-                <a
-                  href={model.downloadUrl}
-                  className="block text-center px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium rounded-lg transition-colors"
+              <div className="flex gap-2">
+                <Link
+                  href="/cloud/analyze"
+                  className="flex-1 text-center px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium rounded-lg transition-colors"
                 >
-                  Download .npz
-                </a>
-              ) : (
-                <span className="block text-center px-4 py-2 bg-[#f1f3f4] text-[#5f6368] text-sm rounded-lg">
-                  Coming Soon
-                </span>
-              )}
+                  Try on Cloud
+                </Link>
+                {model.downloadUrl ? (
+                  <a
+                    href={model.downloadUrl}
+                    className="flex-1 text-center px-4 py-2 bg-white hover:bg-[#f1f3f4] text-[#202124] text-sm font-medium rounded-lg border border-[#dadce0] transition-colors"
+                  >
+                    Download
+                  </a>
+                ) : (
+                  <span className="flex-1 text-center px-4 py-2 bg-[#f1f3f4] text-[#5f6368] text-sm rounded-lg">
+                    Soon
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -254,18 +295,26 @@ export default function ModelsPage() {
                 <span>Accuracy: <strong className="text-[#202124]">{model.accuracy}</strong></span>
                 <span>Size: <strong className="text-[#202124]">{model.size}</strong></span>
               </div>
-              {model.downloadUrl ? (
-                <a
-                  href={model.downloadUrl}
-                  className="block text-center px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium rounded-lg transition-colors"
+              <div className="flex gap-2">
+                <Link
+                  href="/cloud/analyze"
+                  className="flex-1 text-center px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium rounded-lg transition-colors"
                 >
-                  Download .npz
-                </a>
-              ) : (
-                <span className="block text-center px-4 py-2 bg-[#f1f3f4] text-[#5f6368] text-sm rounded-lg">
-                  Coming Soon
-                </span>
-              )}
+                  Try on Cloud
+                </Link>
+                {model.downloadUrl ? (
+                  <a
+                    href={model.downloadUrl}
+                    className="flex-1 text-center px-4 py-2 bg-white hover:bg-[#f1f3f4] text-[#202124] text-sm font-medium rounded-lg border border-[#dadce0] transition-colors"
+                  >
+                    Download
+                  </a>
+                ) : (
+                  <span className="flex-1 text-center px-4 py-2 bg-[#f1f3f4] text-[#5f6368] text-sm rounded-lg">
+                    Soon
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>

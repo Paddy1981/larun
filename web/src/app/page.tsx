@@ -195,7 +195,7 @@ export default function HomePage() {
             Features
           </h2>
           <p className="text-[#5f6368] text-center mb-12 max-w-2xl mx-auto">
-            Professional-grade tools for exoplanet detection
+            Professional-grade tools for astronomical analysis powered by 8 specialized TinyML models
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
