@@ -129,7 +129,7 @@ export default function PricingPage() {
                   href={tier.ctaLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`btn w-full justify-center ${
+                  className={`btn w-full flex items-center justify-center ${
                     tier.highlighted ? 'btn-primary' : 'btn-outline'
                   }`}
                 >
@@ -138,7 +138,7 @@ export default function PricingPage() {
               ) : (
                 <Link
                   href={tier.ctaLink}
-                  className={`btn w-full justify-center ${
+                  className={`btn w-full flex items-center justify-center ${
                     tier.highlighted ? 'btn-primary' : 'btn-outline'
                   }`}
                 >
