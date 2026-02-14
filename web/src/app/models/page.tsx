@@ -12,17 +12,7 @@ interface ModelCard {
   metric?: string; // 'accuracy' or 'auc'
 }
 
-// Featured model - Multi-View Exoplanet Detection (production-ready)
-const featuredModel: ModelCard = {
-  id: 'multiview-exoplanet',
-  name: 'MULTIVIEW-EXOPLANET',
-  description: 'Advanced multi-view architecture for exoplanet detection. Analyzes global (2001 pts), local (201 pts), and secondary eclipse views simultaneously for robust transit identification.',
-  accuracy: '74.2%',
-  metric: 'auc',
-  size: '327KB',
-  downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/MULTIVIEW-EXOPLANET_weights.npz',
-  trained: true,
-};
+// Removed MULTIVIEW-EXOPLANET - superseded by EXOPLANET-001 (98% accuracy vs 74.2% AUC, 43KB vs 327KB)
 
 const detectionModels: ModelCard[] = [
   {
@@ -209,35 +199,6 @@ export default function ModelsPage() {
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
             <div className="text-3xl font-bold text-[#202124]">&lt;20ms</div>
             <div className="text-sm text-[#5f6368] mt-1">Avg. Inference</div>
-          </div>
-        </div>
-
-        {/* Featured Model */}
-        <h2 className="text-2xl font-semibold text-[#202124] mb-4">Featured: Multi-View Architecture</h2>
-        <div className="bg-gradient-to-r from-[#1a73e8] to-[#4285f4] text-white rounded-xl p-6 mb-10">
-          <div className="flex flex-col md:flex-row md:items-center gap-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-xl font-bold font-mono">{featuredModel.name}</h3>
-                <span className="px-2 py-0.5 bg-white/20 text-xs rounded-full">NEW</span>
-              </div>
-              <p className="text-blue-100 mb-4">{featuredModel.description}</p>
-              <div className="flex gap-6 text-sm mb-4">
-                <span>AUC: <strong>{featuredModel.accuracy}</strong></span>
-                <span>Size: <strong>{featuredModel.size}</strong></span>
-                <span>Format: <strong>.npz (NumPy)</strong></span>
-              </div>
-              <a
-                href={featuredModel.downloadUrl}
-                className="inline-block px-5 py-2.5 bg-white text-[#1a73e8] font-medium rounded-lg hover:bg-blue-50 transition-colors text-sm"
-              >
-                Download Weights
-              </a>
-            </div>
-            <div className="hidden md:block text-right">
-              <div className="text-6xl font-bold opacity-20">MV</div>
-              <div className="text-sm opacity-60">Multi-View CNN</div>
-            </div>
           </div>
         </div>
 
