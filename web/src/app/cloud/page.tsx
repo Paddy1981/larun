@@ -23,7 +23,10 @@ export default function Home() {
         </p>
 
         <div className="flex gap-4 justify-center mb-16">
-          <Link href="/pricing" className="bg-larun-black text-white px-8 py-4 rounded-lg hover:bg-gray-800">
+          <Link href="/cloud/auth/signup" className="bg-larun-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors">
+            Start Free Trial
+          </Link>
+          <Link href="/cloud/pricing" className="bg-white text-larun-black px-8 py-4 rounded-lg border-2 border-larun-black hover:bg-gray-50 transition-colors">
             View Pricing
           </Link>
         </div>
@@ -50,22 +53,89 @@ export default function Home() {
 
       <section className="bg-larun-lighter-gray py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl text-center mb-16">Features</h2>
+          <h2 className="text-4xl text-center mb-4">8 Specialized TinyML Models</h2>
+          <p className="text-center text-larun-medium-gray mb-16">
+            Each model optimized for a specific astronomical detection task
+          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
             <div className="bg-white p-6 rounded-lg">
-              <h3 className="text-xl font-medium mb-4">Exoplanet Detection</h3>
-              <p className="text-larun-medium-gray">Detect planetary transits in light curves</p>
+              <h3 className="text-lg font-medium mb-2">EXOPLANET-001</h3>
+              <p className="text-sm text-larun-medium-gray">Transit detection</p>
             </div>
             <div className="bg-white p-6 rounded-lg">
-              <h3 className="text-xl font-medium mb-4">Variable Stars</h3>
-              <p className="text-larun-medium-gray">Classify stellar variability</p>
+              <h3 className="text-lg font-medium mb-2">VSTAR-001</h3>
+              <p className="text-sm text-larun-medium-gray">Variable star classification</p>
             </div>
             <div className="bg-white p-6 rounded-lg">
-              <h3 className="text-xl font-medium mb-4">More Models</h3>
-              <p className="text-larun-medium-gray">6 additional specialized models</p>
+              <h3 className="text-lg font-medium mb-2">FLARE-001</h3>
+              <p className="text-sm text-larun-medium-gray">Stellar flare detection</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-medium mb-2">MICROLENS-001</h3>
+              <p className="text-sm text-larun-medium-gray">Microlensing events</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-medium mb-2">SUPERNOVA-001</h3>
+              <p className="text-sm text-larun-medium-gray">Transient detection</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-medium mb-2">SPECTYPE-001</h3>
+              <p className="text-sm text-larun-medium-gray">Spectral classification</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-medium mb-2">ASTERO-001</h3>
+              <p className="text-sm text-larun-medium-gray">Asteroseismology</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-medium mb-2">GALAXY-001</h3>
+              <p className="text-sm text-larun-medium-gray">Galaxy morphology</p>
             </div>
           </div>
+
+          <div className="text-center">
+            <Link href="/models" className="inline-block text-larun-black hover:underline">
+              View detailed model specifications →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Start Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl mb-6">Get Started in Minutes</h2>
+          <p className="text-lg text-larun-medium-gray mb-12">
+            No setup, no installations. Just upload and analyze.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div>
+              <div className="w-12 h-12 bg-larun-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                1
+              </div>
+              <h3 className="font-medium mb-2">Sign Up Free</h3>
+              <p className="text-sm text-larun-medium-gray">Create account in seconds</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-larun-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                2
+              </div>
+              <h3 className="font-medium mb-2">Upload FITS File</h3>
+              <p className="text-sm text-larun-medium-gray">Drag & drop your data</p>
+            </div>
+            <div>
+              <div className="w-12 h-12 bg-larun-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                3
+              </div>
+              <h3 className="font-medium mb-2">Get Results</h3>
+              <p className="text-sm text-larun-medium-gray">Instant classification</p>
+            </div>
+          </div>
+
+          <Link href="/cloud/auth/signup" className="inline-block bg-larun-black text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors">
+            Start Analyzing Now →
+          </Link>
         </div>
       </section>
     </div>
