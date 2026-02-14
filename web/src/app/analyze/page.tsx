@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import Header from '@/components/Header';
 
 interface AnalysisResult {
@@ -31,11 +32,19 @@ const popularTargets = [
 ];
 
 export default function AnalyzePage() {
+  const { data: session, status } = useSession();
   const [ticId, setTicId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      window.location.href = '/cloud/auth/login?redirect=/analyze';
+    }
+  }, [status]);
 
   const handleAnalyze = async (targetId?: string) => {
     const idToAnalyze = targetId || ticId.trim();
@@ -102,6 +111,24 @@ export default function AnalyzePage() {
       handleAnalyze();
     }
   };
+
+  // Show loading while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex flex-col bg-white">
+        <Header />
+        <main className="flex-1 pt-24 pb-16 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 relative">
+              <div className="absolute inset-0 border-4 border-[#f1f3f4] rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-[#1a73e8] rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <p className="text-[#5f6368]">Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
