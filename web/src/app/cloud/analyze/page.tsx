@@ -68,7 +68,10 @@ export default function AnalyzePage() {
       setQuota(updatedQuota)
     } catch (err: any) {
       console.error('Analysis failed:', err)
-      setError(err.response?.data?.detail || err.message || 'Analysis failed. Please try again.')
+      const errorMessage = err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')
+        ? 'Backend API is not available. The analysis service requires deployment of the Python backend. Please contact support or download models from the Models page for local use.'
+        : err.response?.data?.detail || err.message || 'Analysis failed. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsAnalyzing(false)
     }
