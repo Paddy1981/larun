@@ -83,10 +83,13 @@ export default function GuidePage() {
           <Link href="/" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] no-underline">
             Home
           </Link>
-          <Link href="/dashboard" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] no-underline">
-            Dashboard
+          <Link href="/models" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] no-underline">
+            Models
           </Link>
-          <Link href="/#pricing" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] no-underline">
+          <Link href="/cloud" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] no-underline">
+            Cloud
+          </Link>
+          <Link href="/cloud/pricing" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] no-underline">
             Pricing
           </Link>
           <Link href="/guide" className="px-4 py-2 text-[#1a73e8] text-sm font-medium rounded no-underline">
@@ -95,7 +98,7 @@ export default function GuidePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="px-5 py-2 bg-[#202124] text-white text-sm font-medium rounded no-underline hover:bg-[#3c4043] transition-colors">
+          <Link href="/cloud/auth/signup" className="px-5 py-2 bg-[#202124] text-white text-sm font-medium rounded no-underline hover:bg-[#3c4043] transition-colors">
             Get Started
           </Link>
         </div>
@@ -147,36 +150,60 @@ export default function GuidePage() {
         <main className="ml-[260px] flex-1 p-8 max-w-[900px]">
           {/* Welcome Section */}
           <section id="welcome" className="mb-12">
-            <h1 className="text-[32px] font-normal text-[#202124] mb-4">Welcome to Larun</h1>
+            <h1 className="text-[32px] font-normal text-[#202124] mb-4">Welcome to LARUN.SPACE</h1>
             <p className="text-[#3c4043] text-base leading-relaxed mb-6">
-              Larun is a TinyML-powered platform that enables anyone to search for exoplanets in NASA telescope data.
-              This guide will help you understand how to use the platform effectively and maximize your chances of
-              making a real discovery.
+              LARUN.SPACE is a TinyML-powered cloud platform for astronomical data analysis. With 8 specialized models,
+              you can detect exoplanets, classify variable stars, identify stellar flares, find microlensing events,
+              spot supernovae, classify spectra, perform asteroseismology, and analyze galaxy morphology.
             </p>
 
+            <div className="bg-gradient-to-r from-[#1a73e8] to-[#174ea6] rounded-lg p-6 mb-6 text-white">
+              <h3 className="text-lg font-semibold mb-3">☁️ Cloud Platform Now Available</h3>
+              <p className="text-sm mb-4 opacity-90">
+                Upload FITS files and run TinyML inference instantly with our cloud platform. No setup required.
+              </p>
+              <Link
+                href="/cloud/auth/signup"
+                className="inline-block bg-white text-[#1a73e8] px-6 py-2 rounded font-medium hover:bg-gray-100 transition-colors"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+
             <div className="bg-white border border-[#dadce0] rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-medium text-[#202124] mb-4">What You Can Do</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-[#e8f0fe] rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-[#1a73e8] text-xl">🔭</span>
-                  </div>
-                  <h4 className="font-medium text-[#202124] mb-1">Search</h4>
-                  <p className="text-sm text-[#5f6368]">Analyze light curves for transit signals</p>
+              <h3 className="text-lg font-medium text-[#202124] mb-4">8 TinyML Models Available</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">EXOPLANET-001</div>
+                  <div className="text-xs text-[#5f6368]">Transit Detection</div>
                 </div>
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-[#e6f4ea] rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-[#1e8e3e] text-xl">✓</span>
-                  </div>
-                  <h4 className="font-medium text-[#202124] mb-1">Vet</h4>
-                  <p className="text-sm text-[#5f6368]">Validate candidates with diagnostic tests</p>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">VSTAR-001</div>
+                  <div className="text-xs text-[#5f6368]">Variable Stars</div>
                 </div>
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-[#fef7e0] rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-[#f9ab00] text-xl">📊</span>
-                  </div>
-                  <h4 className="font-medium text-[#202124] mb-1">Analyze</h4>
-                  <p className="text-sm text-[#5f6368]">Assess habitability potential</p>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">FLARE-001</div>
+                  <div className="text-xs text-[#5f6368]">Stellar Flares</div>
+                </div>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">MICROLENS-001</div>
+                  <div className="text-xs text-[#5f6368]">Microlensing</div>
+                </div>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">SUPERNOVA-001</div>
+                  <div className="text-xs text-[#5f6368]">Transients</div>
+                </div>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">SPECTYPE-001</div>
+                  <div className="text-xs text-[#5f6368]">Spectral Class</div>
+                </div>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">ASTERO-001</div>
+                  <div className="text-xs text-[#5f6368]">Asteroseismology</div>
+                </div>
+                <div className="text-center p-3 bg-[#f8f9fa] rounded">
+                  <div className="font-medium text-[#202124] mb-1">GALAXY-001</div>
+                  <div className="text-xs text-[#5f6368]">Morphology</div>
                 </div>
               </div>
             </div>
@@ -186,7 +213,7 @@ export default function GuidePage() {
           <section id="first-steps" className="mb-12">
             <h2 className="text-2xl font-normal text-[#202124] mb-4 pt-6 border-t border-[#dadce0]">First Steps</h2>
             <p className="text-[#3c4043] mb-6">
-              Getting started with Larun is straightforward. Follow these steps to run your first analysis.
+              Getting started with LARUN.SPACE is straightforward. Follow these steps to run your first analysis on the Cloud platform.
             </p>
 
             <div className="space-y-4">
@@ -196,12 +223,13 @@ export default function GuidePage() {
                   1
                 </div>
                 <div>
-                  <h4 className="font-medium text-[#202124] mb-2">Choose a Target</h4>
+                  <h4 className="font-medium text-[#202124] mb-2">Sign Up Free</h4>
                   <p className="text-sm text-[#5f6368] mb-3">
-                    Enter a TIC (TESS Input Catalog) or KIC (Kepler Input Catalog) identifier. You can find interesting
-                    targets from the NASA Exoplanet Archive or TESS Objects of Interest list.
+                    Create a free account to get 5 analyses per month. No credit card required.
                   </p>
-                  <code className="bg-[#f1f3f4] px-2 py-1 rounded text-sm text-[#202124]">Example: TIC 307210830</code>
+                  <Link href="/cloud/auth/signup" className="text-sm text-[#1a73e8] hover:underline">
+                    Sign up now →
+                  </Link>
                 </div>
               </div>
 
@@ -211,10 +239,10 @@ export default function GuidePage() {
                   2
                 </div>
                 <div>
-                  <h4 className="font-medium text-[#202124] mb-2">Run Detection</h4>
+                  <h4 className="font-medium text-[#202124] mb-2">Upload FITS File</h4>
                   <p className="text-sm text-[#5f6368] mb-3">
-                    Click &quot;Run Detection&quot; to fetch the light curve data and analyze it with our TinyML model.
-                    Processing typically takes 10-30 seconds depending on data size.
+                    Upload your astronomical light curve data in FITS format. Our platform accepts standard FITS files
+                    from TESS, Kepler, and other missions.
                   </p>
                 </div>
               </div>
@@ -225,10 +253,10 @@ export default function GuidePage() {
                   3
                 </div>
                 <div>
-                  <h4 className="font-medium text-[#202124] mb-2">Review Results</h4>
+                  <h4 className="font-medium text-[#202124] mb-2">Select Model & Analyze</h4>
                   <p className="text-sm text-[#5f6368] mb-3">
-                    Examine the detection results including the confidence score, light curve visualization,
-                    and any detected transit signals. If promising, proceed to vetting.
+                    Choose from 8 specialized TinyML models. Each model is optimized for specific astronomical phenomena.
+                    Results typically return in under 10 seconds with inference times &lt;10ms.
                   </p>
                 </div>
               </div>
@@ -516,16 +544,16 @@ export default function GuidePage() {
           </section>
 
           {/* CTA Section */}
-          <div className="bg-[#202124] rounded-lg p-8 text-center">
+          <div className="bg-gradient-to-r from-[#1a73e8] to-[#174ea6] rounded-lg p-8 text-center">
             <h3 className="text-xl font-medium text-white mb-2">Ready to Start?</h3>
-            <p className="text-[#9aa0a6] mb-6">
-              Put your knowledge to work and search for your first exoplanet candidate.
+            <p className="text-white opacity-90 mb-6">
+              Sign up free and start analyzing astronomical data with TinyML models.
             </p>
             <Link
-              href="/dashboard"
-              className="inline-block px-6 py-3 bg-white text-[#202124] text-sm font-medium rounded no-underline hover:bg-[#f1f3f4] transition-colors"
+              href="/cloud/auth/signup"
+              className="inline-block px-6 py-3 bg-white text-[#1a73e8] text-sm font-medium rounded no-underline hover:bg-gray-100 transition-colors"
             >
-              Launch Dashboard
+              Start Free Trial
             </Link>
           </div>
         </main>
@@ -543,7 +571,7 @@ export default function GuidePage() {
           <Link href="/faq" className="text-[#5f6368] text-sm no-underline hover:text-[#202124]">
             FAQ
           </Link>
-          <Link href="/#pricing" className="text-[#5f6368] text-sm no-underline hover:text-[#202124]">
+          <Link href="/cloud/pricing" className="text-[#5f6368] text-sm no-underline hover:text-[#202124]">
             Pricing
           </Link>
         </div>
