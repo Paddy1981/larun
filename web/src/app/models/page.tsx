@@ -185,7 +185,7 @@ export default function ModelsPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">9</div>
+            <div className="text-3xl font-bold text-[#202124]">8</div>
             <div className="text-sm text-[#5f6368] mt-1">Trained Models</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#1a73e8] text-center">
