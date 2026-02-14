@@ -331,8 +331,8 @@ export default function DashboardPage() {
           <nav className="hidden md:flex items-center gap-2">
             <Link href="/" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Home</Link>
             <Link href="/dashboard" className="px-4 py-2 text-[#1a73e8] text-sm font-medium rounded">Dashboard</Link>
-            <Link href="/#pricing" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Pricing</Link>
-            <Link href="/#features" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Docs</Link>
+            <Link href="/cloud" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Cloud</Link>
+            <Link href="/models" className="px-4 py-2 text-[#3c4043] text-sm font-medium rounded hover:bg-[#f1f3f4] transition-colors">Models</Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -552,6 +552,30 @@ export default function DashboardPage() {
               <Link href="/#features" className="bg-white hover:bg-[#f1f3f4] text-[#202124] text-xs font-medium px-5 py-1.5 rounded border border-[#dadce0] transition-colors">
                 View Documentation
               </Link>
+            </div>
+          </div>
+
+          {/* Cloud Platform CTA */}
+          <div className="bg-gradient-to-r from-[#1a73e8] to-[#174ea6] rounded-lg p-5 mb-5 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] text-white">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-2">
+                  <span>✨</span>
+                  <span>NEW</span>
+                </div>
+                <h3 className="text-lg font-medium mb-1.5">Try Our Cloud Platform</h3>
+                <p className="text-sm text-white/90 mb-0">
+                  Upload FITS files and run instant inference with 8 specialized TinyML models. 5 free analyses per month, no setup required.
+                </p>
+              </div>
+              <div className="flex gap-2.5">
+                <Link href="/cloud" className="bg-white text-[#1a73e8] hover:bg-blue-50 text-xs font-medium px-5 py-2.5 rounded transition-colors whitespace-nowrap">
+                  Try Cloud →
+                </Link>
+                <Link href="/cloud/pricing" className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 text-xs font-medium px-5 py-2.5 rounded transition-colors whitespace-nowrap">
+                  Pricing
+                </Link>
+              </div>
             </div>
           </div>
 
