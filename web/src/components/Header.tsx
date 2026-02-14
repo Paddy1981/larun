@@ -30,7 +30,7 @@ export default function Header() {
 
           {/* Center Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
+            <Link href="/#features" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Features
             </Link>
             <Link href="/models" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
@@ -42,7 +42,7 @@ export default function Header() {
             <Link href="/guide" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Guide
             </Link>
-            <Link href="#pricing" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
+            <Link href="/cloud/pricing" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
               Pricing
             </Link>
             <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="text-[#5f6368] hover:text-[#202124] text-sm font-medium transition-colors">
