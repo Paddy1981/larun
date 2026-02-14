@@ -1,0 +1,63 @@
+{
+  "version": "3.0.0",
+  "created": "2026-02-14",
+  "models": {
+    "exoplanet_v3.0": {
+      "filename": "exoplanet_v3.0.tflite",
+      "accuracy": "97.90% ± 1.49%",
+      "size_kb": 26,
+      "input_shape": [512, 1],
+      "classes": 6,
+      "class_names": [
+        "Confirmed Planet",
+        "Eclipsing Binary",
+        "Variable Star",
+        "Stellar Activity",
+        "Instrumental Artifact",
+        "No Signal"
+      ],
+      "training_samples": 5000,
+      "validation_method": "5-fold cross-validation",
+      "architecture": "Deep CNN (4 conv layers, 3x3 kernels, [16,24,32,32] filters)",
+      "preprocessing": "Median normalization with MAD scaling",
+      "inference_time_ms": "<20",
+      "quantization": "INT8",
+      "replaced": "exoplanet_v2.0 (Jan 31, 2026)",
+      "improvements": [
+        "Higher accuracy (97.9% vs 96.7%)",
+        "Smaller size (26 KB vs 31 KB)",
+        "More training data (5000 vs 636 samples)",
+        "K-fold cross-validation",
+        "6 detailed classes (vs 3 basic classes)"
+      ]
+    },
+    "vstar_v1.0": {
+      "filename": "vstar_v1.0.tflite",
+      "accuracy": "99.8%",
+      "size_kb": 27,
+      "input_shape": [512, 1],
+      "classes": "Multiple variable star types",
+      "class_names": [
+        "Cepheid",
+        "RR Lyrae",
+        "Delta Scuti",
+        "Other variable types"
+      ],
+      "architecture": "Deep CNN",
+      "quantization": "INT8",
+      "inference_time_ms": "<20"
+    }
+  },
+  "deployment": {
+    "edge_devices": ["Arduino", "ESP32", "Microcontrollers"],
+    "web": "TFLite.js compatible",
+    "mobile": "TFLite Android/iOS compatible",
+    "total_size_kb": 53,
+    "combined_inference_ms": "<40"
+  },
+  "notes": [
+    "Version 3.0 represents a complete overhaul with CNN-based architecture",
+    "Previous v2.0 (Jan 31) archived in ../archived/v2.0_jan31/",
+    "Feature-based models archived in ../archived/feature_based_npz/"
+  ]
+}
