@@ -15,6 +15,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Server-side Supabase client for API routes
+export const createServerSupabaseClient = () => {
+  return createClient(supabaseUrl, supabaseAnonKey)
+}
+
 // Database types
 export interface User {
   id: string
