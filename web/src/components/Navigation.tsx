@@ -72,14 +72,14 @@ export function Navigation() {
             {/* Auth Buttons */}
             <div className="flex items-center gap-3 ml-4 pl-4 border-l border-larun-light-gray">
               <Link
-                href="/auth/login"
+                href="/cloud/auth/login"
                 className="text-sm font-medium text-larun-medium-gray hover:text-larun-black transition-colors"
               >
                 Sign In
               </Link>
 
               <Link
-                href="/auth/signup"
+                href="/cloud/auth/signup"
                 className="bg-larun-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-larun-dark-gray transition-colors"
               >
                 Get Started
