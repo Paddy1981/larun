@@ -9,6 +9,9 @@ import { InferenceResult } from './supabase'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+// Log API URL for debugging
+console.log('API Client initialized with URL:', API_URL)
+
 class APIClient {
   private client: AxiosInstance
 
@@ -20,6 +23,7 @@ class APIClient {
         'Content-Type': 'application/json',
       },
     })
+    console.log('API Client baseURL:', this.client.defaults.baseURL)
   }
 
   setAuthToken(token: string) {

@@ -33,7 +33,7 @@ export default function AnalyzePage() {
   const checkAuth = async () => {
     const { user } = await getCurrentUser()
     if (!user) {
-      window.location.href = '/auth/login?redirect=/analyze'
+      window.location.href = '/cloud/auth/login?redirect=/cloud/analyze'
       return
     }
 
