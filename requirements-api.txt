@@ -1,0 +1,14 @@
+# FastAPI & Server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Astronomical Data
+astropy==5.3.4
+numpy==1.24.3
+
+# Core ML (minimal)
+tensorflow==2.13.0
+
+# Utilities
+python-dotenv==1.0.0
