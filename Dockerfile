@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY requirements-api.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --user -r requirements.txt
+# Install Python dependencies (lightweight for API only)
+RUN pip install --no-cache-dir --user -r requirements-api.txt
 
 # ============================================================================
 # Stage 2: Runtime
@@ -61,8 +61,8 @@ EXPOSE 8000 8501
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command: Run API server
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command: Run API server (Railway sets $PORT automatically)
+CMD uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}
 
 # ============================================================================
 # Alternative entrypoints (use with docker run --entrypoint)
