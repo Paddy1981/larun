@@ -403,30 +403,56 @@ export async function POST(request: NextRequest) {
   const t0 = Date.now();
 
   try {
-    // Validate API key (or fall through for web-UI session requests)
+    // 1. Validate API key (or fall through for web-UI session requests)
     let authResult: Awaited<ReturnType<typeof validateApiKey>>;
     try {
       authResult = await validateApiKey(request);
     } catch (errResp) {
       return errResp as NextResponse; // invalid/rate-limited key
     }
-    void authResult; // auth context available if needed later
 
+    // 2. Parse form data
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const modelId = (formData.get('model_id') as string | null) || 'EXOPLANET-001';
+    const userId = (formData.get('user_id') as string | null) || null;
 
     if (!file) {
       return NextResponse.json({ detail: 'No file provided' }, { status: 400 });
     }
-
-    if (file.size > 50 * 1024 * 1024) { // 50 MB cap
+    if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json({ detail: 'File too large (max 50 MB)' }, { status: 413 });
     }
 
-    const buffer = await file.arrayBuffer();
+    // 3. For web-UI requests: check quota BEFORE running inference
+    let userRow: { analyses_this_month: number; analyses_limit: number } | null = null;
+    if (authResult.type === 'web' && userId && SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+      const service = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      const { data } = await service
+        .from('users')
+        .select('analyses_this_month, analyses_limit')
+        .eq('user_id', userId)
+        .single();
 
-    // Detect FITS by magic bytes ("SIMPLE  " at offset 0)
+      if (data) {
+        userRow = data as { analyses_this_month: number; analyses_limit: number };
+        const limit: number = userRow.analyses_limit ?? 5;
+        const used: number = userRow.analyses_this_month ?? 0;
+        if (limit !== -1 && used >= limit) {
+          return NextResponse.json(
+            {
+              detail: `Monthly limit of ${limit} analyses reached. Upgrade your plan to continue.`,
+              analyses_used: used,
+              analyses_limit: limit,
+            },
+            { status: 429 }
+          );
+        }
+      }
+    }
+
+    // 4. Parse the uploaded file
+    const buffer = await file.arrayBuffer();
     const magic = String.fromCharCode(...new Uint8Array(buffer, 0, 8));
     let time: number[], flux: number[];
 
@@ -436,7 +462,7 @@ export async function POST(request: NextRequest) {
       time = parsed.time;
       flux = parsed.flux;
     } else {
-      // Try as whitespace/comma-delimited ASCII (time, flux, [flux_err])
+      // ASCII two-column time series (comma or whitespace delimited)
       const text = new TextDecoder().decode(buffer);
       time = []; flux = [];
       for (const line of text.split('\n')) {
@@ -458,6 +484,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 5. Run inference
     const features = extractFeatures(time, flux);
     const { classification, probabilities } = runInference(features, modelId);
     const confidence = Math.max(...Object.values(probabilities));
@@ -470,11 +497,35 @@ export async function POST(request: NextRequest) {
       memory_used_kb: Math.round(buffer.byteLength / 1024),
     };
 
+    // 6. For web-UI requests: persist result + update quota (fire-and-forget)
+    if (authResult.type === 'web' && userId && SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+      const service = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      const capturedUserRow = userRow;
+      void (async () => {
+        try {
+          await service.from('analyses').insert({
+            user_id: userId,
+            model_id: modelId,
+            classification: result.classification,
+            confidence: result.confidence,
+            inference_time_ms: result.inference_time_ms,
+            result,
+          });
+          if (capturedUserRow !== null) {
+            await service
+              .from('users')
+              .update({ analyses_this_month: (capturedUserRow.analyses_this_month ?? 0) + 1 })
+              .eq('user_id', userId);
+          }
+        } catch { /* ignore persistence errors — inference already succeeded */ }
+      })();
+    }
+
+    // 7. Return result
     const headers: Record<string, string> = {};
     if (authResult.type === 'api') {
       headers['X-Request-ID'] = authResult.keyId.slice(0, 8);
     }
-
     return NextResponse.json(result, { headers });
   } catch (err) {
     console.error('[TinyML] analyze error:', err);

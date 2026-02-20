@@ -47,8 +47,8 @@ export default function AnalyzePage() {
   const handleAnalyze = async () => {
     if (!file || !user) return
 
-    // Check quota
-    if (quota && quota.quota_limit) {
+    // Check quota (skip if unlimited: analyses_limit === -1)
+    if (quota && quota.quota_limit !== null && quota.quota_limit !== -1) {
       if (quota.analyses_count >= quota.quota_limit) {
         setError('You have reached your monthly analysis quota. Please upgrade your plan.')
         return
@@ -68,9 +68,7 @@ export default function AnalyzePage() {
       setQuota(updatedQuota)
     } catch (err: any) {
       console.error('Analysis failed:', err)
-      const errorMessage = err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')
-        ? 'Backend API is not available. The analysis service requires deployment of the Python backend. Please contact support or download models from the Models page for local use.'
-        : err.response?.data?.detail || err.message || 'Analysis failed. Please try again.'
+      const errorMessage = err.response?.data?.detail || err.message || 'Analysis failed. Please try again.'
       setError(errorMessage)
     } finally {
       setIsAnalyzing(false)

@@ -23,8 +23,9 @@ export function QuotaIndicator({ quota, className = '' }: QuotaIndicatorProps) {
   const isNearLimit = usagePercent >= 80
   const isAtLimit = quota.quota_limit ? quota.analyses_count >= quota.quota_limit : false
 
-  const tierName = quota.quota_limit === 100 ? 'Free' :
-                   quota.quota_limit === 10000 ? 'Pro' : 'Enterprise'
+  const tierName = quota.quota_limit === -1 ? 'Annual' :
+                   quota.quota_limit !== null && quota.quota_limit <= 5 ? 'Free' :
+                   quota.quota_limit !== null && quota.quota_limit <= 50 ? 'Monthly' : 'Developer'
 
   return (
     <div className={`card ${className}`}>
