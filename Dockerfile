@@ -45,10 +45,11 @@ COPY src/ ./src/
 COPY skills/ ./skills/
 COPY config/ ./config/
 COPY models/ ./models/
+COPY nodes/ ./nodes/
 COPY larun.py .
 COPY larun_chat.py .
-COPY larun_pipeline.py .
 COPY api.py .
+COPY cloud_endpoints.py .
 
 # Create data directories
 RUN mkdir -p data/cache data/raw output logs output/submissions
@@ -60,10 +61,10 @@ EXPOSE 8000 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-# Default command: Run Discovery Pipeline Dashboard
-CMD ["gunicorn", "src.dashboard.app:app", "--bind", "0.0.0.0:8080", "--workers", "2"]
+# Default command: Run FastAPI server
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ============================================================================
 # Alternative entrypoints (use with docker run --entrypoint)
