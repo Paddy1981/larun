@@ -21,6 +21,15 @@ export interface VettingResult {
   secondary_eclipse: VettingTest;
 }
 
+export interface TICInfo {
+  ra: number;
+  dec: number;
+  tmag: number;
+  teff: number;
+  radius: number;
+  mass: number;
+}
+
 export interface AnalysisResult {
   detection: boolean;
   confidence: number;
@@ -32,6 +41,8 @@ export interface AnalysisResult {
   vetting?: VettingResult;
   sectors_used?: number[];
   processing_time_seconds?: number;
+  tic_info?: TICInfo;
+  folded_curve?: { phase: number; flux: number }[];
 }
 
 export interface Analysis {
@@ -160,6 +171,15 @@ export async function runDetection(ticId: string): Promise<AnalysisResult> {
       } : undefined,
       sectors_used: result.sectors_used,
       processing_time_seconds: result.processing_time_seconds,
+      tic_info: ticInfo ? {
+        ra: ticInfo.ra,
+        dec: ticInfo.dec,
+        tmag: ticInfo.tmag,
+        teff: ticInfo.teff,
+        radius: ticInfo.radius,
+        mass: ticInfo.mass,
+      } : undefined,
+      folded_curve: result.folded_curve,
     };
   } catch (error) {
     console.error(`Detection error for TIC ${ticId}:`, error);

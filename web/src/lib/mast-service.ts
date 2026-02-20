@@ -27,6 +27,140 @@ export interface TICInfo {
 const MAST_API_URL = 'https://mast.stsci.edu/api/v0';
 const MAST_PORTAL_URL = 'https://mast.stsci.edu/portal/Download/file';
 
+// ---------------------------------------------------------------------------
+// Minimal FITS binary table parser (Node.js-compatible, no browser APIs)
+// Handles TESS LC FITS files: PRIMARY + LIGHTCURVE binary table HDU.
+// fitsjs (installed) is browser-only; this parser uses DataView + ArrayBuffer.
+// ---------------------------------------------------------------------------
+const FITS_BLOCK = 2880;
+const CARD_LEN   = 80;
+
+function readFITSHeader(
+  buffer: ArrayBuffer,
+  byteOffset: number
+): { header: Map<string, string>; nextOffset: number } {
+  const bytes = new Uint8Array(buffer);
+  const header = new Map<string, string>();
+  let pos = byteOffset;
+  let ended = false;
+
+  while (!ended && pos + FITS_BLOCK <= bytes.length) {
+    for (let card = 0; card < 36 && !ended; card++) {
+      const start = pos + card * CARD_LEN;
+      // Decode the 80-byte card as ASCII
+      let line = '';
+      for (let b = 0; b < CARD_LEN; b++) line += String.fromCharCode(bytes[start + b]);
+
+      const keyword = line.slice(0, 8).trimEnd();
+      if (keyword === 'END') { ended = true; break; }
+
+      // Value indicators: standard '= ' at position 8-9
+      if (line[8] === '=' ) {
+        const raw = line.slice(10);
+        const slash = raw.indexOf('/');
+        const val = (slash >= 0 ? raw.slice(0, slash) : raw)
+          .trim()
+          .replace(/^'(.*?)'.*$/, '$1')  // strip FITS string quotes
+          .trim();
+        header.set(keyword, val);
+      }
+    }
+    pos += FITS_BLOCK;
+  }
+
+  return { header, nextOffset: pos };
+}
+
+/** Parse TFORM like '1D', 'E', '28D' → bytes per element and type char */
+function parseTFORM(tform: string): { type: string; bytes: number } {
+  const m = tform.trim().match(/^(\d*)([DEJIKLAB])(\(.*\))?$/i);
+  if (!m) return { type: 'E', bytes: 4 };
+  const count = m[1] ? parseInt(m[1]) : 1;
+  const type  = m[2].toUpperCase();
+  const sizeOf: Record<string, number> = { D: 8, E: 4, J: 4, I: 2, K: 8, L: 1, A: 1, B: 1 };
+  return { type, bytes: (sizeOf[type] ?? 4) * count };
+}
+
+function parseFITSLightCurve(buffer: ArrayBuffer): {
+  time: number[];
+  flux: number[];
+  flux_err: number[];
+  quality: number[];
+} {
+  // --- PRIMARY HDU ---
+  const { header: primaryHeader, nextOffset: afterPrimaryHeader } = readFITSHeader(buffer, 0);
+  let offset = afterPrimaryHeader;
+
+  // Skip primary data block if present (NAXIS > 0)
+  const naxisPrimary = parseInt(primaryHeader.get('NAXIS') ?? '0');
+  if (naxisPrimary > 0) {
+    let dataBytes = Math.abs(parseInt(primaryHeader.get('BITPIX') ?? '8')) / 8;
+    for (let i = 1; i <= naxisPrimary; i++) {
+      dataBytes *= parseInt(primaryHeader.get(`NAXIS${i}`) ?? '0');
+    }
+    offset += Math.ceil(dataBytes / FITS_BLOCK) * FITS_BLOCK;
+  }
+
+  // --- LIGHTCURVE extension HDU ---
+  const { header, nextOffset: afterHeader } = readFITSHeader(buffer, offset);
+  offset = afterHeader;
+
+  const nRows   = parseInt(header.get('NAXIS2') ?? '0');
+  const nFields = parseInt(header.get('TFIELDS') ?? '0');
+  const rowSize = parseInt(header.get('NAXIS1') ?? '0');
+
+  if (nRows === 0 || nFields === 0 || rowSize === 0) {
+    throw new Error('FITS binary table appears empty');
+  }
+
+  // Build column layout: name → {type, bytes, colOffset}
+  const cols: { name: string; type: string; bytes: number; colOffset: number }[] = [];
+  let colOff = 0;
+  for (let i = 1; i <= nFields; i++) {
+    const name   = (header.get(`TTYPE${i}`) ?? '').trim();
+    const tform  = header.get(`TFORM${i}`) ?? 'E';
+    const { type, bytes } = parseTFORM(tform);
+    cols.push({ name, type, bytes, colOffset: colOff });
+    colOff += bytes;
+  }
+
+  const col = (name: string) => cols.find(c => c.name === name);
+  const timeCol    = col('TIME');
+  const fluxCol    = col('PDCSAP_FLUX') ?? col('SAP_FLUX');
+  const fluxErrCol = col('PDCSAP_FLUX_ERR') ?? col('SAP_FLUX_ERR');
+  const qualCol    = col('QUALITY');
+
+  if (!timeCol || !fluxCol) throw new Error('TIME or FLUX column not found in FITS table');
+
+  const view = new DataView(buffer);
+  const time: number[] = [], flux: number[] = [], flux_err: number[] = [], quality: number[] = [];
+
+  for (let row = 0; row < nRows; row++) {
+    const base = offset + row * rowSize;
+    // FITS is big-endian (littleEndian = false)
+    const t  = view.getFloat64(base + timeCol.colOffset, false);
+    const f  = view.getFloat32(base + fluxCol.colOffset, false);
+    const fe = fluxErrCol ? view.getFloat32(base + fluxErrCol.colOffset, false) : 0.001;
+    const q  = qualCol    ? view.getInt32(base + qualCol.colOffset,    false) : 0;
+
+    if (!isFinite(t) || !isFinite(f) || isNaN(t) || isNaN(f)) continue;
+    time.push(t);
+    flux.push(f);
+    flux_err.push(!isFinite(fe) || isNaN(fe) ? 0.001 : Math.abs(fe));
+    quality.push(q);
+  }
+
+  if (time.length === 0) throw new Error('No valid data rows in FITS table');
+
+  // Normalize flux to median ≈ 1.0
+  const sorted = [...flux].sort((a, b) => a - b);
+  const med = sorted[Math.floor(sorted.length / 2)];
+  const normFlux    = flux.map(f => f / med);
+  const normFluxErr = flux_err.map(e => e / med);
+
+  return { time, flux: normFlux, flux_err: normFluxErr, quality };
+}
+
 /**
  * Query MAST for observations of a TIC target
  */
@@ -89,8 +223,9 @@ async function getDataProducts(obsId: string): Promise<Record<string, unknown>[]
 }
 
 /**
- * Download and parse a TESS light curve file
- * Uses the publicly accessible MAST data URLs
+ * Download and parse a TESS light curve file.
+ * Tries our custom FITS binary table parser first (handles .lc.fits files),
+ * falls back to JSON parsing for any other format.
  */
 async function downloadLightCurve(dataUrl: string): Promise<{
   time: number[];
@@ -98,30 +233,33 @@ async function downloadLightCurve(dataUrl: string): Promise<{
   flux_err: number[];
   quality: number[];
 }> {
-  // TESS light curve files are in FITS format
-  // For serverless, we'll use the MAST API to get CSV/JSON format instead
-
-  // Try to get data from TESScut or Light Curve API
-  const response = await fetch(dataUrl, {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const response = await fetch(dataUrl);
 
   if (!response.ok) {
     throw new Error(`Failed to download light curve: ${response.statusText}`);
   }
 
-  // Parse the response based on content type
-  const contentType = response.headers.get('content-type') || '';
+  const contentType = response.headers.get('content-type') ?? '';
 
+  // Try JSON first (fast path)
   if (contentType.includes('json')) {
     const data = await response.json();
     return parseLightCurveJSON(data);
   }
 
-  // If it's a FITS file, we need to handle it differently
-  throw new Error('FITS format not supported in serverless environment');
+  // FITS binary format — use our Node.js-compatible parser
+  // (fitsjs is browser-only; parseFITSLightCurve uses DataView/ArrayBuffer)
+  const buffer = await response.arrayBuffer();
+  const magic = new Uint8Array(buffer, 0, 9);
+  const header = String.fromCharCode(...magic);
+  if (header.startsWith('SIMPLE  ') || header.startsWith('SIMPLE =')) {
+    return parseFITSLightCurve(buffer);
+  }
+
+  // Last resort: treat as JSON text
+  const text = new TextDecoder().decode(buffer);
+  const data = JSON.parse(text);
+  return parseLightCurveJSON(data);
 }
 
 /**

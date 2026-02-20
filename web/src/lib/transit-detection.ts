@@ -52,6 +52,7 @@ export interface DetectionResult {
   vetting: VettingResult | null;
   sectors_used: number[];
   processing_time_seconds: number;
+  folded_curve?: { phase: number; flux: number }[];
 }
 
 /**
@@ -474,6 +475,38 @@ export function runVettingTests(
 }
 
 /**
+ * Compute a phase-folded, binned light curve for display
+ * Returns 100 {phase, flux} points centered on transit (phase=0)
+ */
+function computeFoldedCurve(
+  time: number[],
+  flux: number[],
+  period: number,
+  epoch: number,
+  nBins: number = 100
+): { phase: number; flux: number }[] {
+  // Phase-fold: map each time to [-0.5, 0.5)
+  const phases = time.map(t => {
+    let p = ((t - epoch) % period) / period;
+    if (p > 0.5) p -= 1;
+    if (p < -0.5) p += 1;
+    return p;
+  });
+
+  // Bin the folded data
+  const bins: number[][] = Array.from({ length: nBins }, () => []);
+  for (let i = 0; i < phases.length; i++) {
+    const binIdx = Math.min(nBins - 1, Math.floor((phases[i] + 0.5) * nBins));
+    if (binIdx >= 0) bins[binIdx].push(flux[i]);
+  }
+
+  return bins.map((bin, idx) => ({
+    phase: (idx + 0.5) / nBins - 0.5,
+    flux: bin.length > 0 ? bin.reduce((a, b) => a + b, 0) / bin.length : 1.0,
+  }));
+}
+
+/**
  * Main detection function
  */
 export async function runTransitDetection(
@@ -559,6 +592,13 @@ export async function runTransitDetection(
     confidence *= 0.7;
   }
 
+  // Compute phase-folded curve for display
+  const folded_curve = computeFoldedCurve(
+    time, flux,
+    blsResult.transitParams.period,
+    blsResult.transitParams.epoch
+  );
+
   return {
     detection: true,
     confidence: Number(confidence.toFixed(3)),
@@ -570,5 +610,6 @@ export async function runTransitDetection(
     vetting,
     sectors_used: lightCurve.sectors,
     processing_time_seconds: Number(((Date.now() - startTime) / 1000).toFixed(2)),
+    folded_curve,
   };
 }
