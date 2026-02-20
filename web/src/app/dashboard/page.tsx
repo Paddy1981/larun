@@ -245,9 +245,8 @@ export default function DashboardPage() {
     setIsRefreshingActivity(false);
   };
 
-  const handleAnalyzeTarget = async (ticId: string) => {
-    // Redirect to Cloud platform for TinyML analysis
-    router.push('/cloud/analyze');
+  const handleAnalyzeTarget = (ticId: string) => {
+    router.push(`/analyze?tic=${ticId}`);
   };
 
   const recentActivity = [

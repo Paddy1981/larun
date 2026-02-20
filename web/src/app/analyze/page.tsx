@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 
 interface AnalysisResult {
@@ -31,8 +32,9 @@ const popularTargets = [
   { id: '261136679', name: 'TOI-175 b', description: 'Super-Earth' },
 ];
 
-export default function AnalyzePage() {
+function AnalyzePageInner() {
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
   const [ticId, setTicId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -42,9 +44,19 @@ export default function AnalyzePage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      window.location.href = '/cloud/auth/login?redirect=/analyze';
+      window.location.href = `/cloud/auth/login?redirect=/analyze${searchParams.get('tic') ? `?tic=${searchParams.get('tic')}` : ''}`;
     }
-  }, [status]);
+  }, [status, searchParams]);
+
+  // Pre-fill TIC ID from ?tic= query param and auto-start analysis
+  useEffect(() => {
+    const tic = searchParams.get('tic');
+    if (tic && status === 'authenticated' && !isLoading && !result) {
+      setTicId(tic);
+      handleAnalyze(tic);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, searchParams]);
 
   const handleAnalyze = async (targetId?: string) => {
     const idToAnalyze = targetId || ticId.trim();
@@ -426,5 +438,17 @@ export default function AnalyzePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-8 h-8 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <AnalyzePageInner />
+    </Suspense>
   );
 }
