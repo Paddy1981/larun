@@ -64,7 +64,6 @@ export default function AnalyzePage() {
         setProgress(prev => Math.min(85, prev + 5));
       }, 1500);
 
-      // Submit analysis and wait for full result (runs synchronously server-side)
       const response = await fetch('/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,19 +72,30 @@ export default function AnalyzePage() {
 
       clearInterval(progressInterval);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error?.message || 'Failed to start analysis');
+      // Safely parse — Vercel can return plain-text on timeout/crash
+      const text = await response.text();
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(
+          response.status === 504
+            ? 'Analysis timed out fetching TESS data. Try again or pick a different target.'
+            : `Server error (${response.status}). Please try again.`
+        );
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error((data.error as { message?: string })?.message || 'Failed to start analysis');
+      }
+
       setProgress(100);
       setResult({
-        id: data.analysis_id,
-        tic_id: data.tic_id,
-        status: data.status,
-        result: data.result,
-        error: data.error,
+        id: data.analysis_id as string,
+        tic_id: data.tic_id as string,
+        status: data.status as AnalysisResult['status'],
+        result: data.result as AnalysisResult['result'],
+        error: data.error as string | undefined,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
