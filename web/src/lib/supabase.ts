@@ -171,6 +171,24 @@ export const getUserQuota = async (userId: string): Promise<UsageQuota | null> =
   }
 }
 
+export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching subscription:', error)
+    return null
+  }
+
+  return data
+}
+
 export const createAnalysis = async (analysis: Partial<Analysis>) => {
   const { data, error } = await supabase
     .from('analyses')

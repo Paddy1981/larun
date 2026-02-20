@@ -11,7 +11,7 @@ import { FileUpload } from '@/components/FileUpload'
 import { ModelSelector } from '@/components/ModelSelector'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
 import { QuotaIndicator } from '@/components/QuotaIndicator'
-import { getCurrentUser, getUserQuota, type UsageQuota } from '@/lib/supabase'
+import { getCurrentUser, getUserQuota, getUserSubscription, type UsageQuota, type Subscription } from '@/lib/supabase'
 import { apiClient } from '@/lib/api-client'
 import type { InferenceResult } from '@/lib/supabase'
 import { Loader2, AlertCircle } from 'lucide-react'
@@ -20,6 +20,7 @@ import Link from 'next/link'
 export default function AnalyzePage() {
   const [user, setUser] = useState<any>(null)
   const [quota, setQuota] = useState<UsageQuota | null>(null)
+  const [subscription, setSubscription] = useState<Subscription | null | undefined>(undefined)
   const [selectedModel, setSelectedModel] = useState('EXOPLANET-001')
   const [file, setFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -39,13 +40,23 @@ export default function AnalyzePage() {
 
     setUser(user)
 
-    // Load quota
-    const quotaData = await getUserQuota(user.id)
+    // Load quota and subscription in parallel
+    const [quotaData, subData] = await Promise.all([
+      getUserQuota(user.id),
+      getUserSubscription(user.id),
+    ])
     setQuota(quotaData)
+    setSubscription(subData)
   }
 
   const handleAnalyze = async () => {
     if (!file || !user) return
+
+    // Guard: active subscription required
+    if (!subscription) {
+      setError('An active subscription is required to run cloud models. Please subscribe to continue.')
+      return
+    }
 
     // Check quota (skip if unlimited: analyses_limit === -1)
     if (quota && quota.quota_limit !== null && quota.quota_limit !== -1) {
@@ -94,6 +105,22 @@ export default function AnalyzePage() {
           </p>
         </div>
 
+        {/* Subscription gate banner */}
+        {subscription === null && (
+          <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-5 flex items-start gap-4">
+            <AlertCircle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-amber-900 mb-1">Subscription required</p>
+              <p className="text-sm text-amber-800 mb-3">
+                Running cloud models requires an active subscription. Subscribe to unlock full access.
+              </p>
+              <Link href="/cloud/pricing" className="btn btn-primary btn-sm">
+                View Plans →
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Quota Indicator */}
         {quota && <QuotaIndicator quota={quota} className="mb-8" />}
 
@@ -106,7 +133,7 @@ export default function AnalyzePage() {
               <FileUpload
                 onFileSelect={setFile}
                 selectedFile={file}
-                disabled={isAnalyzing}
+                disabled={isAnalyzing || !subscription}
               />
             </div>
 
@@ -116,14 +143,14 @@ export default function AnalyzePage() {
               <ModelSelector
                 selectedModel={selectedModel}
                 onModelSelect={setSelectedModel}
-                disabled={isAnalyzing}
+                disabled={isAnalyzing || !subscription}
               />
             </div>
 
             {/* Analyze Button */}
             <button
               onClick={handleAnalyze}
-              disabled={!file || isAnalyzing}
+              disabled={!file || isAnalyzing || !subscription}
               className="btn btn-primary w-full text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isAnalyzing ? (
@@ -131,6 +158,8 @@ export default function AnalyzePage() {
                   <Loader2 className="w-5 h-5 animate-spin" />
                   Analyzing...
                 </>
+              ) : !subscription ? (
+                'Subscribe to Run Analysis'
               ) : (
                 '3. Run Analysis'
               )}
@@ -145,12 +174,12 @@ export default function AnalyzePage() {
                     Analysis Failed
                   </p>
                   <p className="text-sm text-red-700">{error}</p>
-                  {error.includes('quota') && (
+                  {(error.includes('quota') || error.includes('subscription')) && (
                     <Link
-                      href="/pricing"
+                      href="/cloud/pricing"
                       className="text-sm text-red-800 underline mt-2 inline-block"
                     >
-                      Upgrade your plan →
+                      View Plans →
                     </Link>
                   )}
                 </div>
