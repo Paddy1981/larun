@@ -1,19 +1,9 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
-
-interface SubscriptionData {
-  plan: 'free' | 'monthly' | 'annual';
-  status: 'active' | 'canceled' | 'past_due';
-  current_period_end: string;
-  cancel_at_period_end: boolean;
-  analyses_used: number;
-  analyses_limit: number;
-}
+import { getCurrentUser, supabase } from '@/lib/supabase';
+import { Loader2 } from 'lucide-react';
 
 const PLANS = {
   free: {
@@ -21,23 +11,14 @@ const PLANS = {
     price: 0,
     period: 'month',
     analyses: 5,
-    features: [
-      '5 analyses per month',
-      'Basic TinyML detection',
-      'CSV export',
-    ],
+    features: ['5 analyses per month', 'Basic TinyML detection', 'CSV export'],
   },
   monthly: {
     name: 'Monthly',
     price: 9,
     period: 'month',
     analyses: 50,
-    features: [
-      '50 analyses per month',
-      'Advanced AI models',
-      'Priority processing',
-      'Email support',
-    ],
+    features: ['50 analyses per month', 'Advanced AI models', 'Priority processing', 'Email support'],
   },
   annual: {
     name: 'Annual',
@@ -45,127 +26,61 @@ const PLANS = {
     period: 'year',
     analyses: -1,
     savings: 19,
-    features: [
-      'Unlimited analyses',
-      'All AI models + API',
-      'White-label reports',
-      'Priority support',
-      '2 months free',
-    ],
+    features: ['Unlimited analyses', 'All AI models + API', 'White-label reports', 'Priority support', '2 months free'],
   },
 };
 
-function SubscriptionContent() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [subscription, setSubscription] = useState<SubscriptionData>({
-    plan: 'free',
-    status: 'active',
-    current_period_end: '',
-    cancel_at_period_end: false,
-    analyses_used: 0,
-    analyses_limit: 5,
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(true);
+type PlanKey = keyof typeof PLANS;
 
-  // Redirect to login if not authenticated
+interface UserData {
+  subscription_tier: string;
+  analyses_this_month: number;
+  analyses_limit: number;
+}
+
+export default function SubscriptionPage() {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login?callbackUrl=/settings/subscription');
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const { user } = await getCurrentUser();
+    if (!user) {
+      window.location.href = '/cloud/auth/login?redirect=/settings/subscription';
+      return;
     }
-  }, [status, router]);
 
-  // Fetch subscription data on mount
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      if (status !== 'authenticated') return;
+    const { data } = await supabase
+      .from('users')
+      .select('subscription_tier, analyses_this_month, analyses_limit')
+      .eq('id', user.id)
+      .single();
 
-      try {
-        const res = await fetch('/api/v1/subscription');
-        if (res.ok) {
-          const data = await res.json();
-          setSubscription(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch subscription:', error);
-      } finally {
-        setIsLoadingData(false);
-      }
-    };
-
-    fetchSubscription();
-  }, [status]);
-
-  const handleManageBilling = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/v1/subscription/portal', {
-        method: 'POST',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        window.location.href = data.url;
-      } else {
-        alert('Billing portal not configured yet. Coming soon!');
-      }
-    } catch (error) {
-      console.error('Failed to open billing portal:', error);
-      alert('Billing portal not configured yet. Coming soon!');
-    } finally {
-      setIsLoading(false);
-    }
+    setUserData(data as UserData);
+    setLoading(false);
   };
 
-  const handleUpgrade = async (plan: string) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/v1/subscription/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-      if (res.ok && data.url) {
-        window.location.href = data.url;
-      } else {
-        console.error('Checkout error:', data);
-        alert(data.error || 'Failed to create checkout. Please try again.');
-      }
-    } catch (error) {
-      console.error('Failed to create checkout session:', error);
-      alert('Network error. Please check your connection and try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Show loading while checking auth or fetching data
-  if (status === 'loading' || isLoadingData) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#5f6368]">Loading subscription data...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
   }
 
-  // Don't render if not authenticated
-  if (status === 'unauthenticated') {
-    return null;
-  }
-
-  const currentPlan = PLANS[subscription.plan];
+  const tier = (userData?.subscription_tier || 'free') as PlanKey;
+  const currentPlan = PLANS[tier] || PLANS.free;
+  const analysesUsed = userData?.analyses_this_month ?? 0;
+  const analysesLimit = userData?.analyses_limit ?? 5;
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
-
       <main className="pt-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="mb-8">
-          <Link href="/dashboard" className="text-[#1a73e8] hover:underline text-sm mb-2 inline-flex items-center gap-1">
+          <Link href="/cloud/dashboard" className="text-[#1a73e8] hover:underline text-sm mb-2 inline-flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -180,29 +95,20 @@ function SubscriptionContent() {
           <h2 className="text-xl font-semibold text-[#202124] mb-4">Current Plan</h2>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <p className="text-2xl font-bold text-[#202124] capitalize">{currentPlan.name}</p>
+              <p className="text-2xl font-bold text-[#202124]">{currentPlan.name}</p>
               <p className="text-[#5f6368]">
-                {subscription.status === 'active' ? (
-                  subscription.plan === 'free' ? (
-                    'Free forever'
-                  ) : (
-                    <>Renews on {new Date(subscription.current_period_end).toLocaleDateString()}</>
-                  )
-                ) : subscription.status === 'canceled' ? (
-                  <>Expires on {new Date(subscription.current_period_end).toLocaleDateString()}</>
-                ) : (
-                  <span className="text-[#ea4335]">Payment past due</span>
-                )}
+                {tier === 'free' ? 'Free forever' : 'Active subscription'}
               </p>
             </div>
-            {subscription.plan !== 'free' && (
-              <button
-                onClick={handleManageBilling}
-                disabled={isLoading}
-                className="px-4 py-2 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+            {tier !== 'free' && (
+              <a
+                href="https://app.lemonsqueezy.com/my-orders"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors text-sm"
               >
                 Manage Billing
-              </button>
+              </a>
             )}
           </div>
 
@@ -211,19 +117,19 @@ function SubscriptionContent() {
             <div className="flex justify-between text-sm mb-2">
               <span className="text-[#5f6368]">Analyses used this month</span>
               <span className="text-[#202124] font-medium">
-                {subscription.analyses_used} / {subscription.analyses_limit === -1 ? '∞' : subscription.analyses_limit}
+                {analysesUsed} / {analysesLimit === -1 ? '∞' : analysesLimit}
               </span>
             </div>
-            {subscription.analyses_limit !== -1 && (
+            {analysesLimit !== -1 && (
               <>
                 <div className="bg-[#f1f3f4] rounded-full h-2">
                   <div
                     className="bg-[#1a73e8] rounded-full h-2 transition-all"
-                    style={{ width: `${Math.min((subscription.analyses_used / subscription.analyses_limit) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((analysesUsed / analysesLimit) * 100, 100)}%` }}
                   />
                 </div>
                 <p className="text-[#5f6368] text-sm mt-2">
-                  {subscription.analyses_limit - subscription.analyses_used} analyses remaining
+                  {analysesLimit - analysesUsed} analyses remaining
                 </p>
               </>
             )}
@@ -232,172 +138,95 @@ function SubscriptionContent() {
 
         {/* Upgrade Options */}
         <h2 className="text-xl font-semibold text-[#202124] mb-4">
-          {subscription.plan === 'free' ? 'Upgrade Your Plan' : 'Change Plan'}
+          {tier === 'free' ? 'Upgrade Your Plan' : 'Change Plan'}
         </h2>
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {/* Free */}
-          <div className={`bg-white border rounded-xl p-6 ${subscription.plan === 'free' ? 'border-[#1a73e8] border-2' : 'border-[#dadce0]'}`}>
-            {subscription.plan === 'free' && (
-              <div className="text-xs font-medium text-[#1a73e8] mb-2">CURRENT PLAN</div>
-            )}
+          <div className={`bg-white border rounded-xl p-6 ${tier === 'free' ? 'border-[#1a73e8] border-2' : 'border-[#dadce0]'}`}>
+            {tier === 'free' && <div className="text-xs font-medium text-[#1a73e8] mb-2">CURRENT PLAN</div>}
             <h3 className="text-lg font-semibold text-[#202124] mb-1">Free</h3>
             <p className="text-[#5f6368] text-sm mb-4">For getting started</p>
             <p className="text-3xl font-bold text-[#202124] mb-4">$0</p>
             <ul className="space-y-2 mb-6">
-              {PLANS.free.features.map((feature, i) => (
+              {PLANS.free.features.map((f, i) => (
                 <li key={i} className="text-[#5f6368] text-sm flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  {feature}
+                  {f}
                 </li>
               ))}
             </ul>
-            {subscription.plan === 'free' ? (
-              <div className="text-center text-[#5f6368] text-sm py-2.5">Current plan</div>
-            ) : (
-              <button
-                onClick={() => handleUpgrade('free')}
-                disabled={isLoading}
-                className="w-full px-4 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
-              >
-                Downgrade
-              </button>
-            )}
+            <div className="text-center text-[#5f6368] text-sm py-2.5">
+              {tier === 'free' ? 'Current plan' : 'Basic tier'}
+            </div>
           </div>
 
           {/* Monthly */}
-          <div className={`bg-white border rounded-xl p-6 relative ${subscription.plan === 'monthly' ? 'border-[#1a73e8] border-2' : 'border-[#dadce0]'}`}>
-            {subscription.plan !== 'monthly' && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#202124] text-white text-xs font-medium px-3 py-1 rounded-full">
-                Popular
-              </div>
+          <div className={`bg-white border rounded-xl p-6 relative ${tier === 'monthly' ? 'border-[#1a73e8] border-2' : 'border-[#dadce0]'}`}>
+            {tier !== 'monthly' && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#202124] text-white text-xs font-medium px-3 py-1 rounded-full">Popular</div>
             )}
-            {subscription.plan === 'monthly' && (
-              <div className="text-xs font-medium text-[#1a73e8] mb-2">CURRENT PLAN</div>
-            )}
+            {tier === 'monthly' && <div className="text-xs font-medium text-[#1a73e8] mb-2">CURRENT PLAN</div>}
             <h3 className="text-lg font-semibold text-[#202124] mb-1">Monthly</h3>
             <p className="text-[#5f6368] text-sm mb-4">For active users</p>
             <p className="text-3xl font-bold text-[#202124] mb-4">$9<span className="text-lg font-normal text-[#5f6368]">/mo</span></p>
             <ul className="space-y-2 mb-6">
-              {PLANS.monthly.features.map((feature, i) => (
+              {PLANS.monthly.features.map((f, i) => (
                 <li key={i} className="text-[#5f6368] text-sm flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  {feature}
+                  {f}
                 </li>
               ))}
             </ul>
-            {subscription.plan === 'monthly' ? (
+            {tier === 'monthly' ? (
               <div className="text-center text-[#5f6368] text-sm py-2.5">Current plan</div>
             ) : (
-              <button
-                onClick={() => handleUpgrade('monthly')}
-                disabled={isLoading}
-                className="w-full px-4 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+              <a
+                href="https://larunspace.lemonsqueezy.com/checkout/buy/f35b9320-79ed-462d-bdf7-1ec4841eadbb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center px-4 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors text-sm"
               >
-                {subscription.plan === 'free' ? 'Upgrade' : 'Switch'}
-              </button>
+                Upgrade
+              </a>
             )}
           </div>
 
           {/* Annual */}
-          <div className={`bg-white border rounded-xl p-6 ${subscription.plan === 'annual' ? 'border-[#1a73e8] border-2' : 'border-[#dadce0]'}`}>
-            {subscription.plan !== 'annual' && (
-              <div className="text-xs font-medium text-[#34a853] mb-2">SAVE $19/YEAR</div>
-            )}
-            {subscription.plan === 'annual' && (
-              <div className="text-xs font-medium text-[#1a73e8] mb-2">CURRENT PLAN</div>
-            )}
+          <div className={`bg-white border rounded-xl p-6 ${tier === 'annual' ? 'border-[#1a73e8] border-2' : 'border-[#dadce0]'}`}>
+            {tier !== 'annual' && <div className="text-xs font-medium text-[#34a853] mb-2">SAVE $19/YEAR</div>}
+            {tier === 'annual' && <div className="text-xs font-medium text-[#1a73e8] mb-2">CURRENT PLAN</div>}
             <h3 className="text-lg font-semibold text-[#202124] mb-1">Annual</h3>
             <p className="text-[#5f6368] text-sm mb-4">Best value</p>
             <p className="text-3xl font-bold text-[#202124] mb-4">$89<span className="text-lg font-normal text-[#5f6368]">/yr</span></p>
             <ul className="space-y-2 mb-6">
-              {PLANS.annual.features.map((feature, i) => (
+              {PLANS.annual.features.map((f, i) => (
                 <li key={i} className="text-[#5f6368] text-sm flex items-center gap-2">
                   <svg className="w-4 h-4 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  {feature}
+                  {f}
                 </li>
               ))}
             </ul>
-            {subscription.plan === 'annual' ? (
+            {tier === 'annual' ? (
               <div className="text-center text-[#5f6368] text-sm py-2.5">Current plan</div>
             ) : (
-              <button
-                onClick={() => handleUpgrade('annual')}
-                disabled={isLoading}
-                className="w-full px-4 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors text-sm disabled:opacity-50"
+              <a
+                href="https://larunspace.lemonsqueezy.com/checkout/buy/ff35095c-0eac-427c-8309-8d55448979a2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center px-4 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors text-sm"
               >
-                {subscription.plan === 'free' ? 'Upgrade' : 'Switch'}
-              </button>
+                Upgrade
+              </a>
             )}
           </div>
         </div>
-
-        {/* FAQ */}
-        <div className="bg-[#f8f9fa] rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-[#202124] mb-4">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-[#202124] font-medium">Can I cancel anytime?</h3>
-              <p className="text-[#5f6368] text-sm mt-1">
-                Yes, you can cancel your subscription at any time. You&apos;ll continue to have access
-                until the end of your billing period.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-[#202124] font-medium">What happens to my analyses if I downgrade?</h3>
-              <p className="text-[#5f6368] text-sm mt-1">
-                All your previous analyses and results remain accessible. You&apos;ll just be limited
-                to the lower plan&apos;s monthly analysis quota going forward.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-[#202124] font-medium">Do unused analyses roll over?</h3>
-              <p className="text-[#5f6368] text-sm mt-1">
-                No, unused analyses do not roll over to the next month. Each billing period
-                starts fresh with your plan&apos;s full allocation.
-              </p>
-            </div>
-          </div>
-        </div>
       </main>
-
-      {/* Footer */}
-      <footer className="py-8 bg-[#f1f3f4] border-t border-[#dadce0]">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex justify-center gap-6 mb-4">
-            <a href="https://laruneng.com" target="_blank" rel="noopener noreferrer" className="text-[#5f6368] text-sm hover:text-[#202124]">
-              laruneng.com
-            </a>
-            <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="text-[#5f6368] text-sm hover:text-[#202124]">
-              GitHub
-            </a>
-            <Link href="/guide" className="text-[#5f6368] text-sm hover:text-[#202124]">
-              Documentation
-            </Link>
-          </div>
-          <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun Engineering. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
-  );
-}
-
-export default function SubscriptionPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#5f6368]">Loading...</p>
-        </div>
-      </div>
-    }>
-      <SubscriptionContent />
-    </Suspense>
   );
 }
