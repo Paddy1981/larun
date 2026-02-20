@@ -156,7 +156,7 @@ export const getUserQuota = async (userId: string): Promise<UsageQuota | null> =
   const { data, error } = await supabase
     .from('users')
     .select('analyses_this_month, analyses_limit')
-    .eq('user_id', userId)
+    .eq('id', userId)
     .single()
 
   if (error || !data) return null

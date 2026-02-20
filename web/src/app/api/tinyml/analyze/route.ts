@@ -431,7 +431,7 @@ export async function POST(request: NextRequest) {
       const { data } = await service
         .from('users')
         .select('analyses_this_month, analyses_limit')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .single();
 
       if (data) {
@@ -515,7 +515,7 @@ export async function POST(request: NextRequest) {
             await service
               .from('users')
               .update({ analyses_this_month: (capturedUserRow.analyses_this_month ?? 0) + 1 })
-              .eq('user_id', userId);
+              .eq('id', userId);
           }
         } catch { /* ignore persistence errors — inference already succeeded */ }
       })();
