@@ -286,8 +286,7 @@ export default function DashboardPage() {
               </svg>
             </button>
             <Link href="/" className="flex items-center gap-2 ml-2">
-              <span className="text-[22px] font-medium text-[#202124]">Larun<span className="text-[#202124]">.</span></span>
-              <span className="text-[22px] font-normal text-[#5f6368]">AstroTinyML</span>
+              <span className="text-[22px] font-medium text-[#202124]">Larun<span className="text-[#1a73e8]">.</span><span className="text-[#1a73e8]">Space</span></span>
             </Link>
           </div>
 
@@ -501,9 +500,8 @@ export default function DashboardPage() {
           {/* Hero Card */}
           <div className="bg-white rounded-lg p-4 mb-5 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] text-center">
             <div className="text-[28px] font-medium mb-0.5">
-              <span className="text-[#202124]">Larun</span><span className="text-[#202124]">.</span>
+              <span className="text-[#202124]">Larun</span><span className="text-[#1a73e8]">.</span><span className="text-[#1a73e8]">Space</span>
             </div>
-            <div className="text-base font-normal text-[#5f6368] mb-1.5">AstroTinyML</div>
             <p className="text-[13px] text-[#5f6368] max-w-[550px] mx-auto mb-3 leading-relaxed">
               TinyML-powered spectral data analysis for astronomical research.
               Process NASA data, detect exoplanets, and generate submission-ready reports.
@@ -825,7 +823,7 @@ export default function DashboardPage() {
               <Link href="/guide" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">How It Works</Link>
               <Link href="/faq" className="text-sm text-[#5f6368] hover:text-[#202124] transition-colors">FAQ</Link>
             </div>
-            <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun. AstroTinyML. All rights reserved.</p>
+            <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun.Space. All rights reserved.</p>
           </footer>
         </div>
       </main>

@@ -24,8 +24,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-[#202124]">Larun<span className="text-[#1a73e8]">.</span></span>
-            <span className="text-sm font-medium text-[#5f6368]">AstroTinyML</span>
+            <span className="text-2xl font-bold text-[#202124]">Larun<span className="text-[#1a73e8]">.</span><span className="text-[#1a73e8]">Space</span></span>
           </Link>
 
           {/* Center Navigation */}

@@ -74,9 +74,8 @@ export default function GuidePage() {
       <nav className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-[#dadce0] flex items-center px-6 z-50">
         <div className="flex items-center gap-2">
           <Link href="/" className="text-[22px] font-medium text-[#202124] no-underline">
-            Larun<span className="text-[#5f6368]">.</span>
+            Larun<span className="text-[#1a73e8]">.</span><span className="text-[#1a73e8]">Space</span>
           </Link>
-          <span className="text-sm text-[#5f6368] font-normal pl-2 border-l border-[#dadce0] ml-2">AstroTinyML</span>
         </div>
 
         <div className="flex-1 flex justify-center gap-2">
@@ -575,7 +574,7 @@ export default function GuidePage() {
             Pricing
           </Link>
         </div>
-        <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun. AstroTinyML. All rights reserved.</p>
+        <p className="text-xs text-[#5f6368]">&copy; {new Date().getFullYear()} Larun.Space. All rights reserved.</p>
       </footer>
     </div>
   );

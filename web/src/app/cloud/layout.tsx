@@ -20,8 +20,7 @@ export default function CloudLayout({
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold text-[#202124]">Larun<span className="text-[#1a73e8]">.</span></span>
-              <span className="text-sm text-[#5f6368]">AstroTinyML</span>
+              <span className="text-xl font-bold text-[#202124]">Larun<span className="text-[#1a73e8]">.</span><span className="text-[#1a73e8]">Space</span></span>
             </Link>
 
             {/* Links */}
