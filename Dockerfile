@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY requirements-railway.txt requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --user -r requirements.txt
+# Install Python dependencies with timeout settings
+RUN pip install --no-cache-dir --user --timeout=300 -r requirements.txt
 
 # ============================================================================
 # Stage 2: Runtime
@@ -49,6 +49,7 @@ COPY nodes/ ./nodes/
 COPY larun.py .
 COPY larun_chat.py .
 COPY api.py .
+COPY api-minimal.py .
 COPY cloud_endpoints.py .
 
 # Create data directories
@@ -63,8 +64,8 @@ EXPOSE 8000 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-# Default command: Run FastAPI server
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command: Run FastAPI server (use minimal API for faster startup)
+CMD ["uvicorn", "api-minimal:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ============================================================================
 # Alternative entrypoints (use with docker run --entrypoint)
