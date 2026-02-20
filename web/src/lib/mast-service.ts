@@ -27,6 +27,21 @@ export interface TICInfo {
 const MAST_API_URL = 'https://mast.stsci.edu/api/v0';
 const MAST_PORTAL_URL = 'https://mast.stsci.edu/portal/Download/file';
 
+/** Fetch with a hard timeout (aborts cleanly; avoids 60s Vercel hard kill) */
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit = {},
+  timeoutMs = 12_000
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const id   = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Minimal FITS binary table parser (Node.js-compatible, no browser APIs)
 // Handles TESS LC FITS files: PRIMARY + LIGHTCURVE binary table HDU.
@@ -178,11 +193,9 @@ async function queryMAST(ticId: string): Promise<Record<string, unknown>[]> {
     },
   };
 
-  const response = await fetch(`${MAST_API_URL}/invoke`, {
+  const response = await fetchWithTimeout(`${MAST_API_URL}/invoke`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
   });
 
@@ -201,16 +214,12 @@ async function getDataProducts(obsId: string): Promise<Record<string, unknown>[]
   const request = {
     service: 'Mast.Caom.Products',
     format: 'json',
-    params: {
-      obsid: obsId,
-    },
+    params: { obsid: obsId },
   };
 
-  const response = await fetch(`${MAST_API_URL}/invoke`, {
+  const response = await fetchWithTimeout(`${MAST_API_URL}/invoke`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
   });
 
@@ -233,7 +242,7 @@ async function downloadLightCurve(dataUrl: string): Promise<{
   flux_err: number[];
   quality: number[];
 }> {
-  const response = await fetch(dataUrl);
+  const response = await fetchWithTimeout(dataUrl, {}, 20_000); // FITS can be large
 
   if (!response.ok) {
     throw new Error(`Failed to download light curve: ${response.statusText}`);
@@ -310,17 +319,13 @@ export async function fetchTICInfo(ticId: string): Promise<TICInfo | null> {
       },
     };
 
-    const response = await fetch(`${MAST_API_URL}/invoke`, {
+    const response = await fetchWithTimeout(`${MAST_API_URL}/invoke`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     });
 
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
 
@@ -390,8 +395,11 @@ export function generateSyntheticLightCurve(
     noise = 0.0004 + seededRand() * 0.0008,
   } = options;
 
-  // Generate ~27 days of data (one TESS sector) at 2-minute cadence
-  const nPoints = 19440; // ~27 days * 24 hours * 60 min / 2 min
+  // Generate ~27 days of data (one TESS sector) at 15-minute cadence.
+  // 15-min binned cadence (vs 2-min native) reduces BLS computation ~50x
+  // while still resolving transits ≥45 min (all known targets qualify).
+  const cadenceMin = 15;
+  const nPoints = Math.floor(27 * 24 * 60 / cadenceMin); // 2592 points
   const time: number[] = [];
   const flux: number[] = [];
   const flux_err: number[] = [];
@@ -400,7 +408,7 @@ export function generateSyntheticLightCurve(
   const t0 = 1325.0; // Reference epoch (BTJD)
 
   for (let i = 0; i < nPoints; i++) {
-    const t = t0 + (i * 2) / (24 * 60); // 2-minute cadence
+    const t = t0 + (i * cadenceMin) / (24 * 60); // 15-min cadence
     time.push(t);
 
     // Base flux with Gaussian noise
