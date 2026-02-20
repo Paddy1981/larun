@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY requirements-railway.txt requirements.txt
+COPY requirements.txt .
 
-# Install Python dependencies with timeout settings
-RUN pip install --no-cache-dir --user --timeout=300 -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir --user -r requirements.txt
 
 # ============================================================================
 # Stage 2: Runtime
@@ -45,12 +45,10 @@ COPY src/ ./src/
 COPY skills/ ./skills/
 COPY config/ ./config/
 COPY models/ ./models/
-COPY nodes/ ./nodes/
 COPY larun.py .
 COPY larun_chat.py .
+COPY larun_pipeline.py .
 COPY api.py .
-COPY api-minimal.py .
-COPY cloud_endpoints.py .
 
 # Create data directories
 RUN mkdir -p data/cache data/raw output logs output/submissions
@@ -61,11 +59,11 @@ RUN mkdir -p data/cache data/raw output logs output/submissions
 EXPOSE 8000 8080
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health || curl -f http://localhost:${PORT:-8000}/ || exit 1
 
-# Default command: Run FastAPI server (use minimal API for faster startup)
-CMD ["uvicorn", "api-minimal:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command: Run Discovery Pipeline Dashboard
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
 # ============================================================================
 # Alternative entrypoints (use with docker run --entrypoint)
