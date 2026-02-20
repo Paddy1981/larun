@@ -1,0 +1,3 @@
+Railway deployment trigger - Force rebuild with latest Dockerfile
+Timestamp: 2026-02-20 07:04 UTC
+Commit: 6cc9af0 - Dockerfile fixed (removed larun_pipeline.py)
