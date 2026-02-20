@@ -306,6 +306,87 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Knowledge Hubs Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-[#202124] text-center mb-4">
+            Standards Knowledge Hubs
+          </h2>
+          <p className="text-[#5f6368] text-center mb-12 max-w-2xl mx-auto">
+            Comprehensive reference libraries for space engineering standards — instantly searchable, always accessible.
+          </p>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* ECSS Hub */}
+            <Link href="/ecss" className="group block bg-white border border-[#dadce0] rounded-2xl p-8 hover:shadow-lg hover:border-[#1a73e8] transition-all duration-200">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 bg-[#1a73e8] rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                  E
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors">ECSS Standards</h3>
+                  <p className="text-sm text-[#5f6368]">European Cooperation for Space Standardization</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-5">
+                <span className="bg-[#fef3c7] text-[#92400e] text-xs font-medium px-2.5 py-1 rounded-full">M — Management</span>
+                <span className="bg-[#dbeafe] text-[#1e40af] text-xs font-medium px-2.5 py-1 rounded-full">E — Engineering</span>
+                <span className="bg-[#d1fae5] text-[#065f46] text-xs font-medium px-2.5 py-1 rounded-full">Q — Quality</span>
+                <span className="bg-[#ede9fe] text-[#4c1d95] text-xs font-medium px-2.5 py-1 rounded-full">+4 branches</span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-5 text-center">
+                <div className="bg-[#f1f3f4] rounded-lg p-3">
+                  <p className="text-2xl font-bold text-[#202124]">7</p>
+                  <p className="text-xs text-[#5f6368] mt-0.5">Branches</p>
+                </div>
+                <div className="bg-[#f1f3f4] rounded-lg p-3">
+                  <p className="text-2xl font-bold text-[#202124]">139</p>
+                  <p className="text-xs text-[#5f6368] mt-0.5">Standards</p>
+                </div>
+                <div className="bg-[#f1f3f4] rounded-lg p-3">
+                  <p className="text-2xl font-bold text-[#202124]">25K+</p>
+                  <p className="text-xs text-[#5f6368] mt-0.5">Requirements</p>
+                </div>
+              </div>
+              <p className="text-sm text-[#1a73e8] font-medium group-hover:underline">Explore ECSS Hub →</p>
+            </Link>
+
+            {/* NASA Hub */}
+            <Link href="/nasa" className="group block bg-white border border-[#dadce0] rounded-2xl p-8 hover:shadow-lg hover:border-[#0b3d91] transition-all duration-200">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 bg-[#0b3d91] rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                  N
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#202124] group-hover:text-[#0b3d91] transition-colors">NASA Standards</h3>
+                  <p className="text-sm text-[#5f6368]">NASA Technical Standards Program (NTSP)</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-5">
+                <span className="bg-[#dbeafe] text-[#1e40af] text-xs font-medium px-2.5 py-1 rounded-full">Structures 5000</span>
+                <span className="bg-[#fef3c7] text-[#92400e] text-xs font-medium px-2.5 py-1 rounded-full">Electrical 4000</span>
+                <span className="bg-[#d1fae5] text-[#065f46] text-xs font-medium px-2.5 py-1 rounded-full">Safety 8000</span>
+                <span className="bg-[#ede9fe] text-[#4c1d95] text-xs font-medium px-2.5 py-1 rounded-full">+4 domains</span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-5 text-center">
+                <div className="bg-[#f1f3f4] rounded-lg p-3">
+                  <p className="text-2xl font-bold text-[#202124]">83</p>
+                  <p className="text-xs text-[#5f6368] mt-0.5">Documents</p>
+                </div>
+                <div className="bg-[#f1f3f4] rounded-lg p-3">
+                  <p className="text-2xl font-bold text-[#202124]">10</p>
+                  <p className="text-xs text-[#5f6368] mt-0.5">NASA Centers</p>
+                </div>
+                <div className="bg-[#f1f3f4] rounded-lg p-3">
+                  <p className="text-2xl font-bold text-[#202124]">7</p>
+                  <p className="text-xs text-[#5f6368] mt-0.5">Disciplines</p>
+                </div>
+              </div>
+              <p className="text-sm text-[#0b3d91] font-medium group-hover:underline">Explore NASA Hub →</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <PricingSection />
 
@@ -323,13 +404,19 @@ export default function HomePage() {
             </Link>
 
             {/* Links */}
-            <div className="flex items-center gap-6 text-sm text-[#5f6368]">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-[#5f6368]">
               <a href="https://laruneng.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#202124] transition-colors">
                 Larun Engineering
               </a>
               <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="hover:text-[#202124] transition-colors">
                 GitHub
               </a>
+              <Link href="/ecss" className="hover:text-[#202124] transition-colors">
+                ECSS Standards
+              </Link>
+              <Link href="/nasa" className="hover:text-[#202124] transition-colors">
+                NASA Standards
+              </Link>
               <Link href="#" className="hover:text-[#202124] transition-colors">
                 Privacy
               </Link>
