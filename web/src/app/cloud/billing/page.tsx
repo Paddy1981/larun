@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getCurrentUser, supabase } from '@/lib/supabase';
+import { getCurrentUser, supabase } from '@/lib/supabase'; // supabase used for session token
 import { Loader2 } from 'lucide-react';
 
 const PLANS = {
@@ -47,32 +47,23 @@ export default function SubscriptionPage() {
   }, []);
 
   const loadData = async () => {
-    // Try Supabase Auth first (cloud login)
-    let email: string | null = null;
+    // Get Supabase session token if available (for Authorization header)
     const { user } = await getCurrentUser();
-    if (user?.email) {
-      email = user.email;
-    } else {
-      // Fall back to NextAuth session (main site login)
-      try {
-        const res = await fetch('/api/auth/session');
-        if (res.ok) {
-          const session = await res.json();
-          email = session?.user?.email ?? null;
-        }
-      } catch { /* ignore */ }
-    }
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
 
-    if (!email) {
+    // Call server-side API that checks both Supabase Auth + NextAuth
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/api/cloud/subscription', { headers });
+
+    if (res.status === 401) {
       window.location.href = '/cloud/auth/login?redirect=/cloud/billing';
       return;
     }
 
-    const { data } = await supabase
-      .from('users')
-      .select('subscription_tier, analyses_this_month, analyses_limit')
-      .eq('email', email)
-      .single();
+    const data = res.ok ? await res.json() : null;
 
     setUserData(data as UserData);
     setLoading(false);
