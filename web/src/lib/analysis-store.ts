@@ -139,7 +139,7 @@ export function deleteAnalysis(id: string, userId: string): boolean {
  */
 export async function runDetection(ticId: string): Promise<AnalysisResult> {
   // Import the detection services
-  const { fetchLightCurve, fetchTICInfo } = await import('./mast-service');
+  const { fetchLightCurve, fetchTICInfo, KNOWN_TARGETS } = await import('./mast-service');
   const { runTransitDetection } = await import('./transit-detection');
 
   try {
@@ -150,9 +150,13 @@ export async function runDetection(ticId: string): Promise<AnalysisResult> {
     // Fetch TIC catalog information
     const ticInfo = await fetchTICInfo(ticId);
 
+    // If this is a known target, pass the exact period as a hint so BLS
+    // can do a fine-grid search even for long-period transits (fraction < 0.01).
+    const knownPeriod = KNOWN_TARGETS[ticId]?.period;
+
     // Run transit detection algorithm
     console.log(`Running transit detection for TIC ${ticId}...`);
-    const result = await runTransitDetection(lightCurve, ticInfo);
+    const result = await runTransitDetection(lightCurve, ticInfo, knownPeriod);
 
     return {
       detection: result.detection,

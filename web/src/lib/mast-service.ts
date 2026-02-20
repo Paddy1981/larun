@@ -350,8 +350,8 @@ export async function fetchTICInfo(ticId: string): Promise<TICInfo | null> {
   }
 }
 
-// Known transit parameters for confirmed/candidate targets
-const KNOWN_TARGETS: Record<string, { period: number; depth: number; duration: number }> = {
+// Known transit parameters for confirmed/candidate targets (exported for hint-period detection)
+export const KNOWN_TARGETS: Record<string, { period: number; depth: number; duration: number }> = {
   '470710327': { period: 14.61, depth: 0.0052, duration: 0.083 }, // TOI-1338 b
   '307210830': { period: 37.42, depth: 0.0021, duration: 0.095 }, // TOI-700 d
   '441462736': { period: 0.766, depth: 0.0089, duration: 0.042 }, // TOI-849 b

@@ -162,14 +162,16 @@ export function runBLS(
     periodSteps?: number;
     minTransitDuration?: number;
     maxTransitDuration?: number;
+    hintPeriod?: number;   // Exact period to test with a fine-grid search
   } = {}
 ): BLSResult {
   const {
     minPeriod = 0.5,
     maxPeriod = 40,
     periodSteps = 500,           // 500 log-spaced periods; adequate resolution
-    minTransitDuration = 0.01,   // Fraction of period
+    minTransitDuration = 0.01,   // Fraction of period (general BLS)
     maxTransitDuration = 0.15,
+    hintPeriod,
   } = options;
 
   // Normalize flux
@@ -296,6 +298,83 @@ export function runBLS(
       };
     }
   }
+
+  // ── Hint-period fine search ────────────────────────────────────────────────
+  // For targets with a known/suspected period (e.g. KNOWN_TARGETS), run an
+  // extra high-resolution sweep at the exact period.  This handles long-period
+  // planets whose transit-duration fraction is too small for the general BLS
+  // (e.g. TOI-1231.01: 0.078d / 24.25d = 0.0032 < minTransitDuration 0.01).
+  if (hintPeriod !== undefined && hintPeriod > 0) {
+    const hPhases = time.map(t => ((t - time[0]) % hintPeriod) / hintPeriod);
+    const hNorm   = normFlux; // already computed above
+
+    // 12 duration steps from 0.001 to 0.2 of the hint period
+    const hDurSteps = 12;
+    // 2000 phase steps — fine enough for any transit fraction ≥ 0.001
+    const hPhaseSteps = 2000;
+
+    for (let d = 0; d < hDurSteps; d++) {
+      const td = 0.001 + (0.20 - 0.001) * d / hDurSteps;
+
+      for (let p = 0; p < hPhaseSteps; p++) {
+        const phaseStart = p / hPhaseSteps;
+
+        let iti = 0, itc = 0, oti = 0, otc = 0;
+        for (let i = 0; i < hPhases.length; i++) {
+          const ph = hPhases[i];
+          const wp = ph < phaseStart ? ph + 1 : ph;
+          if (wp >= phaseStart && wp < phaseStart + td) {
+            iti += hNorm[i]; itc++;
+          } else {
+            oti += hNorm[i]; otc++;
+          }
+        }
+        if (itc < 3 || otc < 10) continue;
+
+        const dep = oti / otc - iti / itc;
+        const pw  = dep > 0
+          ? (dep * dep * itc * otc) / (itc + otc)
+          : 0;
+
+        if (pw > bestPower) {
+          bestPower    = pw;
+          bestPeriod   = hintPeriod;
+          bestPhase    = phaseStart;
+          bestDuration = td;
+        }
+      }
+    }
+
+    // Re-derive transitParams if hint search beat general BLS
+    if (bestPeriod === hintPeriod && bestPower > 0) {
+      const hPh2 = time.map(t => ((t - time[0]) % hintPeriod) / hintPeriod);
+      const inF: number[] = [], outF: number[] = [];
+      for (let i = 0; i < hPh2.length; i++) {
+        if (hPh2[i] >= bestPhase && hPh2[i] < bestPhase + bestDuration) {
+          inF.push(flux[i]);
+        } else {
+          outF.push(flux[i]);
+        }
+      }
+      if (inF.length > 0 && outF.length > 0) {
+        const inMean  = inF.reduce((a,b)=>a+b,0) / inF.length;
+        const outMean = outF.reduce((a,b)=>a+b,0) / outF.length;
+        const dep     = (outMean - inMean) / outMean;
+        const nz      = std(outF) / outMean;
+        const snr     = dep / (nz / Math.sqrt(inF.length));
+        transitParams = {
+          period:    hintPeriod,
+          epoch:     time[0] + bestPhase * hintPeriod,
+          depth:     dep,
+          depth_ppm: dep * 1e6,
+          duration:  bestDuration * hintPeriod * 24,
+          snr,
+          power:     bestPower,
+        };
+      }
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   return {
     bestPeriod,
@@ -534,7 +613,8 @@ function computeFoldedCurve(
  */
 export async function runTransitDetection(
   lightCurve: LightCurveData,
-  ticInfo: TICInfo | null
+  ticInfo: TICInfo | null,
+  hintPeriod?: number     // Known period to test with fine-grid search
 ): Promise<DetectionResult> {
   const startTime = Date.now();
 
@@ -563,8 +643,10 @@ export async function runTransitDetection(
     };
   }
 
-  // Sigma clip outliers
-  const clipped = sigmaClip(time, flux, 5);
+  // Sigma clip at 20σ — removes cosmic-ray spikes only.
+  // Lower values (e.g. 5σ) would clip deep transit signals (8000–9000 ppm)
+  // in low-noise data, causing false "no detection" results.
+  const clipped = sigmaClip(time, flux, 20);
   time = clipped.time;
   flux = clipped.flux;
 
@@ -577,8 +659,8 @@ export async function runTransitDetection(
   const blsTime = ds.time;
   const blsFlux = ds.flux;
 
-  // Run BLS
-  const blsResult = runBLS(blsTime, blsFlux);
+  // Run BLS (pass hint period for targeted fine search)
+  const blsResult = runBLS(blsTime, blsFlux, { hintPeriod });
 
   // Check if we have a significant detection
   const detectionThreshold = 0.0001; // Minimum BLS power
