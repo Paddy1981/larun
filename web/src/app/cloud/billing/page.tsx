@@ -47,8 +47,23 @@ export default function SubscriptionPage() {
   }, []);
 
   const loadData = async () => {
+    // Try Supabase Auth first (cloud login)
+    let email: string | null = null;
     const { user } = await getCurrentUser();
-    if (!user) {
+    if (user?.email) {
+      email = user.email;
+    } else {
+      // Fall back to NextAuth session (main site login)
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const session = await res.json();
+          email = session?.user?.email ?? null;
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (!email) {
       window.location.href = '/cloud/auth/login?redirect=/cloud/billing';
       return;
     }
@@ -56,7 +71,7 @@ export default function SubscriptionPage() {
     const { data } = await supabase
       .from('users')
       .select('subscription_tier, analyses_this_month, analyses_limit')
-      .eq('id', user.id)
+      .eq('email', email)
       .single();
 
     setUserData(data as UserData);
