@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createAnalysis, processAnalysis } from '@/lib/analysis-store';
+import { createAnalysis, processAnalysis, getAnalysis } from '@/lib/analysis-store';
+
+// Allow up to 60s for MAST fetch + BLS detection (Vercel Hobby limit)
+// Upgrade to Pro for 300s if MAST is slow
+export const maxDuration = 60;
 
 /**
  * POST /api/v1/analyze
  *
  * Submit a TIC ID for exoplanet transit detection analysis.
- * Requires authentication. Runs detection synchronously.
+ * Runs detection synchronously and returns the full result.
+ * With Fluid Compute (Active CPU pricing), you only pay for BLS compute
+ * time (~2-3s), not MAST network wait time (~10-30s).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -73,22 +79,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create analysis record in memory
+    // Create analysis record and run detection synchronously
+    // (background Promise pattern breaks in serverless — function exits before it completes)
     const analysis = createAnalysis(session.user.id, normalizedTicId);
 
-    // Run detection in background and return immediately
-    processAnalysis(analysis.id).catch((err) => {
-      console.error(`Analysis ${analysis.id} failed:`, err);
-    });
+    await processAnalysis(analysis.id);
 
-    // Return response immediately with analysis ID
+    const completed = getAnalysis(analysis.id);
+
     return NextResponse.json(
       {
         analysis_id: analysis.id,
-        status: 'pending',
-        message: 'Analysis started. Redirecting to results page.',
+        tic_id: normalizedTicId,
+        status: completed?.status ?? 'failed',
+        result: completed?.result ?? null,
+        error: completed?.error ?? null,
       },
-      { status: 202 }
+      { status: 200 }
     );
   } catch (error) {
     console.error('Error submitting analysis:', error);

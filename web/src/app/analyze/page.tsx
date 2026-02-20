@@ -59,46 +59,34 @@ export default function AnalyzePage() {
     setProgress(0);
 
     try {
-      // Submit analysis
+      // Simulate progress while waiting for synchronous result
+      const progressInterval = setInterval(() => {
+        setProgress(prev => Math.min(85, prev + 5));
+      }, 1500);
+
+      // Submit analysis and wait for full result (runs synchronously server-side)
       const response = await fetch('/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tic_id: idToAnalyze }),
       });
 
+      clearInterval(progressInterval);
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error?.message || 'Failed to start analysis');
       }
 
-      const { analysis_id } = await response.json();
-      setProgress(10);
-
-      // Poll for results
-      let attempts = 0;
-      const maxAttempts = 60;
-
-      while (attempts < maxAttempts) {
-        const statusResponse = await fetch(`/api/v1/analyze/${analysis_id}`);
-        const statusData = await statusResponse.json();
-
-        if (statusData.status === 'processing') {
-          setProgress(Math.min(90, 10 + attempts * 5));
-        }
-
-        if (statusData.status === 'completed' || statusData.status === 'failed') {
-          setResult(statusData);
-          setProgress(100);
-          break;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
-      }
-
-      if (attempts >= maxAttempts) {
-        setError('Analysis timed out. Please try again.');
-      }
+      const data = await response.json();
+      setProgress(100);
+      setResult({
+        id: data.analysis_id,
+        tic_id: data.tic_id,
+        status: data.status,
+        result: data.result,
+        error: data.error,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
