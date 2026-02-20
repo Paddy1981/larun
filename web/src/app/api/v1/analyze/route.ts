@@ -17,20 +17,8 @@ export const maxDuration = 60;
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Auth is optional — authenticated users get quota tracking
     const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'unauthorized',
-            message: 'Authentication required',
-          },
-        },
-        { status: 401 }
-      );
-    }
 
     // Parse request body
     const body = await request.json();
@@ -63,25 +51,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check usage limits (for free tier)
-    const analysesThisMonth = session.user.analysesThisMonth || 0;
-    const analysesLimit = session.user.analysesLimit || 5;
-
-    if (analysesLimit !== -1 && analysesThisMonth >= analysesLimit) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'usage_limit_exceeded',
-            message: `Monthly analysis limit reached (${analysesLimit}). Upgrade to analyze more targets.`,
+    // Check usage limits for authenticated users only
+    if (session?.user) {
+      const analysesThisMonth = session.user.analysesThisMonth || 0;
+      const analysesLimit = session.user.analysesLimit || 5;
+      if (analysesLimit !== -1 && analysesThisMonth >= analysesLimit) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'usage_limit_exceeded',
+              message: `Monthly analysis limit reached (${analysesLimit}). Upgrade to analyze more targets.`,
+            },
           },
-        },
-        { status: 429 }
-      );
+          { status: 429 }
+        );
+      }
     }
 
-    // Create analysis record and run detection synchronously
-    // (background Promise pattern breaks in serverless — function exits before it completes)
-    const analysis = createAnalysis(session.user.id, normalizedTicId);
+    const userId = session?.user?.id ?? `anon-${normalizedTicId}`;
+    const analysis = createAnalysis(userId, normalizedTicId);
 
     await processAnalysis(analysis.id);
 

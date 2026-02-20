@@ -142,8 +142,8 @@ export function runBLS(
 ): BLSResult {
   const {
     minPeriod = 0.5,
-    maxPeriod = 15,
-    periodSteps = 1000,
+    maxPeriod = 40,
+    periodSteps = 2000,
     minTransitDuration = 0.01, // Fraction of period
     maxTransitDuration = 0.15,
   } = options;

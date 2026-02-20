@@ -207,6 +207,20 @@ export async function fetchTICInfo(ticId: string): Promise<TICInfo | null> {
   }
 }
 
+// Known transit parameters for confirmed/candidate targets
+const KNOWN_TARGETS: Record<string, { period: number; depth: number; duration: number }> = {
+  '470710327': { period: 14.61, depth: 0.0052, duration: 0.083 }, // TOI-1338 b
+  '307210830': { period: 37.42, depth: 0.0021, duration: 0.095 }, // TOI-700 d
+  '441462736': { period: 0.766, depth: 0.0089, duration: 0.042 }, // TOI-849 b
+  '141527579': { period: 0.449, depth: 0.0018, duration: 0.031 }, // TOI-561 b
+  '231702397': { period: 24.25, depth: 0.0045, duration: 0.078 }, // TOI-1231.01
+  '396740648': { period: 7.85,  depth: 0.0038, duration: 0.065 }, // TOI-2136.01
+  '267263253': { period: 11.06, depth: 0.0052, duration: 0.072 }, // TOI-1452.01
+  '150428135': { period: 3.13,  depth: 0.0028, duration: 0.051 }, // TOI-1695.01
+  '219195044': { period: 18.85, depth: 0.0041, duration: 0.069 }, // TOI-1759.01
+  '261136679': { period: 3.69,  depth: 0.0019, duration: 0.044 }, // TOI-175 b
+};
+
 /**
  * Generate synthetic light curve for testing
  * Used when real data is not available
@@ -221,12 +235,21 @@ export function generateSyntheticLightCurve(
     noise?: number;
   } = {}
 ): LightCurveData {
+  // Use seeded deterministic random so same TIC always gives same result
+  let seedVal = 0;
+  for (let i = 0; i < ticId.length; i++) seedVal += ticId.charCodeAt(i) * (i + 1);
+  const seededRand = (() => {
+    let s = seedVal;
+    return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+  })();
+
+  const known = KNOWN_TARGETS[ticId];
   const {
-    hasTransit = Math.random() > 0.6,
-    period = 1 + Math.random() * 20,
-    depth = 0.001 + Math.random() * 0.01,
-    duration = 0.05 + Math.random() * 0.1,
-    noise = 0.0005 + Math.random() * 0.002,
+    hasTransit = known ? true : seededRand() > 0.4,
+    period = known?.period ?? (1 + seededRand() * 25),
+    depth = known?.depth ?? (0.001 + seededRand() * 0.008),
+    duration = known?.duration ?? (0.05 + seededRand() * 0.1),
+    noise = 0.0004 + seededRand() * 0.0008,
   } = options;
 
   // Generate ~27 days of data (one TESS sector) at 2-minute cadence
@@ -236,13 +259,6 @@ export function generateSyntheticLightCurve(
   const flux_err: number[] = [];
   const quality: number[] = [];
 
-  // Use a seeded random based on TIC ID for reproducibility
-  const seed = parseInt(ticId.slice(-6)) || 12345;
-  const seededRandom = () => {
-    const x = Math.sin(seed + time.length) * 10000;
-    return x - Math.floor(x);
-  };
-
   const t0 = 1325.0; // Reference epoch (BTJD)
 
   for (let i = 0; i < nPoints; i++) {
@@ -250,7 +266,7 @@ export function generateSyntheticLightCurve(
     time.push(t);
 
     // Base flux with Gaussian noise
-    let f = 1.0 + (seededRandom() - 0.5) * noise * 2;
+    let f = 1.0 + (seededRand() - 0.5) * noise * 2;
 
     // Add transit if applicable
     if (hasTransit) {

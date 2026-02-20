@@ -26,10 +26,19 @@ interface AnalysisResult {
   error?: string;
 }
 
-const popularTargets = [
-  { id: '470710327', name: 'TOI-1338 b', description: 'Circumbinary planet' },
-  { id: '307210830', name: 'TOI-700 d', description: 'Earth-sized in HZ' },
-  { id: '261136679', name: 'TOI-175 b', description: 'Super-Earth' },
+const confirmedTargets = [
+  { id: '470710327', name: 'TOI-1338 b', description: 'Circumbinary · 14.6d', confirmed: true },
+  { id: '307210830', name: 'TOI-700 d',  description: 'Earth-sized HZ · 37.4d', confirmed: true },
+  { id: '441462736', name: 'TOI-849 b',  description: 'Dense Neptune · 18.4h', confirmed: true },
+  { id: '141527579', name: 'TOI-561 b',  description: 'Super-Earth · 10.8h', confirmed: true },
+];
+
+const candidateTargets = [
+  { id: '231702397', name: 'TOI-1231.01', description: 'Unconfirmed · 24.3d' },
+  { id: '396740648', name: 'TOI-2136.01', description: 'Unconfirmed · 7.9d' },
+  { id: '267263253', name: 'TOI-1452.01', description: 'Unconfirmed · 11.1d' },
+  { id: '150428135', name: 'TOI-1695.01', description: 'Unconfirmed · 3.1d' },
+  { id: '219195044', name: 'TOI-1759.01', description: 'Unconfirmed · 18.9d' },
 ];
 
 function AnalyzePageInner() {
@@ -41,12 +50,7 @@ function AnalyzePageInner() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      window.location.href = `/cloud/auth/login?redirect=/analyze${searchParams.get('tic') ? `?tic=${searchParams.get('tic')}` : ''}`;
-    }
-  }, [status, searchParams]);
+  // No auth required — analysis is public
 
   // Pre-fill TIC ID from ?tic= query param and auto-start analysis
   useEffect(() => {
@@ -182,23 +186,38 @@ function AnalyzePageInner() {
             )}
           </div>
 
-          {/* Popular Targets */}
+          {/* Target Pickers */}
           {!isLoading && !result && (
-            <div className="mb-8">
-              <p className="text-sm text-[#5f6368] mb-3">Try a known target:</p>
-              <div className="flex flex-wrap gap-2">
-                {popularTargets.map((target) => (
-                  <button
-                    key={target.id}
-                    onClick={() => {
-                      setTicId(target.id);
-                      handleAnalyze(target.id);
-                    }}
-                    className="px-4 py-2 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] text-sm rounded-full transition-colors"
-                  >
-                    TIC {target.id} ({target.name})
-                  </button>
-                ))}
+            <div className="mb-8 space-y-4">
+              {/* Confirmed planets — model validation */}
+              <div>
+                <p className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Confirmed Planets</p>
+                <div className="flex flex-wrap gap-2">
+                  {confirmedTargets.map((target) => (
+                    <button
+                      key={target.id}
+                      onClick={() => { setTicId(target.id); handleAnalyze(target.id); }}
+                      className="px-3 py-1.5 bg-[#e6f4ea] hover:bg-[#ceead6] text-[#137333] text-xs font-medium rounded-full transition-colors"
+                    >
+                      {target.name} · {target.description}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Unconfirmed candidates */}
+              <div>
+                <p className="text-xs font-medium text-[#5f6368] uppercase tracking-wider mb-2">Unconfirmed Candidates</p>
+                <div className="flex flex-wrap gap-2">
+                  {candidateTargets.map((target) => (
+                    <button
+                      key={target.id}
+                      onClick={() => { setTicId(target.id); handleAnalyze(target.id); }}
+                      className="px-3 py-1.5 bg-[#fef7e0] hover:bg-[#fde293] text-[#b06000] text-xs font-medium rounded-full transition-colors"
+                    >
+                      {target.name} · {target.description}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
