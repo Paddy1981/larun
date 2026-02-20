@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import {
-  createAnalysisInDB,
-  runAnalysisWithDB,
-  incrementUserAnalysisCount,
-} from '@/lib/analysis-db';
+import { createAnalysis, processAnalysis } from '@/lib/analysis-store';
 
 /**
  * POST /api/v1/analyze
@@ -77,19 +73,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create analysis record in Supabase
-    const analysis = await createAnalysisInDB(
-      session.user.id,
-      session.user.email,
-      normalizedTicId
-    );
+    // Create analysis record in memory
+    const analysis = createAnalysis(session.user.id, normalizedTicId);
 
-    // Increment usage count
-    await incrementUserAnalysisCount(session.user.email);
-
-    // Run detection synchronously (Vercel functions have up to 60s timeout on Pro)
-    // This runs in the background via Promise but we return immediately
-    runAnalysisWithDB(analysis.id).catch((err) => {
+    // Run detection in background and return immediately
+    processAnalysis(analysis.id).catch((err) => {
       console.error(`Analysis ${analysis.id} failed:`, err);
     });
 

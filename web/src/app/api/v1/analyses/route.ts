@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { listAnalysesFromDB, type AnalysisStatus } from '@/lib/analysis-db';
+import { listAnalyses, type AnalysisStatus } from '@/lib/analysis-store';
 
 /**
  * GET /api/v1/analyses
@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get analyses from Supabase
-    const { analyses, total } = await listAnalysesFromDB(session.user.id, {
+    // Get analyses from in-memory store
+    const { analyses, total } = listAnalyses(session.user.id, {
       status: statusFilter || undefined,
       limit: perPage,
       offset: (page - 1) * perPage,

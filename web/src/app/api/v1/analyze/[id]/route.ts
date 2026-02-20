@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getAnalysisFromDB } from '@/lib/analysis-db';
+import { getAnalysis } from '@/lib/analysis-store';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -32,8 +32,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { id: analysisId } = await params;
 
-    // Get analysis from Supabase (checks ownership via userId)
-    const analysis = await getAnalysisFromDB(analysisId, session.user.id);
+    // Get analysis from in-memory store
+    const analysis = getAnalysis(analysisId, session.user.id);
 
     if (!analysis) {
       return NextResponse.json(
