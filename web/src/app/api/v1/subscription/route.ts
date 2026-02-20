@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerSupabaseClient();
 
-    // Get user's subscription data
+    // Get user's subscription data (use actual column names from schema)
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, subscription_status, subscription_plan, analyses_used, analyses_limit, subscription_current_period_end')
+      .select('id, subscription_tier, analyses_limit, analyses_this_month')
       .eq('email', session.user.email)
       .single();
 
@@ -43,15 +43,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const plan = user.subscription_plan || 'free';
-    const limit = user.analyses_limit || PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free;
+    const plan = user.subscription_tier || 'free';
+    const limit = user.analyses_limit != null ? user.analyses_limit : (PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] ?? PLAN_LIMITS.free);
 
     return NextResponse.json({
       plan: plan,
-      status: user.subscription_status || 'active',
-      current_period_end: user.subscription_current_period_end,
+      status: 'active',
+      current_period_end: null,
       cancel_at_period_end: false,
-      analyses_used: user.analyses_used || 0,
+      analyses_used: user.analyses_this_month || 0,
       analyses_limit: limit,
     });
   } catch (error) {

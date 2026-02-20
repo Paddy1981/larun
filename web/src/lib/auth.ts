@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { createClient } from '@supabase/supabase-js';
 
 // Extend the session type to include custom fields
 declare module 'next-auth' {
@@ -30,16 +31,44 @@ declare module 'next-auth/jwt' {
   }
 }
 
+// Map Supabase subscription_tier → NextAuth tier label
+function toNextAuthTier(dbTier: string): 'free' | 'hobbyist' | 'professional' {
+  if (dbTier === 'annual') return 'professional';
+  if (dbTier === 'monthly') return 'hobbyist';
+  return 'free';
+}
+
 // Get analyses limit based on subscription tier
 function getAnalysesLimit(tier: string): number {
   switch (tier) {
     case 'professional':
+    case 'annual':
       return -1; // Unlimited
     case 'hobbyist':
-      return 25;
+    case 'monthly':
+      return 50;
     default:
-      return 3; // Free tier
+      return 5; // Free tier
   }
+}
+
+// Fetch subscription tier from Supabase using service key (server-side only)
+async function fetchSubscriptionTier(email: string): Promise<string> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  if (!url || !key) return 'free';
+  try {
+    const sb = createClient(url, key);
+    const { data } = await sb
+      .from('users')
+      .select('subscription_tier, analyses_limit')
+      .eq('email', email)
+      .single();
+    if (data?.subscription_tier) return data.subscription_tier;
+  } catch {
+    // ignore
+  }
+  return 'free';
 }
 
 // Check if Google OAuth is configured
@@ -83,8 +112,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.subscriptionTier = 'free';
         token.analysesThisMonth = 0;
+        // Look up subscription tier from Supabase on first sign-in
+        if (user.email) {
+          const dbTier = await fetchSubscriptionTier(user.email);
+          token.subscriptionTier = toNextAuthTier(dbTier);
+        } else {
+          token.subscriptionTier = 'free';
+        }
       }
       return token;
     },

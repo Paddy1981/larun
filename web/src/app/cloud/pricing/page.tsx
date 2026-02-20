@@ -5,7 +5,7 @@
  */
 
 import Link from 'next/link'
-import { Check, Zap, Rocket, Shield } from 'lucide-react'
+import { Check, Zap, Rocket, Shield, Code2 } from 'lucide-react'
 
 export default function PricingPage() {
   const tiers = [
@@ -16,11 +16,11 @@ export default function PricingPage() {
       description: 'For getting started',
       icon: <Zap className="w-6 h-6" />,
       features: [
-        '5 analyses per month',
-        'Basic TinyML detection',
+        '5 web analyses per month',
+        'All 8 TinyML models',
+        'FITS file upload',
         'CSV export',
         'Community support',
-        'FITS file upload',
       ],
       cta: 'Get Started Free',
       ctaLink: '/cloud/auth/signup',
@@ -31,15 +31,35 @@ export default function PricingPage() {
       name: 'Monthly',
       price: '$9',
       period: 'per month',
-      description: 'For active users',
+      description: 'For active researchers',
       icon: <Rocket className="w-6 h-6" />,
       features: [
-        '50 analyses per month',
-        'Advanced AI models',
+        '50 web analyses per month',
+        'All 8 TinyML models',
         'Priority processing',
         'JSON & CSV export',
         'Email support',
-        'Cloud storage',
+        'Analysis history',
+      ],
+      cta: 'Subscribe Now',
+      ctaLink: 'https://larunspace.lemonsqueezy.com/checkout/buy/f35b9320-79ed-462d-bdf7-1ec4841eadbb',
+      highlighted: false,
+      badge: '',
+      isExternal: true,
+    },
+    {
+      name: 'Developer',
+      price: '$29',
+      period: 'per month',
+      description: 'For builders & pipelines',
+      icon: <Code2 className="w-6 h-6" />,
+      features: [
+        '10,000 API calls per month',
+        'REST API access + API keys',
+        'All 8 TinyML models',
+        'Programmatic FITS upload',
+        'JSON response + metadata',
+        'Priority support',
       ],
       cta: 'Subscribe Now',
       ctaLink: 'https://larunspace.lemonsqueezy.com/checkout/buy/f35b9320-79ed-462d-bdf7-1ec4841eadbb',
@@ -51,14 +71,14 @@ export default function PricingPage() {
       name: 'Annual',
       price: '$89',
       period: 'per year',
-      description: 'Best value',
+      description: 'Unlimited everything',
       icon: <Shield className="w-6 h-6" />,
       features: [
-        'Unlimited analyses',
-        'All AI models + API',
+        'Unlimited web + API calls',
+        'All 8 TinyML models',
+        'Unlimited API keys',
         'White-label reports',
         'Priority support',
-        'Advanced features',
         'Bulk processing',
       ],
       cta: 'Subscribe Now',
@@ -80,8 +100,25 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {/* API banner */}
+        <div className="mb-10 p-5 bg-larun-black text-larun-white rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="font-semibold mb-1">Build with the LARUN API</p>
+            <p className="text-sm text-larun-light-gray">
+              Automate light-curve classification in your own pipelines with a single HTTP call.
+              <code className="ml-2 bg-white/10 px-2 py-0.5 rounded text-xs">POST /api/tinyml/analyze</code>
+            </p>
+          </div>
+          <Link
+            href="/cloud/dashboard"
+            className="shrink-0 px-5 py-2.5 bg-white text-larun-black text-sm font-medium rounded-lg hover:bg-larun-lighter-gray transition-colors"
+          >
+            Get API Key →
+          </Link>
+        </div>
+
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -155,10 +192,20 @@ export default function PricingPage() {
 
           <div className="space-y-6">
             <div>
+              <h4 className="text-lg font-medium mb-2">How does API access work?</h4>
+              <p className="text-larun-medium-gray">
+                Generate an API key from your Dashboard and include it as the <code className="bg-larun-lighter-gray px-1 rounded text-sm">X-API-Key</code> header
+                when calling <code className="bg-larun-lighter-gray px-1 rounded text-sm">POST /api/tinyml/analyze</code>.
+                The Developer plan includes 10,000 API calls per month. Annual plan gives unlimited API calls.
+              </p>
+            </div>
+
+            <div>
               <h4 className="text-lg font-medium mb-2">What counts as an analysis?</h4>
               <p className="text-larun-medium-gray">
                 Each FITS file you upload and analyze with a TinyML model counts as one analysis.
                 Running the same file through multiple models counts as multiple analyses.
+                API calls count separately from web UI analyses.
               </p>
             </div>
 

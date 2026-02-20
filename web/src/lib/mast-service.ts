@@ -96,7 +96,7 @@ function parseTFORM(tform: string): { type: string; bytes: number } {
   return { type, bytes: (sizeOf[type] ?? 4) * count };
 }
 
-function parseFITSLightCurve(buffer: ArrayBuffer): {
+export function parseFITSLightCurve(buffer: ArrayBuffer): {
   time: number[];
   flux: number[];
   flux_err: number[];

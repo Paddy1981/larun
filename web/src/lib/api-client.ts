@@ -34,7 +34,7 @@ class APIClient {
     delete this.client.defaults.headers.common['Authorization']
   }
 
-  // TinyML Analysis
+  // TinyML Analysis — always routes to Next.js API (relative URL)
   async analyzeTinyML(
     file: File,
     modelId: string,
@@ -45,10 +45,11 @@ class APIClient {
     formData.append('model_id', modelId)
     formData.append('user_id', userId)
 
-    const response = await this.client.post('/api/tinyml/analyze', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    // Use relative URL so it always hits the Next.js API route regardless of
+    // whether NEXT_PUBLIC_API_URL is set (avoids "Backend API not available")
+    const response = await axios.post('/api/tinyml/analyze', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
     })
 
     return response.data
@@ -56,7 +57,7 @@ class APIClient {
 
   // Get available models
   async getModels() {
-    const response = await this.client.get('/api/tinyml/models')
+    const response = await axios.get('/api/tinyml/models')
     return response.data
   }
 
