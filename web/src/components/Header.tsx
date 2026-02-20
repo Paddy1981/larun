@@ -125,7 +125,7 @@ export default function Header() {
                             Dashboard
                           </Link>
                           <Link
-                            href="/settings/subscription"
+                            href="/cloud/billing"
                             className="block px-4 py-2 text-sm text-[#3c4043] hover:bg-[#f1f3f4]"
                             onClick={() => setShowUserMenu(false)}
                           >

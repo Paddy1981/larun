@@ -14,7 +14,7 @@ interface AuthAwareCTAProps {
 export function AuthAwareCTA({ className = '', children, variant = 'primary' }: AuthAwareCTAProps) {
   const { data: session, status } = useSession();
 
-  const href = session ? '/settings/subscription' : '/auth/register';
+  const href = session ? '/cloud/billing' : '/auth/register';
 
   if (status === 'loading') {
     return (
@@ -43,7 +43,7 @@ export function PricingButton({
 
   // For logged-in users, go to subscription page
   // For non-logged-in users, go to register
-  const href = session ? '/settings/subscription' : '/auth/register';
+  const href = session ? '/cloud/billing' : '/auth/register';
 
   const labels = {
     free: 'Get Started',

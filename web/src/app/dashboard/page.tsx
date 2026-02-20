@@ -337,7 +337,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="py-1">
-                    <Link href="/settings/subscription" className="block px-4 py-2 text-sm text-[#3c4043] hover:bg-[#f1f3f4]">
+                    <Link href="/cloud/billing" className="block px-4 py-2 text-sm text-[#3c4043] hover:bg-[#f1f3f4]">
                       Usage & Billing
                     </Link>
                     <button
@@ -440,13 +440,13 @@ export default function DashboardPage() {
           {/* Account Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Account</p>
           <div className="px-3">
-            <Link href="/settings/subscription" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/billing" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
               <span className="text-sm">Profile</span>
             </Link>
-            <Link href="/settings/subscription" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/billing" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
               </svg>
