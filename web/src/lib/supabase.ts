@@ -16,9 +16,10 @@ export const supabase = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createClient('https://placeholder.supabase.co', 'placeholder-key')
 
-// Server-side Supabase client for API routes
+// Server-side Supabase client for API routes — uses service role key to bypass RLS
 export const createServerSupabaseClient = () => {
-  return createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder-key')
+  const serviceKey = process.env.SUPABASE_SERVICE_KEY || supabaseAnonKey;
+  return createClient(supabaseUrl || 'https://placeholder.supabase.co', serviceKey || 'placeholder-key');
 }
 
 // Database types

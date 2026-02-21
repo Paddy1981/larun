@@ -49,35 +49,67 @@ export interface Analysis {
 }
 
 /**
+ * Ensure a user row exists in Supabase `users` table (upsert by email).
+ * Returns the user's UUID, which satisfies the analyses.user_id FK.
+ */
+async function ensureUser(
+  supabase: ReturnType<typeof createServerSupabaseClient>,
+  email: string,
+): Promise<string> {
+  // Try to find existing user
+  const { data: existing } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single();
+
+  if (existing?.id) return existing.id;
+
+  // Create new user with a proper UUID
+  const newId = crypto.randomUUID();
+  await supabase.from('users').insert({
+    id: newId,
+    email,
+    subscription_tier: 'free',
+    analyses_this_month: 0,
+  });
+  return newId;
+}
+
+/**
  * Create a new analysis in Supabase
  */
 export async function createAnalysisInDB(
-  userId: string,
+  _nextAuthId: string,
   userEmail: string,
-  ticId: string
+  ticId: string,
 ): Promise<Analysis> {
   const supabase = createServerSupabaseClient();
-  const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Resolve (or create) a real Supabase UUID for this user
+  const supabaseUserId = await ensureUser(supabase, userEmail);
+
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
 
   const analysis: Analysis = {
     id,
-    user_id: userId,
+    user_id: supabaseUserId,
     tic_id: ticId.replace(/\D/g, ''),
     status: 'pending',
-    created_at: new Date().toISOString(),
+    created_at: now,
   };
 
   const { error } = await supabase.from('analyses').insert({
     id: analysis.id,
-    user_id: analysis.user_id,
-    user_email: userEmail,
+    user_id: supabaseUserId,
     tic_id: analysis.tic_id,
     status: analysis.status,
-    created_at: analysis.created_at,
+    created_at: now,
   });
 
   if (error) {
-    console.error('Error creating analysis:', error);
+    console.error('Error creating analysis in DB:', error);
     throw new Error('Failed to create analysis record');
   }
 
@@ -156,18 +188,27 @@ export async function updateAnalysisInDB(
 }
 
 /**
- * List analyses for a user from Supabase
+ * List analyses for a user from Supabase, looked up by email.
  */
 export async function listAnalysesFromDB(
-  userId: string,
+  userEmail: string,
   options?: { status?: AnalysisStatus; limit?: number; offset?: number }
 ): Promise<{ analyses: Analysis[]; total: number }> {
   const supabase = createServerSupabaseClient();
 
+  // Resolve user UUID by email
+  const { data: user } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', userEmail)
+    .single();
+
+  if (!user?.id) return { analyses: [], total: 0 };
+
   let query = supabase
     .from('analyses')
     .select('*', { count: 'exact' })
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (options?.status) {
