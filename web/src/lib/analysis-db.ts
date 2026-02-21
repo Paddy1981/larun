@@ -115,7 +115,7 @@ export async function createAnalysisInDB(
 
   if (error) {
     console.error('Error creating analysis in DB:', error);
-    throw new Error('Failed to create analysis record');
+    throw new Error(`Failed to create analysis record: ${error.message} (code: ${error.code})`);
   }
 
   return analysis;
