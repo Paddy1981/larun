@@ -36,6 +36,7 @@ interface WebhookPayload {
     event_name: WebhookEventName;
     custom_data?: {
       user_id?: string;
+      user_email?: string;
     };
   };
   data: {
@@ -170,29 +171,56 @@ function getPlanFromVariant(variantId: number | undefined): 'monthly' | 'annual'
   return (VARIANT_IDS[variantStr as keyof typeof VARIANT_IDS] || 'monthly') as 'monthly' | 'annual';
 }
 
+// Resolve user UUID: try by ID first, then by email fallback
+async function resolveUserId(
+  supabase: ReturnType<typeof createServerSupabaseClient>,
+  userId: string | undefined,
+  userEmail: string | undefined,
+  fallbackEmail?: string,
+): Promise<string | null> {
+  // 1. Try exact UUID match
+  if (userId) {
+    const { data } = await supabase.from('users').select('id').eq('id', userId).single();
+    if (data?.id) return data.id;
+  }
+  // 2. Fall back to email from custom_data
+  const email = userEmail || fallbackEmail;
+  if (email) {
+    const { data } = await supabase.from('users').select('id').eq('email', email).single();
+    if (data?.id) return data.id;
+  }
+  return null;
+}
+
 // Event handlers
 
 async function handleSubscriptionCreated(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
   const { data, meta } = payload;
-  const userId = meta.custom_data?.user_id;
   const attrs = data.attributes;
   const plan = getPlanFromVariant(attrs.variant_id);
 
+  const resolvedId = await resolveUserId(
+    supabase,
+    meta.custom_data?.user_id,
+    meta.custom_data?.user_email,
+    attrs.user_email,
+  );
+
   console.log('[LemonSqueezy] Subscription created:', {
     subscriptionId: data.id,
-    userId,
+    resolvedId,
     email: attrs.user_email,
     plan,
   });
 
-  if (!userId) {
-    console.error('[LemonSqueezy] No user_id in custom_data');
+  if (!resolvedId) {
+    console.error('[LemonSqueezy] Could not resolve user for subscription_created');
     return;
   }
 
   // Create subscription record
   const { error: subError } = await supabase.from('subscriptions').insert({
-    user_id: userId,
+    user_id: resolvedId,
     lemon_squeezy_subscription_id: data.id,
     lemon_squeezy_customer_id: String(attrs.customer_id),
     variant_id: String(attrs.variant_id),
@@ -212,7 +240,7 @@ async function handleSubscriptionCreated(supabase: ReturnType<typeof createServe
     subscription_tier: plan,
     lemon_squeezy_customer_id: String(attrs.customer_id),
     analyses_limit: PLAN_LIMITS[plan],
-  }).eq('id', userId);
+  }).eq('id', resolvedId);
 
   if (userError) {
     console.error('[LemonSqueezy] Error updating user:', userError);
@@ -221,13 +249,19 @@ async function handleSubscriptionCreated(supabase: ReturnType<typeof createServe
 
 async function handleSubscriptionUpdated(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
   const { data, meta } = payload;
-  const userId = meta.custom_data?.user_id;
   const attrs = data.attributes;
   const plan = getPlanFromVariant(attrs.variant_id);
 
+  const resolvedId = await resolveUserId(
+    supabase,
+    meta.custom_data?.user_id,
+    meta.custom_data?.user_email,
+    attrs.user_email,
+  );
+
   console.log('[LemonSqueezy] Subscription updated:', {
     subscriptionId: data.id,
-    userId,
+    resolvedId,
     status: attrs.status,
     plan,
   });
@@ -244,12 +278,11 @@ async function handleSubscriptionUpdated(supabase: ReturnType<typeof createServe
     console.error('[LemonSqueezy] Error updating subscription:', subError);
   }
 
-  // Update user if we have user_id
-  if (userId) {
+  if (resolvedId) {
     const { error: userError } = await supabase.from('users').update({
       subscription_tier: plan,
       analyses_limit: PLAN_LIMITS[plan],
-    }).eq('id', userId);
+    }).eq('id', resolvedId);
 
     if (userError) {
       console.error('[LemonSqueezy] Error updating user:', userError);

@@ -49,6 +49,7 @@ COPY larun.py .
 COPY larun_chat.py .
 COPY larun_pipeline.py .
 COPY api.py .
+COPY start.py .
 
 # Create data directories
 RUN mkdir -p data/cache data/raw output logs output/submissions
@@ -63,7 +64,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health || curl -f http://localhost:${PORT:-8000}/ || exit 1
 
 # Default command: Run Discovery Pipeline Dashboard
-CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["python", "start.py"]
 
 # ============================================================================
 # Alternative entrypoints (use with docker run --entrypoint)

@@ -352,16 +352,30 @@ export async function fetchTICInfo(ticId: string): Promise<TICInfo | null> {
 
 // Known transit parameters for confirmed/candidate targets (exported for hint-period detection)
 export const KNOWN_TARGETS: Record<string, { period: number; depth: number; duration: number }> = {
-  '470710327': { period: 14.61, depth: 0.0052, duration: 0.083 }, // TOI-1338 b
-  '307210830': { period: 37.42, depth: 0.0021, duration: 0.095 }, // TOI-700 d
-  '441462736': { period: 0.766, depth: 0.0089, duration: 0.042 }, // TOI-849 b
-  '141527579': { period: 0.449, depth: 0.0018, duration: 0.031 }, // TOI-561 b
-  '231702397': { period: 24.25, depth: 0.0045, duration: 0.078 }, // TOI-1231.01
-  '396740648': { period: 7.85,  depth: 0.0038, duration: 0.065 }, // TOI-2136.01
-  '267263253': { period: 11.06, depth: 0.0052, duration: 0.072 }, // TOI-1452.01
-  '150428135': { period: 3.13,  depth: 0.0028, duration: 0.051 }, // TOI-1695.01
-  '219195044': { period: 18.85, depth: 0.0041, duration: 0.069 }, // TOI-1759.01
-  '261136679': { period: 3.69,  depth: 0.0019, duration: 0.044 }, // TOI-175 b
+  // ── Confirmed ──────────────────────────────────────────────────────────────
+  '470710327': { period: 14.61,  depth: 0.0052, duration: 0.083 }, // TOI-1338 b  – circumbinary
+  '307210830': { period: 37.42,  depth: 0.0021, duration: 0.095 }, // TOI-700 d   – HZ Earth-sized
+  '441462736': { period: 0.766,  depth: 0.0089, duration: 0.042 }, // TOI-849 b   – dense Neptune
+  '141527579': { period: 0.449,  depth: 0.0018, duration: 0.031 }, // TOI-561 b   – super-Earth
+  '261136679': { period: 3.69,   depth: 0.0019, duration: 0.044 }, // TOI-175 b   – sub-Neptune
+  '149603524': { period: 1.2749, depth: 0.0158, duration: 0.053 }, // WASP-121 b  – ultra-hot Jupiter
+  '29960110':  { period: 0.7921, depth: 0.0059, duration: 0.025 }, // LTT 9779 b  – ultra-hot Neptune
+  '271893367': { period: 2.114,  depth: 0.0062, duration: 0.057 }, // TOI-132 b   – dense Neptune
+  '158588995': { period: 4.173,  depth: 0.0029, duration: 0.054 }, // TOI-1136 b  – 6-planet system
+  '395171208': { period: 5.017,  depth: 0.0081, duration: 0.061 }, // TOI-4153 b  – hot Saturn
+  // ── Candidates ─────────────────────────────────────────────────────────────
+  '231702397': { period: 24.25,  depth: 0.0045, duration: 0.078 }, // TOI-1231.01
+  '396740648': { period: 7.85,   depth: 0.0038, duration: 0.065 }, // TOI-2136.01
+  '267263253': { period: 11.06,  depth: 0.0052, duration: 0.072 }, // TOI-1452.01
+  '150428135': { period: 3.13,   depth: 0.0028, duration: 0.051 }, // TOI-1695.01
+  '219195044': { period: 18.85,  depth: 0.0041, duration: 0.069 }, // TOI-1759.01
+  '467179528': { period: 10.90,  depth: 0.0038, duration: 0.071 }, // TOI-1266.01
+  '455737351': { period: 7.201,  depth: 0.0071, duration: 0.063 }, // TOI-2119.01
+  '349488688': { period: 6.549,  depth: 0.0044, duration: 0.067 }, // TOI-1806.01
+  '237913869': { period: 3.769,  depth: 0.0051, duration: 0.048 }, // TOI-1694.01
+  '394050135': { period: 6.133,  depth: 0.0039, duration: 0.061 }, // TOI-2084.01
+  '284361752': { period: 9.084,  depth: 0.0023, duration: 0.068 }, // TOI-4342.01
+  '372172128': { period: 2.502,  depth: 0.0031, duration: 0.043 }, // TOI-3714.01
 };
 
 /**

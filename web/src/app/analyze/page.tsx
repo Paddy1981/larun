@@ -48,18 +48,31 @@ interface AnalysisResult {
 }
 
 const confirmedTargets = [
-  { id: '470710327', name: 'TOI-1338 b',  description: 'Circumbinary · 14.6d',    confirmed: true },
-  { id: '307210830', name: 'TOI-700 d',   description: 'Earth-sized HZ · 37.4d',  confirmed: true },
-  { id: '441462736', name: 'TOI-849 b',   description: 'Dense Neptune · 18.4h',   confirmed: true },
-  { id: '141527579', name: 'TOI-561 b',   description: 'Super-Earth · 10.8h',     confirmed: true },
+  { id: '470710327', name: 'TOI-1338 b',  description: 'Circumbinary · 14.6d',       confirmed: true },
+  { id: '307210830', name: 'TOI-700 d',   description: 'Earth-sized HZ · 37.4d',     confirmed: true },
+  { id: '441462736', name: 'TOI-849 b',   description: 'Dense Neptune · 18.4h',      confirmed: true },
+  { id: '141527579', name: 'TOI-561 b',   description: 'Super-Earth · 10.8h',        confirmed: true },
+  { id: '261136679', name: 'TOI-175 b',   description: 'Sub-Neptune · 3.7d',         confirmed: true },
+  { id: '149603524', name: 'WASP-121 b',  description: 'Ultra-hot Jupiter · 1.3d',   confirmed: true },
+  { id: '29960110',  name: 'LTT 9779 b',  description: 'Ultra-hot Neptune · 0.8d',   confirmed: true },
+  { id: '271893367', name: 'TOI-132 b',   description: 'Dense Neptune · 2.1d',       confirmed: true },
+  { id: '158588995', name: 'TOI-1136 b',  description: '6-planet system · 4.2d',     confirmed: true },
+  { id: '395171208', name: 'TOI-4153 b',  description: 'Hot Saturn · 5.0d',          confirmed: true },
 ];
 
 const candidateTargets = [
-  { id: '231702397', name: 'TOI-1231.01', description: 'Unconfirmed · 24.3d' },
-  { id: '396740648', name: 'TOI-2136.01', description: 'Unconfirmed · 7.9d' },
-  { id: '267263253', name: 'TOI-1452.01', description: 'Unconfirmed · 11.1d' },
-  { id: '150428135', name: 'TOI-1695.01', description: 'Unconfirmed · 3.1d' },
-  { id: '219195044', name: 'TOI-1759.01', description: 'Unconfirmed · 18.9d' },
+  { id: '231702397', name: 'TOI-1231.01', description: 'Sub-Neptune · 24.3d' },
+  { id: '396740648', name: 'TOI-2136.01', description: 'Sub-Neptune · 7.9d' },
+  { id: '267263253', name: 'TOI-1452.01', description: 'Ocean world? · 11.1d' },
+  { id: '150428135', name: 'TOI-1695.01', description: 'Sub-Earth · 3.1d' },
+  { id: '219195044', name: 'TOI-1759.01', description: 'M-dwarf · 18.9d' },
+  { id: '467179528', name: 'TOI-1266.01', description: 'Sub-Neptune · 10.9d' },
+  { id: '455737351', name: 'TOI-2119.01', description: 'M-dwarf · 7.2d' },
+  { id: '349488688', name: 'TOI-1806.01', description: 'Sub-Neptune · 6.6d' },
+  { id: '237913869', name: 'TOI-1694.01', description: 'Hot Neptune · 3.8d' },
+  { id: '394050135', name: 'TOI-2084.01', description: 'M-dwarf · 6.1d' },
+  { id: '284361752', name: 'TOI-4342.01', description: 'Earth-sized · 9.1d' },
+  { id: '372172128', name: 'TOI-3714.01', description: 'Super-Earth · 2.5d' },
 ];
 
 // ── Transit chart (SVG, inline, no extra deps) ────────────────────────────
@@ -201,6 +214,17 @@ function FlagChip({ flag }: { flag: string }) {
   );
 }
 
+interface LiveCandidate {
+  tic_id: string;
+  toi: string;
+  period_days: number;
+  depth_ppm: number;
+  duration_hours: number;
+  disposition: string;
+  planet_radius_earth: number | null;
+  star_tmag: number | null;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 function AnalyzePageInner() {
   const { status } = useSession();
@@ -210,6 +234,20 @@ function AnalyzePageInner() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [liveCandidates, setLiveCandidates] = useState<LiveCandidate[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(true);
+  const [showAllLive, setShowAllLive] = useState(false);
+
+  // Fetch live TOI candidates from NASA Exoplanet Archive (via our API)
+  useEffect(() => {
+    fetch('/api/v1/toi-candidates')
+      .then(r => r.json())
+      .then(d => {
+        if (d.candidates) setLiveCandidates(d.candidates);
+      })
+      .catch(() => {/* silent – hardcoded fallback still shown */})
+      .finally(() => setCandidatesLoading(false));
+  }, []);
 
   // Pre-fill TIC ID from ?tic= query param and auto-start
   useEffect(() => {
@@ -340,7 +378,9 @@ function AnalyzePageInner() {
 
           {/* ── Target pickers ─────────────────────────────────────────── */}
           {!isLoading && !result && (
-            <div className="mb-8 space-y-4">
+            <div className="mb-8 space-y-5">
+
+              {/* Confirmed planets */}
               <div>
                 <p className="text-xs font-semibold text-[#5f6368] uppercase tracking-wider mb-2">
                   Confirmed Planets
@@ -356,9 +396,11 @@ function AnalyzePageInner() {
                   ))}
                 </div>
               </div>
+
+              {/* Static curated candidates */}
               <div>
                 <p className="text-xs font-semibold text-[#5f6368] uppercase tracking-wider mb-2">
-                  Unconfirmed Candidates
+                  Curated Candidates
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {candidateTargets.map(t => (
@@ -371,6 +413,47 @@ function AnalyzePageInner() {
                   ))}
                 </div>
               </div>
+
+              {/* Live TOI candidates from NASA Exoplanet Archive */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-xs font-semibold text-[#5f6368] uppercase tracking-wider">
+                    Live TOI Catalog
+                  </p>
+                  <span className="px-2 py-0.5 bg-[#e8f0fe] text-[#1a73e8] text-xs rounded-full font-medium">
+                    NASA Exoplanet Archive
+                  </span>
+                  {candidatesLoading && (
+                    <span className="w-3 h-3 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin inline-block" />
+                  )}
+                  {!candidatesLoading && liveCandidates.length > 0 && (
+                    <span className="text-xs text-[#5f6368]">{liveCandidates.length} targets</span>
+                  )}
+                </div>
+                {!candidatesLoading && liveCandidates.length === 0 && (
+                  <p className="text-xs text-[#9aa0a6]">Could not load live catalog — using curated list above.</p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {(showAllLive ? liveCandidates : liveCandidates.slice(0, 30)).map(c => (
+                    <button key={c.tic_id}
+                      onClick={() => { setTicId(c.tic_id); handleAnalyze(c.tic_id); }}
+                      title={`TIC ${c.tic_id} · ${c.period_days.toFixed(2)}d · depth ${(c.depth_ppm / 1e4).toFixed(2)}% · ${c.disposition}`}
+                      className="px-3 py-1.5 bg-[#f0f4ff] hover:bg-[#d2e3fc] text-[#174ea6] text-xs font-medium rounded-full transition-colors"
+                    >
+                      TOI-{c.toi} · {c.period_days.toFixed(1)}d
+                    </button>
+                  ))}
+                </div>
+                {!candidatesLoading && liveCandidates.length > 30 && (
+                  <button
+                    onClick={() => setShowAllLive(v => !v)}
+                    className="mt-2 text-xs text-[#1a73e8] hover:underline"
+                  >
+                    {showAllLive ? 'Show fewer' : `Show all ${liveCandidates.length} targets`}
+                  </button>
+                )}
+              </div>
+
             </div>
           )}
 

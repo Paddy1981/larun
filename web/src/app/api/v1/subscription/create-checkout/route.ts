@@ -56,8 +56,10 @@ export async function POST(request: NextRequest) {
           type: 'checkouts',
           attributes: {
             checkout_data: {
+              email: session.user.email ?? undefined,
               custom: {
                 user_id: session.user.id,
+                user_email: session.user.email,
               },
             },
             checkout_options: {

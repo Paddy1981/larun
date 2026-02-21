@@ -32,19 +32,30 @@ interface StatsData {
 
 // Confirmed exoplanets - demonstrates model accuracy
 const confirmedPlanets = [
-  { id: 'TIC 307210830', name: 'TOI-700 d', status: 'Confirmed', confidence: '98%', period: '37.42d', type: 'Earth-sized', discoveryYear: '2020' },
-  { id: 'TIC 470710327', name: 'TOI-1338 b', status: 'Confirmed', confidence: '96%', period: '14.61d', type: 'Circumbinary', discoveryYear: '2020' },
-  { id: 'TIC 441462736', name: 'TOI-849 b', status: 'Confirmed', confidence: '94%', period: '18.36h', type: 'Dense Neptune', discoveryYear: '2020' },
-  { id: 'TIC 141527579', name: 'TOI-561 b', status: 'Confirmed', confidence: '97%', period: '10.78h', type: 'Super-Earth', discoveryYear: '2021' },
+  { id: 'TIC 307210830', name: 'TOI-700 d',    status: 'Confirmed', confidence: '98%', period: '37.42d',  type: 'Earth-sized HZ',    discoveryYear: '2020' },
+  { id: 'TIC 470710327', name: 'TOI-1338 b',   status: 'Confirmed', confidence: '96%', period: '14.61d',  type: 'Circumbinary',      discoveryYear: '2020' },
+  { id: 'TIC 441462736', name: 'TOI-849 b',    status: 'Confirmed', confidence: '94%', period: '18.4h',   type: 'Dense Neptune',     discoveryYear: '2020' },
+  { id: 'TIC 141527579', name: 'TOI-561 b',    status: 'Confirmed', confidence: '97%', period: '10.8h',   type: 'Super-Earth',       discoveryYear: '2021' },
+  { id: 'TIC 261136679', name: 'TOI-175 b',    status: 'Confirmed', confidence: '95%', period: '3.69d',   type: 'Sub-Neptune',       discoveryYear: '2019' },
+  { id: 'TIC 149603524', name: 'WASP-121 b',   status: 'Confirmed', confidence: '99%', period: '1.27d',   type: 'Ultra-hot Jupiter', discoveryYear: '2016' },
+  { id: 'TIC 29960110',  name: 'LTT 9779 b',   status: 'Confirmed', confidence: '99%', period: '0.79d',   type: 'Ultra-hot Neptune', discoveryYear: '2020' },
+  { id: 'TIC 158588995', name: 'TOI-1136 b',   status: 'Confirmed', confidence: '93%', period: '4.17d',   type: '6-planet system',   discoveryYear: '2023' },
 ];
 
 // Unconfirmed TOI candidates for user analysis
 const toiCandidates = [
   { id: 'TIC 231702397', toi: 'TOI-1231.01', period: '24.25', depth: '0.45%', mag: '12.3', status: 'Candidate' },
-  { id: 'TIC 396740648', toi: 'TOI-2136.01', period: '7.85', depth: '0.38%', mag: '11.9', status: 'Candidate' },
+  { id: 'TIC 396740648', toi: 'TOI-2136.01', period: '7.85',  depth: '0.38%', mag: '11.9', status: 'Candidate' },
   { id: 'TIC 267263253', toi: 'TOI-1452.01', period: '11.06', depth: '0.52%', mag: '13.2', status: 'Candidate' },
-  { id: 'TIC 150428135', toi: 'TOI-1695.01', period: '3.13', depth: '0.28%', mag: '12.1', status: 'Candidate' },
+  { id: 'TIC 150428135', toi: 'TOI-1695.01', period: '3.13',  depth: '0.28%', mag: '12.1', status: 'Candidate' },
   { id: 'TIC 219195044', toi: 'TOI-1759.01', period: '18.85', depth: '0.41%', mag: '11.5', status: 'Candidate' },
+  { id: 'TIC 467179528', toi: 'TOI-1266.01', period: '10.90', depth: '0.38%', mag: '12.4', status: 'Candidate' },
+  { id: 'TIC 455737351', toi: 'TOI-2119.01', period: '7.20',  depth: '0.71%', mag: '11.2', status: 'Candidate' },
+  { id: 'TIC 349488688', toi: 'TOI-1806.01', period: '6.55',  depth: '0.44%', mag: '12.7', status: 'Candidate' },
+  { id: 'TIC 237913869', toi: 'TOI-1694.01', period: '3.77',  depth: '0.51%', mag: '11.6', status: 'Candidate' },
+  { id: 'TIC 394050135', toi: 'TOI-2084.01', period: '6.13',  depth: '0.39%', mag: '13.1', status: 'Candidate' },
+  { id: 'TIC 284361752', toi: 'TOI-4342.01', period: '9.08',  depth: '0.23%', mag: '12.8', status: 'Candidate' },
+  { id: 'TIC 372172128', toi: 'TOI-3714.01', period: '2.50',  depth: '0.31%', mag: '12.0', status: 'Candidate' },
 ];
 
 const products = [
@@ -104,6 +115,17 @@ const products = [
   },
 ];
 
+interface LiveTOI {
+  tic_id: string;
+  toi: string;
+  period_days: number;
+  depth_ppm: number;
+  duration_hours: number;
+  disposition: string;
+  planet_radius_earth: number | null;
+  star_tmag: number | null;
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -124,6 +146,9 @@ export default function DashboardPage() {
   const [isRefreshingActivity, setIsRefreshingActivity] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingTarget, setAnalyzingTarget] = useState<string | null>(null);
+  const [liveTOI, setLiveTOI] = useState<LiveTOI[]>([]);
+  const [toiLoading, setToiLoading] = useState(true);
+  const [showAllLive, setShowAllLive] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -213,13 +238,29 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchLiveTOI = async () => {
+    try {
+      const res = await fetch('/api/v1/toi-candidates');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.candidates) setLiveTOI(data.candidates);
+      }
+    } catch {
+      /* silent – static fallback still shown */
+    } finally {
+      setToiLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+    fetchLiveTOI();
   }, []);
 
   const handleRefreshTargets = async () => {
     setIsRefreshingTargets(true);
-    await fetchDashboardData();
+    setToiLoading(true);
+    await Promise.all([fetchDashboardData(), fetchLiveTOI()]);
     setIsRefreshingTargets(false);
   };
 
@@ -633,84 +674,186 @@ export default function DashboardPage() {
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                 </svg>
                 Candidates to Analyze
-              </h2>
-              <button
-                onClick={handleRefreshTargets}
-                disabled={isRefreshingTargets}
-                className="px-3 py-1.5 text-xs bg-[#f1f3f4] hover:bg-[#dadce0] text-[#3c4043] rounded transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {isRefreshingTargets && (
-                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                {!toiLoading && liveTOI.length > 0 && (
+                  <span className="ml-1 px-2 py-0.5 text-xs bg-[#e8f0fe] text-[#1a73e8] rounded-full font-medium">
+                    {liveTOI.length} live
+                  </span>
                 )}
-                Refresh List
-              </button>
+                {toiLoading && (
+                  <span className="w-3.5 h-3.5 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin inline-block ml-1" />
+                )}
+              </h2>
+              <div className="flex items-center gap-2">
+                {!toiLoading && liveTOI.length > 0 && (
+                  <span className="text-xs text-[#5f6368] bg-[#e8f0fe] px-2 py-1 rounded">
+                    NASA Exoplanet Archive
+                  </span>
+                )}
+                <button
+                  onClick={handleRefreshTargets}
+                  disabled={isRefreshingTargets || toiLoading}
+                  className="px-3 py-1.5 text-xs bg-[#f1f3f4] hover:bg-[#dadce0] text-[#3c4043] rounded transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {(isRefreshingTargets || toiLoading) && (
+                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  Refresh
+                </button>
+              </div>
             </div>
             <p className="text-[13px] text-[#5f6368] mb-4">
-              Unconfirmed TESS Objects of Interest (TOI) awaiting analysis. Use our Cloud platform to analyze these candidates with TinyML models.
+              {liveTOI.length > 0
+                ? `${liveTOI.length} TESS Objects of Interest loaded live from the NASA Exoplanet Archive. Click any target to run BLS transit analysis.`
+                : 'Unconfirmed TESS Objects of Interest (TOI) awaiting analysis. Use our Cloud platform to analyze these candidates with TinyML models.'}
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-[13px]">
-                <thead>
-                  <tr className="text-left text-[#3c4043] bg-[#e8f0fe]">
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Target ID</th>
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">TOI</th>
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Period (days)</th>
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Depth</th>
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Magnitude</th>
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Status</th>
-                    <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {toiCandidates.map((target, index) => {
-                    const targetInfo = getTargetStatus(target.id);
-                    const statusStyles: Record<string, string> = {
-                      'Candidate': 'bg-[#fef7e0] text-[#b06000]',
-                      'Processing': 'bg-[#e8f0fe] text-[#1a73e8]',
-                      'Analyzed': 'bg-[#e8eaed] text-[#5f6368]',
-                      'Planet Candidate': 'bg-[#e6f4ea] text-[#137333]',
-                      'False Positive': 'bg-[#fce8e6] text-[#c5221f]',
-                      'Failed': 'bg-[#fce8e6] text-[#c5221f]',
-                    };
-                    return (
-                      <tr key={index} className="hover:bg-[#f8f9fa] border-b border-[#f1f3f4]">
-                        <td className="py-2.5 px-3 text-[#202124] font-medium font-mono text-xs">{target.id}</td>
-                        <td className="py-2.5 px-3 text-[#3c4043]">{target.toi}</td>
-                        <td className="py-2.5 px-3 text-[#3c4043]">{target.period}</td>
-                        <td className="py-2.5 px-3 text-[#3c4043]">{target.depth}</td>
-                        <td className="py-2.5 px-3 text-[#3c4043]">{target.mag}</td>
-                        <td className="py-2.5 px-3">
-                          <span className={`px-2 py-0.5 text-xs rounded font-medium ${statusStyles[targetInfo.status] || statusStyles['Candidate']}`}>
-                            {targetInfo.status}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          {targetInfo.analysisId && targetInfo.status !== 'Failed' ? (
-                            <Link
-                              href={`/results/${targetInfo.analysisId}`}
-                              className="inline-flex items-center gap-1.5 bg-white hover:bg-[#f1f3f4] text-[#1a73e8] text-xs font-medium px-3 py-1 rounded border border-[#dadce0] transition-colors"
-                            >
-                              View Results
-                            </Link>
-                          ) : (
-                            <button
-                              onClick={() => handleAnalyzeTarget(target.id.replace('TIC ', ''))}
-                              className="inline-flex items-center gap-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-medium px-3 py-1 rounded transition-colors"
-                            >
-                              Analyze on Cloud →
-                            </button>
-                          )}
-                        </td>
+            {/* Live NASA TOI table */}
+            {liveTOI.length > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[13px]">
+                    <thead>
+                      <tr className="text-left text-[#3c4043] bg-[#e8f0fe]">
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">TOI</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">TIC ID</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Period (d)</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Depth (ppm)</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Rp (R⊕)</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Tmag</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Disposition</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Status</th>
+                        <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Action</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody>
+                      {(showAllLive ? liveTOI : liveTOI.slice(0, 25)).map((toi, index) => {
+                        const targetInfo = getTargetStatus(toi.tic_id);
+                        const statusStyles: Record<string, string> = {
+                          'Candidate':       'bg-[#fef7e0] text-[#b06000]',
+                          'Processing':      'bg-[#e8f0fe] text-[#1a73e8]',
+                          'Analyzed':        'bg-[#e8eaed] text-[#5f6368]',
+                          'Planet Candidate':'bg-[#e6f4ea] text-[#137333]',
+                          'False Positive':  'bg-[#fce8e6] text-[#c5221f]',
+                          'Failed':          'bg-[#fce8e6] text-[#c5221f]',
+                        };
+                        const dispColors: Record<string, string> = {
+                          CP:  'bg-[#e6f4ea] text-[#137333]',
+                          KP:  'bg-[#e6f4ea] text-[#137333]',
+                          PC:  'bg-[#fef7e0] text-[#b06000]',
+                          APC: 'bg-[#fef7e0] text-[#b06000]',
+                          FP:  'bg-[#fce8e6] text-[#c5221f]',
+                        };
+                        return (
+                          <tr key={index} className="hover:bg-[#f8f9fa] border-b border-[#f1f3f4]">
+                            <td className="py-2.5 px-3 text-[#202124] font-medium">TOI-{toi.toi}</td>
+                            <td className="py-2.5 px-3 text-[#3c4043] font-mono text-xs">{toi.tic_id}</td>
+                            <td className="py-2.5 px-3 text-[#3c4043]">{toi.period_days.toFixed(3)}</td>
+                            <td className="py-2.5 px-3 text-[#3c4043]">{Math.round(toi.depth_ppm).toLocaleString()}</td>
+                            <td className="py-2.5 px-3 text-[#3c4043]">{toi.planet_radius_earth?.toFixed(2) ?? '—'}</td>
+                            <td className="py-2.5 px-3 text-[#3c4043]">{toi.star_tmag?.toFixed(1) ?? '—'}</td>
+                            <td className="py-2.5 px-3">
+                              <span className={`px-2 py-0.5 text-xs rounded font-medium ${dispColors[toi.disposition] ?? 'bg-[#f1f3f4] text-[#5f6368]'}`}>
+                                {toi.disposition}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className={`px-2 py-0.5 text-xs rounded font-medium ${statusStyles[targetInfo.status] ?? statusStyles['Candidate']}`}>
+                                {targetInfo.status}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {targetInfo.analysisId && targetInfo.status !== 'Failed' ? (
+                                <Link href={`/results/${targetInfo.analysisId}`}
+                                  className="inline-flex items-center gap-1 bg-white hover:bg-[#f1f3f4] text-[#1a73e8] text-xs font-medium px-3 py-1 rounded border border-[#dadce0] transition-colors">
+                                  View Results
+                                </Link>
+                              ) : (
+                                <button
+                                  onClick={() => handleAnalyzeTarget(toi.tic_id)}
+                                  className="inline-flex items-center gap-1 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-medium px-3 py-1 rounded transition-colors"
+                                >
+                                  Analyze →
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {liveTOI.length > 25 && (
+                  <button
+                    onClick={() => setShowAllLive(v => !v)}
+                    className="mt-3 text-xs text-[#1a73e8] hover:underline"
+                  >
+                    {showAllLive ? 'Show fewer' : `Show all ${liveTOI.length} targets from NASA →`}
+                  </button>
+                )}
+              </>
+            ) : (
+              /* Static fallback while live data loads or fails */
+              <div className="overflow-x-auto">
+                <table className="w-full text-[13px]">
+                  <thead>
+                    <tr className="text-left text-[#3c4043] bg-[#e8f0fe]">
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Target ID</th>
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">TOI</th>
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Period (days)</th>
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Depth</th>
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Tmag</th>
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Status</th>
+                      <th className="py-2.5 px-3 font-medium border-b border-[#d2e3fc]">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {toiCandidates.map((target, index) => {
+                      const targetInfo = getTargetStatus(target.id);
+                      const statusStyles: Record<string, string> = {
+                        'Candidate':       'bg-[#fef7e0] text-[#b06000]',
+                        'Processing':      'bg-[#e8f0fe] text-[#1a73e8]',
+                        'Analyzed':        'bg-[#e8eaed] text-[#5f6368]',
+                        'Planet Candidate':'bg-[#e6f4ea] text-[#137333]',
+                        'False Positive':  'bg-[#fce8e6] text-[#c5221f]',
+                        'Failed':          'bg-[#fce8e6] text-[#c5221f]',
+                      };
+                      return (
+                        <tr key={index} className="hover:bg-[#f8f9fa] border-b border-[#f1f3f4]">
+                          <td className="py-2.5 px-3 text-[#202124] font-medium font-mono text-xs">{target.id}</td>
+                          <td className="py-2.5 px-3 text-[#3c4043]">{target.toi}</td>
+                          <td className="py-2.5 px-3 text-[#3c4043]">{target.period}</td>
+                          <td className="py-2.5 px-3 text-[#3c4043]">{target.depth}</td>
+                          <td className="py-2.5 px-3 text-[#3c4043]">{target.mag}</td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 text-xs rounded font-medium ${statusStyles[targetInfo.status] ?? statusStyles['Candidate']}`}>
+                              {targetInfo.status}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            {targetInfo.analysisId && targetInfo.status !== 'Failed' ? (
+                              <Link href={`/results/${targetInfo.analysisId}`}
+                                className="inline-flex items-center gap-1.5 bg-white hover:bg-[#f1f3f4] text-[#1a73e8] text-xs font-medium px-3 py-1 rounded border border-[#dadce0] transition-colors">
+                                View Results
+                              </Link>
+                            ) : (
+                              <button
+                                onClick={() => handleAnalyzeTarget(target.id.replace('TIC ', ''))}
+                                className="inline-flex items-center gap-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-medium px-3 py-1 rounded transition-colors"
+                              >
+                                Analyze →
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Products Grid */}
