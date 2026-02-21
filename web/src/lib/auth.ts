@@ -72,8 +72,9 @@ async function fetchSubscriptionTier(email: string): Promise<string> {
 }
 
 // Check if Google OAuth is configured
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+// .trim() guards against trailing newlines injected by Vercel's env var storage
+const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
 const isGoogleConfigured = !!(googleClientId && googleClientSecret);
 
 // Log configuration status (helpful for debugging)
@@ -96,7 +97,7 @@ export const authOptions: NextAuthOptions = {
       ]
     : [],
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET?.trim(),
 
   session: {
     strategy: 'jwt',
