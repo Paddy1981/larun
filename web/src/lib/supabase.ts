@@ -18,7 +18,11 @@ export const supabase = isConfigured
 
 // Server-side Supabase client for API routes — uses service role key to bypass RLS
 export const createServerSupabaseClient = () => {
-  const serviceKey = (process.env.SUPABASE_SERVICE_KEY || supabaseAnonKey).trim();
+  const serviceKey = (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    supabaseAnonKey
+  ).trim();
   const url = supabaseUrl || 'https://placeholder.supabase.co';
   return createClient(url, serviceKey || 'placeholder-key');
 }
