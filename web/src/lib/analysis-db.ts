@@ -106,6 +106,8 @@ export async function createAnalysisInDB(
     tic_id: analysis.tic_id,
     status: analysis.status,
     created_at: now,
+    model_id: 'bls-transit-v2',
+    result: {},
   });
 
   if (error) {
