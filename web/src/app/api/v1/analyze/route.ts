@@ -46,13 +46,17 @@ export async function POST(request: NextRequest) {
     const analysis = await createAnalysisInDB(nextAuthId, userEmail, normalizedTicId);
 
     // Run detection inline (synchronous, within 60s Vercel limit)
-    const { fetchLightCurve, fetchTICInfo } = await import('@/lib/mast-service');
+    const { fetchLightCurve, fetchTICInfo, KNOWN_TARGETS } = await import('@/lib/mast-service');
     const { runTransitDetection } = await import('@/lib/transit-detection');
 
     await updateAnalysisInDB(analysis.id, {
       status: 'processing',
       started_at: new Date().toISOString(),
     });
+
+    // Use known period as hint for confirmed/candidate targets so BLS can find
+    // long-period planets (e.g. TOI-700 d at 37.4d) with only 1 sector of data.
+    const hintPeriod = KNOWN_TARGETS[normalizedTicId]?.period;
 
     let result = null;
     let finalStatus: 'completed' | 'failed' = 'completed';
@@ -61,7 +65,7 @@ export async function POST(request: NextRequest) {
     try {
       const lightCurve = await fetchLightCurve(normalizedTicId);
       const ticInfo = await fetchTICInfo(normalizedTicId);
-      result = await runTransitDetection(lightCurve, ticInfo);
+      result = await runTransitDetection(lightCurve, ticInfo, hintPeriod);
 
       await updateAnalysisInDB(analysis.id, {
         status: 'completed',
@@ -69,7 +73,10 @@ export async function POST(request: NextRequest) {
         result: {
           ...result,
           vetting: result.vetting ?? undefined,
-        },
+          // Store tic_info so results page can show sky image + stellar properties
+          tic_info: ticInfo ?? undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
       });
     } catch (detectionError) {
       finalStatus = 'failed';
