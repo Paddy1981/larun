@@ -26,7 +26,7 @@ interface AnalysisResult {
     duration_hours: number | null;
     epoch_btjd: number | null;
     snr: number | null;
-    vetting: {
+    vetting?: {
       disposition: string;
       confidence: number;
       odd_even: VettingTest;
@@ -192,17 +192,17 @@ export default function ResultsPage() {
             <>
               {/* Detection Summary */}
               <Card className={`p-6 mb-6 ${
-                analysis.result.vetting.disposition === 'PLANET_CANDIDATE'
+                analysis.result.vetting?.disposition === 'PLANET_CANDIDATE'
                   ? 'bg-green-900/20 border-green-500/30'
-                  : analysis.result.vetting.disposition === 'LIKELY_FALSE_POSITIVE'
+                  : analysis.result.vetting?.disposition === 'LIKELY_FALSE_POSITIVE'
                   ? 'bg-red-900/20 border-red-500/30'
                   : 'bg-yellow-900/20 border-yellow-500/30'
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Disposition</p>
-                    <p className={`text-2xl font-bold ${getDispositionColor(analysis.result.vetting.disposition)}`}>
-                      {analysis.result.vetting.disposition.replace(/_/g, ' ')}
+                    <p className={`text-2xl font-bold ${getDispositionColor(analysis.result.vetting?.disposition ?? 'INCONCLUSIVE')}`}>
+                      {(analysis.result.vetting?.disposition ?? 'INCONCLUSIVE').replace(/_/g, ' ')}
                     </p>
                   </div>
                   <div className="text-right">
@@ -254,6 +254,7 @@ export default function ResultsPage() {
               )}
 
               {/* Vetting Results */}
+              {analysis.result.vetting && (
               <Card className="p-6 mb-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Vetting Results</h2>
                 <div className="space-y-4">
@@ -312,6 +313,7 @@ export default function ResultsPage() {
                   </div>
                 </div>
               </Card>
+              )}
 
               {/* Actions */}
               <Card className="p-6 mb-6">
