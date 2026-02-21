@@ -47,7 +47,6 @@ COPY config/ ./config/
 COPY models/ ./models/
 COPY larun.py .
 COPY larun_chat.py .
-COPY larun_pipeline.py .
 COPY api.py .
 COPY start.py .
 
