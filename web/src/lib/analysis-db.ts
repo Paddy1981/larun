@@ -176,7 +176,7 @@ export async function updateAnalysisInDB(
   const dbUpdates: Record<string, unknown> = {};
 
   if (updates.status) dbUpdates.status = updates.status;
-  if (updates.started_at) dbUpdates.started_at = updates.started_at;
+  // Note: analyses table has no started_at column, skip it
   if (updates.completed_at) dbUpdates.completed_at = updates.completed_at;
   if (updates.result) {
     dbUpdates.result = updates.result;
@@ -193,7 +193,7 @@ export async function updateAnalysisInDB(
 
   if (error) {
     console.error('Error updating analysis:', error);
-    throw new Error('Failed to update analysis');
+    throw new Error(`Failed to update analysis: ${error.message} (code: ${error.code})`);
   }
 }
 
