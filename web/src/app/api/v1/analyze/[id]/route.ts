@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { getAnalysis } from '@/lib/analysis-store';
+import { getAnalysisFromDB } from '@/lib/analysis-db';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -10,30 +8,15 @@ interface RouteParams {
 /**
  * GET /api/v1/analyze/[id]
  *
- * Get the status and results of a submitted analysis.
- * Fetches from Supabase for serverless compatibility.
+ * Get the status and results of a submitted analysis from Supabase.
+ * No auth required — analysis IDs are UUIDs (not guessable).
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'unauthorized',
-            message: 'Authentication required',
-          },
-        },
-        { status: 401 }
-      );
-    }
-
     const { id: analysisId } = await params;
 
-    // Get analysis from in-memory store
-    const analysis = getAnalysis(analysisId, session.user.id);
+    // Fetch from Supabase by ID (no userId filter — UUIDs are not guessable)
+    const analysis = await getAnalysisFromDB(analysisId);
 
     if (!analysis) {
       return NextResponse.json(
@@ -54,10 +37,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       status: analysis.status,
       created_at: analysis.created_at,
     };
-
-    if (analysis.started_at) {
-      response.started_at = analysis.started_at;
-    }
 
     if (analysis.completed_at) {
       response.completed_at = analysis.completed_at;
