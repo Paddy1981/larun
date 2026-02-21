@@ -6,8 +6,8 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
+const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
 
 // Create a no-op client if env vars are missing (cloud/* pages gracefully degrade)
 const isConfigured = !!(supabaseUrl && supabaseAnonKey)
@@ -18,8 +18,9 @@ export const supabase = isConfigured
 
 // Server-side Supabase client for API routes — uses service role key to bypass RLS
 export const createServerSupabaseClient = () => {
-  const serviceKey = process.env.SUPABASE_SERVICE_KEY || supabaseAnonKey;
-  return createClient(supabaseUrl || 'https://placeholder.supabase.co', serviceKey || 'placeholder-key');
+  const serviceKey = (process.env.SUPABASE_SERVICE_KEY || supabaseAnonKey).trim();
+  const url = supabaseUrl || 'https://placeholder.supabase.co';
+  return createClient(url, serviceKey || 'placeholder-key');
 }
 
 // Database types
