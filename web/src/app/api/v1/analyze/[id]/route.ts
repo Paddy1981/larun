@@ -54,15 +54,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         snr: analysis.result.snr,
         sectors_used: analysis.result.sectors_used,
         processing_time_seconds: analysis.result.processing_time_seconds,
-        vetting: analysis.result.vetting
-          ? {
-              disposition: analysis.result.vetting.disposition,
-              confidence: analysis.result.vetting.confidence,
-              odd_even: analysis.result.vetting.odd_even,
-              v_shape: analysis.result.vetting.v_shape,
-              secondary_eclipse: analysis.result.vetting.secondary_eclipse,
-            }
-          : undefined,
+        folded_curve: (analysis.result as unknown as Record<string, unknown>).folded_curve ?? undefined,
+        tic_info: (analysis.result as unknown as Record<string, unknown>).tic_info ?? undefined,
+        vetting: analysis.result.vetting ?? undefined,
       };
     }
 
