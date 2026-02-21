@@ -90,8 +90,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error submitting analysis:', error);
+    const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: { code: 'internal_error', message: 'Failed to submit analysis' } },
+      { error: { code: 'internal_error', message: 'Failed to submit analysis', debug: msg } },
       { status: 500 }
     );
   }
