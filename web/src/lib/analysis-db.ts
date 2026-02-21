@@ -115,7 +115,7 @@ export async function createAnalysisInDB(
 
   if (error) {
     console.error('Error creating analysis in DB:', error);
-    throw new Error(`Failed to create analysis record: ${error.message} (code: ${error.code})`);
+    throw new Error('Failed to create analysis record');
   }
 
   return analysis;
@@ -193,7 +193,7 @@ export async function updateAnalysisInDB(
 
   if (error) {
     console.error('Error updating analysis:', error);
-    throw new Error(`Failed to update analysis: ${error.message} (code: ${error.code})`);
+    throw new Error('Failed to update analysis');
   }
 }
 
