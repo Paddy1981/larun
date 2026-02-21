@@ -18,6 +18,9 @@ pydantic>=2.5.0
 supabase>=2.3.0
 python-dotenv>=1.0.0
 
+# Astronomical (for FITS file parsing)
+astropy>=5.3
+
 # Configuration
 pyyaml>=6.0
 
