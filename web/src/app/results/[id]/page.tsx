@@ -248,35 +248,117 @@ export default function ResultsPage() {
             <div className="space-y-5">
 
               {/* Detection summary banner */}
-              <div className={`bg-white border rounded-xl p-6 shadow-sm flex items-center gap-4 ${
-                detected ? 'border-green-300 bg-green-50' : 'border-[#dadce0]'
-              }`}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  detected ? 'bg-green-100' : 'bg-[#f1f3f4]'
-                }`}>
-                  {detected ? (
-                    <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-6 h-6 text-[#5f6368]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h1 className={`text-xl font-bold ${detected ? 'text-green-700' : 'text-[#202124]'}`}>
-                    {detected ? 'Transit Signal Detected!' : 'No Transit Signal Detected'}
-                  </h1>
-                  <p className="text-[#5f6368] text-sm">
-                    TIC {analysis.tic_id}
-                    {res.sectors_used && res.sectors_used.length > 0 &&
-                      ` · Sector${res.sectors_used.length > 1 ? 's' : ''} ${res.sectors_used.join(', ')}`}
-                    {res.processing_time_seconds && ` · ${res.processing_time_seconds.toFixed(1)}s`}
-                    {analysis.completed_at && ` · ${new Date(analysis.completed_at).toLocaleDateString()}`}
-                  </p>
-                </div>
-              </div>
+              {(() => {
+                const disposition = res.vetting?.disposition;
+                const isPlanetCandidate = disposition === 'PLANET_CANDIDATE';
+                const isFalsePositive = disposition === 'LIKELY_FALSE_POSITIVE';
+                const isInconclusive = disposition === 'INCONCLUSIVE';
+
+                // Verdict styling
+                const verdictBg = !detected
+                  ? 'border-[#dadce0] bg-white'
+                  : isPlanetCandidate
+                  ? 'border-green-300 bg-green-50'
+                  : isFalsePositive
+                  ? 'border-red-200 bg-red-50'
+                  : isInconclusive
+                  ? 'border-yellow-300 bg-yellow-50'
+                  : 'border-[#dadce0] bg-white';
+
+                const iconBg = !detected
+                  ? 'bg-[#f1f3f4]'
+                  : isPlanetCandidate
+                  ? 'bg-green-100'
+                  : isFalsePositive
+                  ? 'bg-red-100'
+                  : 'bg-yellow-100';
+
+                const titleColor = !detected
+                  ? 'text-[#202124]'
+                  : isPlanetCandidate
+                  ? 'text-green-700'
+                  : isFalsePositive
+                  ? 'text-red-700'
+                  : 'text-yellow-700';
+
+                const verdictLabel = !detected
+                  ? null
+                  : isPlanetCandidate
+                  ? 'Planet Candidate'
+                  : isFalsePositive
+                  ? 'Likely False Positive'
+                  : isInconclusive
+                  ? 'Inconclusive'
+                  : null;
+
+                const verdictExplain = !detected
+                  ? null
+                  : isPlanetCandidate
+                  ? 'All vetting checks passed. This signal has the expected shape and behaviour of a genuine transiting planet.'
+                  : isFalsePositive
+                  ? 'Vetting checks indicate this signal is likely caused by an eclipsing binary star or instrumental artefact, not a planet. The alternating transit depths and V-shaped profile are hallmarks of a stellar false positive.'
+                  : isInconclusive
+                  ? 'Some vetting checks raised warnings. More data or follow-up observations are needed to confirm or rule out a planet.'
+                  : null;
+
+                return (
+                  <div className={`border rounded-xl p-6 shadow-sm ${verdictBg}`}>
+                    <div className="flex items-start gap-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${iconBg}`}>
+                        {!detected ? (
+                          <svg className="w-6 h-6 text-[#5f6368]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        ) : isPlanetCandidate ? (
+                          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : isFalsePositive ? (
+                          <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h1 className={`text-xl font-bold ${titleColor}`}>
+                            {detected ? 'Transit Signal Detected' : 'No Transit Signal Detected'}
+                          </h1>
+                          {verdictLabel && (
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              isPlanetCandidate ? 'bg-green-100 text-green-700'
+                              : isFalsePositive ? 'bg-red-100 text-red-700'
+                              : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {verdictLabel}
+                            </span>
+                          )}
+                        </div>
+                        {verdictExplain && (
+                          <p className={`text-sm mt-2 font-medium ${
+                            isPlanetCandidate ? 'text-green-700'
+                            : isFalsePositive ? 'text-red-700'
+                            : 'text-yellow-700'
+                          }`}>
+                            {verdictExplain}
+                          </p>
+                        )}
+                        <p className="text-[#5f6368] text-xs mt-2">
+                          TIC {analysis.tic_id}
+                          {res.sectors_used && res.sectors_used.length > 0 &&
+                            ` · Sector${res.sectors_used.length > 1 ? 's' : ''} ${res.sectors_used.join(', ')}`}
+                          {res.processing_time_seconds && ` · ${res.processing_time_seconds.toFixed(1)}s`}
+                          {analysis.completed_at && ` · ${new Date(analysis.completed_at).toLocaleDateString()}`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {detected && (
                 <>
@@ -337,6 +419,86 @@ export default function ResultsPage() {
                     </div>
                   )}
 
+                  {/* Why this result — rationale */}
+                  {(() => {
+                    const snr = res.snr ?? 0;
+                    const conf = res.confidence ?? 0;
+                    const depth = res.depth_ppm ?? 0;
+                    const period = res.period_days ?? 0;
+                    const vetting = res.vetting;
+                    const failCount = vetting
+                      ? [vetting.odd_even, vetting.v_shape, vetting.secondary_eclipse].filter(t => t.flag === 'FAIL').length
+                      : 0;
+
+                    const confLabel = conf >= 0.85 ? 'very high' : conf >= 0.65 ? 'high' : conf >= 0.45 ? 'moderate' : 'low';
+                    const snrLabel = snr >= 15 ? 'strong' : snr >= 10 ? 'clear' : snr >= 7 ? 'marginal' : 'weak';
+                    const depthLabel = depth < 500 ? 'shallow' : depth < 5000 ? 'moderate' : 'deep';
+
+                    return (
+                      <div className="bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-5 shadow-sm">
+                        <h3 className="text-sm font-semibold text-[#202124] mb-3 flex items-center gap-2">
+                          <svg className="w-4 h-4 text-[#1a73e8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Why this result?
+                        </h3>
+                        <ul className="space-y-2 text-sm text-[#5f6368]">
+                          <li>
+                            <span className="font-medium text-[#202124]">Detection confidence {(conf * 100).toFixed(0)}% ({confLabel}).</span>
+                            {' '}The BLS algorithm scored the periodic signal at {(conf * 100).toFixed(1)}% confidence —
+                            {conf < 0.5
+                              ? ' below the threshold typically required to claim a robust detection.'
+                              : conf < 0.7
+                              ? ' a moderate score; real planets can fall here but so can stellar variability.'
+                              : ' a strong score suggesting the periodicity is real.'}
+                          </li>
+                          <li>
+                            <span className="font-medium text-[#202124]">SNR {snr.toFixed(1)} ({snrLabel} signal).</span>
+                            {' '}Signal-to-noise ratio measures how far the transit dip stands above the noise floor.
+                            {snr < 7
+                              ? ' Below 7 the signal is marginal and likely noise.'
+                              : snr < 10
+                              ? ' Between 7–10 is detectable but at the edge of reliability.'
+                              : ' Above 10 is a clear, statistically significant dip.'}
+                          </li>
+                          <li>
+                            <span className="font-medium text-[#202124]">Transit depth {depth.toFixed(0)} ppm ({depthLabel}).</span>
+                            {' '}Depth is the fraction of starlight blocked per transit (1 ppm = 0.0001%).
+                            {depth > 10000
+                              ? ' Depths above 1% are unusual for planets — large eclipsing binaries produce this.'
+                              : depth > 2000
+                              ? ' This depth implies a Jupiter-class or larger body, which can also be a stellar companion.'
+                              : ' Consistent with a Neptune- to Jupiter-sized planet.'}
+                          </li>
+                          {period > 0 && (
+                            <li>
+                              <span className="font-medium text-[#202124]">Orbital period {period.toFixed(3)} days.</span>
+                              {' '}BLS found the most significant periodic signal at this period.
+                              {period < 1
+                              ? ' Ultra-short periods (< 1 d) can be artefacts; confirm with additional sectors.'
+                              : period < 10
+                              ? ' Short-period planets are commonly confirmed in TESS data.'
+                              : ' Longer periods require more transits — results are less certain with few TESS sectors.'}
+                            </li>
+                          )}
+                          {vetting && (
+                            <li>
+                              <span className="font-medium text-[#202124]">
+                                {failCount} of 3 vetting tests failed.
+                              </span>
+                              {' '}
+                              {failCount === 0
+                                ? 'No false-positive indicators found — consistent with a genuine planet.'
+                                : failCount === 1
+                                ? 'One warning raised; may still be a planet but warrants caution.'
+                                : `${failCount} tests flagged characteristics typical of an eclipsing binary or stellar artefact, driving the "Likely False Positive" verdict.`}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    );
+                  })()}
+
                   {/* Phase-folded light curve */}
                   {res.folded_curve && res.folded_curve.length > 0 && (
                     <div className="bg-white border border-[#dadce0] rounded-xl p-6 shadow-sm">
@@ -380,31 +542,58 @@ export default function ResultsPage() {
                   {/* Vetting tests */}
                   {res.vetting && (
                     <div className="bg-white border border-[#dadce0] rounded-xl p-6 shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-[#202124]">Vetting Tests</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          res.vetting.disposition === 'PLANET_CANDIDATE'        ? 'bg-green-100 text-green-700'
-                          : res.vetting.disposition === 'LIKELY_FALSE_POSITIVE' ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {res.vetting.disposition.replace(/_/g, ' ')}
-                        </span>
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-[#202124]">False Positive Vetting Tests</h3>
+                        <p className="text-xs text-[#5f6368] mt-1">
+                          These checks look for signs that the transit signal is caused by a background eclipsing
+                          binary or other stellar artefact rather than a genuine planet.
+                          A <span className="font-semibold text-red-600">FAIL</span> means the signal shows that suspicious
+                          characteristic; a <span className="font-semibold text-green-600">PASS</span> means it does not.
+                        </p>
                       </div>
                       <div className="space-y-3">
                         {[
-                          { name: 'Odd–Even Depth Test',     test: res.vetting.odd_even },
-                          { name: 'V-Shape Analysis',         test: res.vetting.v_shape },
-                          { name: 'Secondary Eclipse Check',  test: res.vetting.secondary_eclipse },
-                        ].map(({ name, test }) => (
-                          <div key={name} className="flex items-center justify-between p-4 bg-[#f8f9fa] rounded-lg">
-                            <div className="flex-1 min-w-0 pr-4">
-                              <p className="font-medium text-[#202124] text-sm">{name}</p>
-                              <p className="text-xs text-[#5f6368] mt-0.5">{test.message}</p>
+                          {
+                            name: 'Odd–Even Depth Test',
+                            hint: 'In a real planet transit every dip should be identical. Different depths on alternating transits suggest two stars orbiting each other.',
+                            test: res.vetting.odd_even,
+                          },
+                          {
+                            name: 'V-Shape Analysis',
+                            hint: 'Real planet transits have a flat bottom. A pure V-shape indicates a grazing or stellar eclipse rather than a disc-like planet blocking the star.',
+                            test: res.vetting.v_shape,
+                          },
+                          {
+                            name: 'Secondary Eclipse Check',
+                            hint: 'An eclipsing binary usually shows a second dip halfway around the orbit (when the fainter star passes behind the brighter). No secondary eclipse is a point in favour of a planet.',
+                            test: res.vetting.secondary_eclipse,
+                          },
+                        ].map(({ name, hint, test }) => (
+                          <div key={name} className={`p-4 rounded-lg border ${
+                            test.flag === 'PASS'    ? 'bg-green-50 border-green-100'
+                            : test.flag === 'FAIL'  ? 'bg-red-50 border-red-100'
+                            : 'bg-yellow-50 border-yellow-100'
+                          }`}>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-[#202124] text-sm">{name}</p>
+                                <p className="text-xs text-[#5f6368] mt-0.5">{test.message}</p>
+                                <p className="text-xs text-[#9aa0a6] mt-1 italic">{hint}</p>
+                              </div>
+                              <FlagChip flag={test.flag} />
                             </div>
-                            <FlagChip flag={test.flag} />
                           </div>
                         ))}
                       </div>
+                      <p className="text-xs text-[#5f6368] mt-4 pt-4 border-t border-[#dadce0]">
+                        <span className="font-medium">Overall vetting confidence:</span> {(res.vetting.confidence * 100).toFixed(0)}%.
+                        {res.vetting.disposition === 'LIKELY_FALSE_POSITIVE' &&
+                          ' Follow-up spectroscopy or high-resolution imaging is recommended to confirm the nature of this signal.'}
+                        {res.vetting.disposition === 'PLANET_CANDIDATE' &&
+                          ' This candidate warrants follow-up radial velocity or transit observations.'}
+                        {res.vetting.disposition === 'INCONCLUSIVE' &&
+                          ' Additional TESS sectors or ground-based photometry would help clarify the signal.'}
+                      </p>
                     </div>
                   )}
                 </>
