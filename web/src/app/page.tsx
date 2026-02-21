@@ -130,6 +130,86 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* SatTrack Section */}
+      <section className="py-16 bg-white border-t border-[#dadce0]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            {/* Visual side */}
+            <div className="flex-1 hidden md:flex items-center justify-center">
+              <div className="relative w-64 h-64">
+                {/* Globe ring */}
+                <div className="absolute inset-0 rounded-full border-2 border-[#e8f0fe] flex items-center justify-center">
+                  <div className="w-48 h-48 rounded-full border border-[#c5d5f8] flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full bg-[#e8f0fe] flex items-center justify-center">
+                      <svg className="w-16 h-16 text-[#1a73e8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                {/* Orbit dots */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a73e8] rounded-full shadow-lg"></div>
+                <div className="absolute bottom-8 right-6 w-2 h-2 bg-[#fbbc04] rounded-full shadow-lg"></div>
+                <div className="absolute top-1/2 left-2 w-2 h-2 bg-[#34a853] rounded-full shadow-lg"></div>
+              </div>
+            </div>
+
+            {/* Content side */}
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 bg-[#e8f0fe] text-[#1a73e8] text-sm font-medium px-4 py-2 rounded-full mb-4">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                </svg>
+                Live Now
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#202124] mb-4">
+                Track Satellites in Real Time
+              </h2>
+              <p className="text-[#5f6368] text-lg mb-6">
+                SatTrack is a real-time 3D satellite tracker. Monitor 2,000+ satellites, predict ISS and Starlink passes over your location, and view live space weather—all in your browser.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-[#3c4043]">
+                  <svg className="w-5 h-5 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                  2,000+ satellites tracked live with TLE data
+                </li>
+                <li className="flex items-center gap-3 text-[#3c4043]">
+                  <svg className="w-5 h-5 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                  Pass predictions for ISS, Starlink & more
+                </li>
+                <li className="flex items-center gap-3 text-[#3c4043]">
+                  <svg className="w-5 h-5 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                  Interactive 3D globe view in your browser
+                </li>
+                <li className="flex items-center gap-3 text-[#3c4043]">
+                  <svg className="w-5 h-5 text-[#1a73e8] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                  Live space weather & solar activity data
+                </li>
+              </ul>
+              <a
+                href="https://sattrack.larun.space"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+              >
+                Open SatTrack
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 bg-[#f1f3f4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
