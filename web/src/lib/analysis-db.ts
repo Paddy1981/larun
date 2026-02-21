@@ -108,6 +108,9 @@ export async function createAnalysisInDB(
     created_at: now,
     model_id: 'bls-transit-v2',
     result: {},
+    classification: 'pending',
+    confidence: 0,
+    inference_time_ms: 0,
   });
 
   if (error) {
@@ -175,7 +178,12 @@ export async function updateAnalysisInDB(
   if (updates.status) dbUpdates.status = updates.status;
   if (updates.started_at) dbUpdates.started_at = updates.started_at;
   if (updates.completed_at) dbUpdates.completed_at = updates.completed_at;
-  if (updates.result) dbUpdates.result = updates.result;
+  if (updates.result) {
+    dbUpdates.result = updates.result;
+    dbUpdates.classification = updates.result.detection ? 'transit_candidate' : 'no_detection';
+    dbUpdates.confidence = updates.result.confidence ?? 0;
+    dbUpdates.inference_time_ms = Math.round((updates.result.processing_time_seconds ?? 0) * 1000);
+  }
   if (updates.error) dbUpdates.error_message = updates.error;
 
   const { error } = await supabase
