@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { createClient } from '@supabase/supabase-js';
 import { authOptions } from '@/lib/auth';
 
 const LEMONSQUEEZY_API_URL = 'https://api.lemonsqueezy.com/v1';
@@ -8,7 +9,7 @@ export async function POST() {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -25,28 +26,37 @@ export async function POST() {
       );
     }
 
-    // TODO: Get the customer's LemonSqueezy customer ID from your database
-    // For now, we'll return the general customer portal URL
-    // In production, you should:
-    // 1. Store lemon_squeezy_customer_id when subscription is created
-    // 2. Fetch customer's portal URL using their customer ID
+    // Fetch customer ID from users table
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: user } = await sb
+      .from('users')
+      .select('lemon_squeezy_customer_id')
+      .eq('email', session.user.email)
+      .maybeSingle();
+    const customerId = user?.lemon_squeezy_customer_id;
 
-    // Example of how to get customer portal URL when you have the customer ID:
-    // const customerId = await getCustomerIdFromDatabase(session.user.id);
-    // const response = await fetch(`${LEMONSQUEEZY_API_URL}/customers/${customerId}`, {
-    //   headers: {
-    //     'Accept': 'application/vnd.api+json',
-    //     'Authorization': `Bearer ${apiKey}`,
-    //   },
-    // });
-    // const data = await response.json();
-    // const portalUrl = data.data.attributes.urls.customer_portal;
+    if (customerId) {
+      const res = await fetch(`${LEMONSQUEEZY_API_URL}/customers/${customerId}`, {
+        headers: {
+          'Accept': 'application/vnd.api+json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const portalUrl = data.data?.attributes?.urls?.customer_portal;
+        if (portalUrl) {
+          return NextResponse.json({ url: portalUrl });
+        }
+      }
+    }
 
-    // For now, redirect to LemonSqueezy's general billing page
-    // Users can manage their subscriptions there
+    // Fall back to generic URL if no customer ID or API call fails
     return NextResponse.json({
       url: 'https://app.lemonsqueezy.com/my-orders',
-      message: 'Customer portal - users can manage subscriptions here',
     });
   } catch (error) {
     console.error('Portal error:', error);

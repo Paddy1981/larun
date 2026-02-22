@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 // LemonSqueezy Variant IDs (maps variant ID to plan name)
 const VARIANT_IDS = {
@@ -114,8 +114,11 @@ export async function POST(request: NextRequest) {
       userId: customData?.user_id,
     });
 
-    // Initialize Supabase client
-    const supabase = createServerSupabaseClient();
+    // Initialize Supabase client with service role key (bypasses RLS)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     // Handle different event types
     switch (eventName) {
@@ -171,34 +174,50 @@ function getPlanFromVariant(variantId: number | undefined): 'monthly' | 'annual'
   return (VARIANT_IDS[variantStr as keyof typeof VARIANT_IDS] || 'monthly') as 'monthly' | 'annual';
 }
 
-// Resolve user UUID: try by ID first, then by email fallback
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseServiceClient = ReturnType<typeof createClient<any>>;
+
+/**
+ * Resolve a Supabase user ID from custom_data or email.
+ * Creates a new user row for NextAuth/Google users who have no Supabase auth row
+ * (safe after migration 003 drops the FK constraint on users.id → auth.users).
+ */
 async function resolveUserId(
-  supabase: ReturnType<typeof createServerSupabaseClient>,
+  supabase: SupabaseServiceClient,
   userId: string | undefined,
   userEmail: string | undefined,
-  fallbackEmail?: string,
+  fallbackEmail: string | undefined,
 ): Promise<string | null> {
-  // 1. Try exact UUID match
+  // 1. Try by exact ID match
   if (userId) {
-    const { data } = await supabase.from('users').select('id').eq('id', userId).single();
+    const { data } = await supabase.from('users').select('id').eq('id', userId).maybeSingle();
     if (data?.id) return data.id;
   }
-  // 2. Fall back to email from custom_data
+  // 2. Try by email
   const email = userEmail || fallbackEmail;
   if (email) {
-    const { data } = await supabase.from('users').select('id').eq('email', email).single();
+    const { data } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
     if (data?.id) return data.id;
+    // 3. Create user row (NextAuth user — no Supabase auth row; FK dropped in migration 003)
+    const newId = crypto.randomUUID();
+    const { data: created } = await supabase
+      .from('users')
+      .insert({ id: newId, email, subscription_tier: 'free', analyses_limit: 5 })
+      .select('id')
+      .single();
+    if (created?.id) return created.id;
   }
   return null;
 }
 
 // Event handlers
 
-async function handleSubscriptionCreated(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handleSubscriptionCreated(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const attrs = data.attributes;
   const plan = getPlanFromVariant(attrs.variant_id);
 
+  // Resolve (or create) user row — handles NextAuth Google users
   const resolvedId = await resolveUserId(
     supabase,
     meta.custom_data?.user_id,
@@ -214,7 +233,7 @@ async function handleSubscriptionCreated(supabase: ReturnType<typeof createServe
   });
 
   if (!resolvedId) {
-    console.error('[LemonSqueezy] Could not resolve user for subscription_created');
+    console.error('[LemonSqueezy] Could not resolve user — no user_id or email in payload');
     return;
   }
 
@@ -235,7 +254,7 @@ async function handleSubscriptionCreated(supabase: ReturnType<typeof createServe
     console.error('[LemonSqueezy] Error creating subscription:', subError);
   }
 
-  // Update user's subscription tier
+  // Update user's subscription tier and store customer ID
   const { error: userError } = await supabase.from('users').update({
     subscription_tier: plan,
     lemon_squeezy_customer_id: String(attrs.customer_id),
@@ -247,7 +266,7 @@ async function handleSubscriptionCreated(supabase: ReturnType<typeof createServe
   }
 }
 
-async function handleSubscriptionUpdated(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handleSubscriptionUpdated(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const attrs = data.attributes;
   const plan = getPlanFromVariant(attrs.variant_id);
@@ -290,7 +309,7 @@ async function handleSubscriptionUpdated(supabase: ReturnType<typeof createServe
   }
 }
 
-async function handleSubscriptionCancelled(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handleSubscriptionCancelled(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const userId = meta.custom_data?.user_id;
   const attrs = data.attributes;
@@ -325,7 +344,7 @@ async function handleSubscriptionCancelled(supabase: ReturnType<typeof createSer
   }
 }
 
-async function handleSubscriptionResumed(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handleSubscriptionResumed(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const userId = meta.custom_data?.user_id;
   const attrs = data.attributes;
@@ -359,7 +378,7 @@ async function handleSubscriptionResumed(supabase: ReturnType<typeof createServe
   }
 }
 
-async function handleSubscriptionPaused(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handleSubscriptionPaused(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const userId = meta.custom_data?.user_id;
 
@@ -378,7 +397,7 @@ async function handleSubscriptionPaused(supabase: ReturnType<typeof createServer
   }
 }
 
-async function handlePaymentFailed(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handlePaymentFailed(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const userId = meta.custom_data?.user_id;
 
@@ -397,7 +416,7 @@ async function handlePaymentFailed(supabase: ReturnType<typeof createServerSupab
   }
 }
 
-async function handlePaymentSuccess(supabase: ReturnType<typeof createServerSupabaseClient>, payload: WebhookPayload) {
+async function handlePaymentSuccess(supabase: SupabaseServiceClient, payload: WebhookPayload) {
   const { data, meta } = payload;
   const userId = meta.custom_data?.user_id;
   const attrs = data.attributes;

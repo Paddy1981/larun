@@ -35,6 +35,8 @@ declare module 'next-auth/jwt' {
 function toNextAuthTier(dbTier: string): 'free' | 'hobbyist' | 'professional' {
   if (dbTier === 'annual') return 'professional';
   if (dbTier === 'monthly') return 'hobbyist';
+  if (dbTier === 'professional') return 'professional';
+  if (dbTier === 'hobbyist') return 'hobbyist';
   return 'free';
 }
 
@@ -52,23 +54,23 @@ function getAnalysesLimit(tier: string): number {
   }
 }
 
-// Fetch subscription tier from Supabase using service key (server-side only)
-async function fetchSubscriptionTier(email: string): Promise<string> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  if (!url || !key) return 'free';
-  try {
-    const sb = createClient(url, key);
-    const { data } = await sb
-      .from('users')
-      .select('subscription_tier, analyses_limit')
-      .eq('email', email)
-      .single();
-    if (data?.subscription_tier) return data.subscription_tier;
-  } catch {
-    // ignore
+// Fetch live subscription tier + current month usage from DB
+async function fetchUserData(email: string): Promise<{ tier: string; analysesThisMonth: number }> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) {
+    return { tier: 'free', analysesThisMonth: 0 };
   }
-  return 'free';
+  const sb = createClient(supabaseUrl, serviceKey);
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [userResult, quotaResult] = await Promise.all([
+    sb.from('users').select('subscription_tier').eq('email', email).maybeSingle(),
+    sb.from('monthly_quota').select('analyses_count').eq('user_email', email).eq('month', currentMonth).maybeSingle(),
+  ]);
+  return {
+    tier: userResult.data?.subscription_tier || 'free',
+    analysesThisMonth: quotaResult.data?.analyses_count ?? 0,
+  };
 }
 
 // Check if Google OAuth is configured
@@ -110,17 +112,14 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.analysesThisMonth = 0;
-        // Look up subscription tier from Supabase on first sign-in
-        if (user.email) {
-          const dbTier = await fetchSubscriptionTier(user.email);
-          token.subscriptionTier = toNextAuthTier(dbTier);
-        } else {
-          token.subscriptionTier = 'free';
-        }
+    async jwt({ token, user, trigger }) {
+      // Refresh on first sign-in OR on explicit update trigger
+      const email = (user?.email || token.email) as string | undefined;
+      if (email && (user || trigger === 'update')) {
+        const { tier, analysesThisMonth } = await fetchUserData(email);
+        token.subscriptionTier = toNextAuthTier(tier);
+        token.analysesThisMonth = analysesThisMonth;
+        if (user) token.id = user.id;
       }
       return token;
     },
