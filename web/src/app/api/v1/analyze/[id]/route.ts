@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAnalysisFromDB } from '@/lib/analysis-db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { getAnalysis } from '@/lib/analysis-store';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -8,15 +10,30 @@ interface RouteParams {
 /**
  * GET /api/v1/analyze/[id]
  *
- * Get the status and results of a submitted analysis from Supabase.
- * No auth required — analysis IDs are UUIDs (not guessable).
+ * Get the status and results of a submitted analysis.
+ * Fetches from Supabase for serverless compatibility.
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'unauthorized',
+            message: 'Authentication required',
+          },
+        },
+        { status: 401 }
+      );
+    }
+
     const { id: analysisId } = await params;
 
-    // Fetch from Supabase by ID (no userId filter — UUIDs are not guessable)
-    const analysis = await getAnalysisFromDB(analysisId);
+    // Get analysis from in-memory store
+    const analysis = getAnalysis(analysisId, session.user.id);
 
     if (!analysis) {
       return NextResponse.json(
@@ -38,6 +55,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       created_at: analysis.created_at,
     };
 
+    if (analysis.started_at) {
+      response.started_at = analysis.started_at;
+    }
+
     if (analysis.completed_at) {
       response.completed_at = analysis.completed_at;
     }
@@ -54,9 +75,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         snr: analysis.result.snr,
         sectors_used: analysis.result.sectors_used,
         processing_time_seconds: analysis.result.processing_time_seconds,
-        folded_curve: (analysis.result as unknown as Record<string, unknown>).folded_curve ?? undefined,
-        tic_info: (analysis.result as unknown as Record<string, unknown>).tic_info ?? undefined,
-        vetting: analysis.result.vetting ?? undefined,
+        vetting: analysis.result.vetting
+          ? {
+              disposition: analysis.result.vetting.disposition,
+              confidence: analysis.result.vetting.confidence,
+              odd_even: analysis.result.vetting.odd_even,
+              v_shape: analysis.result.vetting.v_shape,
+              secondary_eclipse: analysis.result.vetting.secondary_eclipse,
+            }
+          : undefined,
       };
     }
 

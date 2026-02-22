@@ -1,104 +1,111 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createAnalysisInDB, updateAnalysisInDB } from '@/lib/analysis-db';
+import { createAnalysis, processAnalysis, getAnalysis } from '@/lib/analysis-store';
 
+// Allow up to 60s for MAST fetch + BLS detection (Vercel Hobby limit)
+// Upgrade to Pro for 300s if MAST is slow
 export const maxDuration = 60;
 
+/**
+ * POST /api/v1/analyze
+ *
+ * Submit a TIC ID for exoplanet transit detection analysis.
+ * Runs detection synchronously and returns the full result.
+ * With Fluid Compute (Active CPU pricing), you only pay for BLS compute
+ * time (~2-3s), not MAST network wait time (~10-30s).
+ */
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
     const session = await getServerSession(authOptions);
 
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'unauthorized',
+            message: 'Authentication required',
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    // Parse request body
     const body = await request.json();
     const { tic_id } = body;
 
+    // Validate TIC ID
     if (!tic_id || typeof tic_id !== 'string') {
       return NextResponse.json(
-        { error: { code: 'invalid_request', message: 'tic_id is required' } },
+        {
+          error: {
+            code: 'invalid_request',
+            message: 'tic_id is required',
+          },
+        },
         { status: 400 }
       );
     }
 
+    // Normalize and validate TIC ID format
     const normalizedTicId = tic_id.replace(/\D/g, '');
-    if (!normalizedTicId) {
+    if (!normalizedTicId || normalizedTicId.length < 1) {
       return NextResponse.json(
-        { error: { code: 'invalid_tic_id', message: 'Invalid TIC ID format.' } },
+        {
+          error: {
+            code: 'invalid_tic_id',
+            message: 'Invalid TIC ID format. Please enter a numeric TIC ID.',
+          },
+        },
         { status: 400 }
       );
     }
 
-    // Quota check for authenticated users
-    if (session?.user) {
-      const analysesThisMonth = session.user.analysesThisMonth || 0;
-      const analysesLimit = session.user.analysesLimit || 5;
-      if (analysesLimit !== -1 && analysesThisMonth >= analysesLimit) {
-        return NextResponse.json(
-          { error: { code: 'usage_limit_exceeded', message: `Monthly limit reached (${analysesLimit}). Upgrade to continue.` } },
-          { status: 429 }
-        );
-      }
+    // Check usage limits (for free tier)
+    const analysesThisMonth = session.user.analysesThisMonth || 0;
+    const analysesLimit = session.user.analysesLimit || 5;
+
+    if (analysesLimit !== -1 && analysesThisMonth >= analysesLimit) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'usage_limit_exceeded',
+            message: `Monthly analysis limit reached (${analysesLimit}). Upgrade to analyze more targets.`,
+          },
+        },
+        { status: 429 }
+      );
     }
 
-    const userEmail = session?.user?.email ?? 'anonymous@larun.space';
-    const nextAuthId = session?.user?.id ?? 'anon';
+    // Create analysis record and run detection synchronously
+    // (background Promise pattern breaks in serverless — function exits before it completes)
+    const analysis = createAnalysis(session.user.id, normalizedTicId);
 
-    // Create record in Supabase (persists across serverless instances)
-    const analysis = await createAnalysisInDB(nextAuthId, userEmail, normalizedTicId);
+    await processAnalysis(analysis.id);
 
-    // Run detection inline (synchronous, within 60s Vercel limit)
-    const { fetchLightCurve, fetchTICInfo, KNOWN_TARGETS } = await import('@/lib/mast-service');
-    const { runTransitDetection } = await import('@/lib/transit-detection');
+    const completed = getAnalysis(analysis.id);
 
-    await updateAnalysisInDB(analysis.id, {
-      status: 'processing',
-      started_at: new Date().toISOString(),
-    });
-
-    // Use known period as hint for confirmed/candidate targets so BLS can find
-    // long-period planets (e.g. TOI-700 d at 37.4d) with only 1 sector of data.
-    const hintPeriod = KNOWN_TARGETS[normalizedTicId]?.period;
-
-    let result = null;
-    let finalStatus: 'completed' | 'failed' = 'completed';
-    let errorMessage: string | undefined;
-
-    try {
-      const lightCurve = await fetchLightCurve(normalizedTicId);
-      const ticInfo = await fetchTICInfo(normalizedTicId);
-      result = await runTransitDetection(lightCurve, ticInfo, hintPeriod);
-
-      await updateAnalysisInDB(analysis.id, {
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        result: {
-          ...result,
-          vetting: result.vetting ?? undefined,
-          // Store tic_info so results page can show sky image + stellar properties
-          tic_info: ticInfo ?? undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-      });
-    } catch (detectionError) {
-      finalStatus = 'failed';
-      errorMessage = detectionError instanceof Error ? detectionError.message : 'Detection failed';
-      await updateAnalysisInDB(analysis.id, {
-        status: 'failed',
-        completed_at: new Date().toISOString(),
-        error: errorMessage,
-      });
-    }
-
-    return NextResponse.json({
-      analysis_id: analysis.id,
-      tic_id: normalizedTicId,
-      status: finalStatus,
-      result,
-      error: errorMessage ?? null,
-    });
+    return NextResponse.json(
+      {
+        analysis_id: analysis.id,
+        tic_id: normalizedTicId,
+        status: completed?.status ?? 'failed',
+        result: completed?.result ?? null,
+        error: completed?.error ?? null,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error submitting analysis:', error);
     return NextResponse.json(
-      { error: { code: 'internal_error', message: 'Failed to submit analysis' } },
+      {
+        error: {
+          code: 'internal_error',
+          message: 'Failed to submit analysis',
+        },
+      },
       { status: 500 }
     );
   }

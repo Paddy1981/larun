@@ -6,8 +6,8 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
-const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 // Create a no-op client if env vars are missing (cloud/* pages gracefully degrade)
 const isConfigured = !!(supabaseUrl && supabaseAnonKey)
@@ -16,15 +16,9 @@ export const supabase = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createClient('https://placeholder.supabase.co', 'placeholder-key')
 
-// Server-side Supabase client for API routes — uses service role key to bypass RLS
+// Server-side Supabase client for API routes
 export const createServerSupabaseClient = () => {
-  const serviceKey = (
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_KEY ||
-    supabaseAnonKey
-  ).trim();
-  const url = supabaseUrl || 'https://placeholder.supabase.co';
-  return createClient(url, serviceKey || 'placeholder-key');
+  return createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder-key')
 }
 
 // Database types
@@ -158,37 +152,17 @@ export const getUserAnalyses = async (userId: string): Promise<Analysis[]> => {
 }
 
 export const getUserQuota = async (userId: string): Promise<UsageQuota | null> => {
-  // Read quota directly from the users table (analyses_this_month + analyses_limit)
+  const currentMonth = new Date().toISOString().slice(0, 7) // '2026-02'
+
   const { data, error } = await supabase
-    .from('users')
-    .select('analyses_this_month, analyses_limit')
-    .eq('id', userId)
-    .single()
-
-  if (error || !data) return null
-
-  return {
-    id: userId,
-    user_id: userId,
-    month: new Date().toISOString().slice(0, 7),
-    analyses_count: (data as any).analyses_this_month ?? 0,
-    quota_limit: (data as any).analyses_limit ?? 5,
-    created_at: new Date().toISOString(),
-  }
-}
-
-export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
-  const { data, error } = await supabase
-    .from('subscriptions')
+    .from('usage_quotas')
     .select('*')
     .eq('user_id', userId)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+    .eq('month', currentMonth)
+    .single()
 
-  if (error) {
-    console.error('Error fetching subscription:', error)
+  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+    console.error('Error fetching quota:', error)
     return null
   }
 
