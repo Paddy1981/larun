@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { createClient } from '@supabase/supabase-js';
 import { authOptions } from '@/lib/auth';
 import { createAnalysis, processAnalysis, getAnalysis } from '@/lib/analysis-store';
 
@@ -63,20 +64,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check usage limits (for free tier)
-    const analysesThisMonth = session.user.analysesThisMonth || 0;
-    const analysesLimit = session.user.analysesLimit || 5;
+    // Live DB quota enforcement (authoritative — not JWT which may be stale)
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const email = session.user.email;
+    const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
 
-    if (analysesLimit !== -1 && analysesThisMonth >= analysesLimit) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'usage_limit_exceeded',
-            message: `Monthly analysis limit reached (${analysesLimit}). Upgrade to analyze more targets.`,
+    // Get per-user limit from users table (default 5 if no row yet)
+    const { data: userData } = await sb
+      .from('users')
+      .select('analyses_limit')
+      .eq('email', email)
+      .maybeSingle();
+    const analysesLimit = userData?.analyses_limit != null ? userData.analyses_limit : 5;
+
+    // Check current month usage (skip if unlimited)
+    if (analysesLimit !== -1) {
+      const { data: quotaData } = await sb
+        .from('monthly_quota')
+        .select('analyses_count')
+        .eq('user_email', email)
+        .eq('month', currentMonth)
+        .maybeSingle();
+      const used = quotaData?.analyses_count ?? 0;
+      if (used >= analysesLimit) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'usage_limit_exceeded',
+              message: `Monthly analysis limit reached (${analysesLimit}). Upgrade to analyze more targets.`,
+            },
           },
-        },
-        { status: 429 }
-      );
+          { status: 429 }
+        );
+      }
     }
 
     // Create analysis record and run detection synchronously
@@ -86,6 +109,10 @@ export async function POST(request: NextRequest) {
     await processAnalysis(analysis.id);
 
     const completed = getAnalysis(analysis.id);
+
+    // Atomic usage increment after success (non-fatal if it fails)
+    const { error: quotaErr } = await sb.rpc('increment_monthly_quota', { p_email: email, p_month: currentMonth });
+    if (quotaErr) console.error('[analyze] Failed to increment monthly quota:', quotaErr);
 
     return NextResponse.json(
       {

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+import { authOptions } from '@/lib/auth';
 
 const PLAN_LIMITS = {
   free: 5,
@@ -20,19 +17,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const email = session.user.email;
+    const currentMonth = new Date().toISOString().slice(0, 7);
 
-    // Get user's subscription data (use actual column names from schema)
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('id, subscription_tier, analyses_limit, analyses_this_month')
-      .eq('email', session.user.email)
-      .single();
+    const [userResult, quotaResult] = await Promise.all([
+      supabase
+        .from('users')
+        .select('id, subscription_tier, subscription_status, analyses_limit, subscription_current_period_end')
+        .eq('email', email)
+        .maybeSingle(),
+      supabase
+        .from('monthly_quota')
+        .select('analyses_count')
+        .eq('user_email', email)
+        .eq('month', currentMonth)
+        .maybeSingle(),
+    ]);
 
-    if (userError && userError.code !== 'PGRST116') {
-      console.error('Error fetching user:', userError);
+    if (userResult.error) {
+      console.error('Error fetching user:', userResult.error);
       return NextResponse.json({ error: 'Failed to fetch subscription data' }, { status: 500 });
     }
+
+    const user = userResult.data;
+    const used = quotaResult.data?.analyses_count ?? 0;
 
     // If user doesn't exist, return free tier defaults
     if (!user) {
@@ -41,20 +53,22 @@ export async function GET(request: NextRequest) {
         status: 'active',
         current_period_end: null,
         cancel_at_period_end: false,
-        analyses_used: 0,
+        analyses_used: used,
         analyses_limit: PLAN_LIMITS.free,
       });
     }
 
     const plan = user.subscription_tier || 'free';
-    const limit = user.analyses_limit != null ? user.analyses_limit : (PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] ?? PLAN_LIMITS.free);
+    const limit = user.analyses_limit != null
+      ? user.analyses_limit
+      : (PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] ?? PLAN_LIMITS.free);
 
     return NextResponse.json({
-      plan: plan,
-      status: 'active',
-      current_period_end: null,
+      plan,
+      status: user.subscription_status || 'active',
+      current_period_end: user.subscription_current_period_end,
       cancel_at_period_end: false,
-      analyses_used: user.analyses_this_month || 0,
+      analyses_used: used,
       analyses_limit: limit,
     });
   } catch (error) {
