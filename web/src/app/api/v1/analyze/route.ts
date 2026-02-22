@@ -111,9 +111,8 @@ export async function POST(request: NextRequest) {
     const completed = getAnalysis(analysis.id);
 
     // Atomic usage increment after success (non-fatal if it fails)
-    await sb
-      .rpc('increment_monthly_quota', { p_email: email, p_month: currentMonth })
-      .catch((err) => console.error('[analyze] Failed to increment monthly quota:', err));
+    const { error: quotaErr } = await sb.rpc('increment_monthly_quota', { p_email: email, p_month: currentMonth });
+    if (quotaErr) console.error('[analyze] Failed to increment monthly quota:', quotaErr);
 
     return NextResponse.json(
       {
