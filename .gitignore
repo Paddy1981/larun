@@ -21,6 +21,17 @@ Thumbs.db
 data/demo/
 data/raw/
 data/real/
+data/expanded/
+data/master_catalog/
+data/benchmark/
+data/ASTERO-001/
+data/EXOPLANET-001/
+data/FLARE-001/
+data/GALAXY-001/
+data/MICROLENS-001/
+data/SPECTYPE-001/
+data/SUPERNOVA-001/
+data/VSTAR-001/
 models/demo/
 models/real/
 models/checkpoints/
@@ -29,6 +40,47 @@ output/*.csv
 output/*.html
 output/*.json
 logs/
+
+# Training artefacts
+*.log
+automated_results/
+train_*.py
+build_*.py
+fetch_real_data.py
+train_production.py
+training_monitor.py
+test_automated_training.sh
+test_exoplanet_fetch.py
+exoplanet_download.log
+automated_training.py
+drivers/
+firmware/
+tools/
+scripts/demo_*.py
+scripts/download_*.py
+scripts/run_benchmark*.py
+src/dashboard/
+src/database/
+src/pipeline/
+src/submission/
+supabase/.temp/
+web/supabase/.temp/
+
+# Stale cloud prototype
+cloud/
+
+# Misc generated files
+AUTOMATED_TRAINING_GUIDE.md
+BUSINESS_MODEL.md
+DEPLOY.md
+DEPLOYMENT_IMPLEMENTATION_STATUS.md
+FINAL_RESULTS_SUMMARY.md
+IMPLEMENTATION_COMPLETE.md
+MODELS_CONVERTED.md
+MODEL_TELESCOPE_COMPATIBILITY.md
+RAILWAY_DEPLOYMENT_GUIDE.md
+TINYML_DEPLOYMENT_GUIDE.md
+TRAINING_PROGRESS_SUMMARY.md
 
 # Keep model export templates
 !output/astro_tinyml_weights.h
@@ -53,3 +105,4 @@ build/
 docs/CLAUDE.md
 docs/ANTIGRAVITY.md
 training_output.log
+.vercel
