@@ -4,16 +4,16 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 export async function GET(request: NextRequest) {
   let email: string | null = null;
 
   // 1. Try Supabase Auth token from request header
   const authHeader = request.headers.get('Authorization');
-  if (authHeader?.startsWith('Bearer ') && SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+  if (authHeader?.startsWith('Bearer ') && SUPABASE_URL) {
     const token = authHeader.replace('Bearer ', '');
-    const client = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+    const client = createClient(SUPABASE_URL, svcKey);
     const { data: { user } } = await client.auth.getUser(token);
     if (user?.email) email = user.email;
   }
@@ -29,16 +29,35 @@ export async function GET(request: NextRequest) {
   }
 
   // 3. Query with service key (bypasses RLS)
-  const service = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const { data } = await service
-    .from('users')
-    .select('subscription_tier, analyses_this_month, analyses_limit')
-    .eq('email', email)
-    .single();
+  const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+  const service = createClient(SUPABASE_URL, svcKey);
+  const currentMonth = new Date().toISOString().slice(0, 7);
 
-  if (!data) {
-    return NextResponse.json({ subscription_tier: 'free', analyses_this_month: 0, analyses_limit: 5 });
+  const [userResult, quotaResult] = await Promise.all([
+    service
+      .from('users')
+      .select('subscription_tier, analyses_limit')
+      .eq('email', email)
+      .maybeSingle(),
+    service
+      .from('monthly_quota')
+      .select('analyses_count')
+      .eq('user_email', email)
+      .eq('month', currentMonth)
+      .maybeSingle(),
+  ]);
+
+  if (!userResult.data) {
+    return NextResponse.json({
+      subscription_tier: 'free',
+      analyses_this_month: quotaResult.data?.analyses_count ?? 0,
+      analyses_limit: 5,
+    });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json({
+    subscription_tier: userResult.data.subscription_tier || 'free',
+    analyses_this_month: quotaResult.data?.analyses_count ?? 0,
+    analyses_limit: userResult.data.analyses_limit ?? 5,
+  });
 }
