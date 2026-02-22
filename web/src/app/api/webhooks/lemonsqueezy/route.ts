@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase client with service role key (bypasses RLS)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
     );
 
     // Handle different event types

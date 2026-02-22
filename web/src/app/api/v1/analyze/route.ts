@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Live DB quota enforcement (authoritative — not JWT which may be stale)
     const sb = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
     );
     const email = session.user.email;
     const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'

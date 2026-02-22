@@ -57,7 +57,7 @@ function getAnalysesLimit(tier: string): number {
 // Fetch live subscription tier + current month usage from DB
 async function fetchUserData(email: string): Promise<{ tier: string; analysesThisMonth: number }> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
   if (!supabaseUrl || !serviceKey) {
     return { tier: 'free', analysesThisMonth: 0 };
   }
