@@ -5,12 +5,11 @@ import { useSession } from 'next-auth/react'
 import { FileUpload } from '@/components/FileUpload'
 import { ModelSelector } from '@/components/ModelSelector'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
-import { QuotaIndicator } from '@/components/QuotaIndicator'
 import { ColorIndexInput, type ColorIndices } from '@/components/ColorIndexInput'
 import { getCurrentUser, getUserQuota, type UsageQuota } from '@/lib/supabase'
 import { apiClient, getModelById } from '@/lib/api-client'
 import type { InferenceResult } from '@/lib/supabase'
-import { Loader2, AlertCircle, Search, Upload } from 'lucide-react'
+import { Loader2, AlertCircle, Search, Upload, Telescope, Zap, CheckCircle2, XCircle, AlertTriangle, RotateCcw, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -31,9 +30,16 @@ interface TicResult {
 }
 
 const POPULAR_TARGETS = [
-  { id: '470710327', name: 'TOI-1338 b', description: 'Circumbinary planet' },
-  { id: '307210830', name: 'TOI-700 d',  description: 'Earth-sized in HZ' },
-  { id: '261136679', name: 'TOI-175 b',  description: 'Super-Earth' },
+  { id: '470710327', name: 'TOI-1338 b', type: 'Circumbinary',    year: '2020' },
+  { id: '307210830', name: 'TOI-700 d',  type: 'Earth-sized HZ',  year: '2020' },
+  { id: '261136679', name: 'TOI-175 b',  type: 'Super-Earth',     year: '2019' },
+]
+
+const PIPELINE_STAGES = [
+  { label: 'Fetching TESS data',       sub: 'NASA MAST archive' },
+  { label: 'Preprocessing light curve', sub: 'Normalise & detrend' },
+  { label: 'Running BLS periodogram',  sub: 'Transit search' },
+  { label: 'Vetting candidate',         sub: 'False positive tests' },
 ]
 
 const EMPTY_INDICES: ColorIndices = { bv: '', vr: '', bp_rp: '', jh: '', hk: '' }
@@ -46,26 +52,26 @@ export default function AnalyzePage() {
   const [authLoading, setAuthLoading] = useState(true)
   const [quota, setQuota] = useState<UsageQuota | null>(null)
 
-  // Mode: 'tic' = TIC ID lookup, 'upload' = FITS/colour index
   const [mode, setMode] = useState<'tic' | 'upload'>('tic')
 
-  // TIC ID mode state
-  const [ticId, setTicId] = useState('')
-  const [ticLoading, setTicLoading] = useState(false)
+  // TIC ID state
+  const [ticId, setTicId]         = useState('')
+  const [ticLoading, setTicLoading]   = useState(false)
   const [ticProgress, setTicProgress] = useState(0)
-  const [ticResult, setTicResult] = useState<TicResult | null>(null)
-  const [ticError, setTicError] = useState<string | null>(null)
-  const [ticId_used, setTicIdUsed] = useState('')   // for showing in result header
+  const [ticStage, setTicStage]     = useState(0)
+  const [ticResult, setTicResult]   = useState<TicResult | null>(null)
+  const [ticError, setTicError]     = useState<string | null>(null)
+  const [ticId_used, setTicIdUsed]  = useState('')
 
-  // Upload mode state
-  const [selectedModel, setSelectedModel] = useState('EXOPLANET-001')
-  const [file, setFile] = useState<File | null>(null)
-  const [colorIndices, setColorIndices] = useState<ColorIndices>(EMPTY_INDICES)
-  const [uploadResult, setUploadResult] = useState<InferenceResult | null>(null)
-  const [uploadLoading, setUploadLoading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
+  // Upload state
+  const [selectedModel, setSelectedModel]   = useState('EXOPLANET-001')
+  const [file, setFile]                     = useState<File | null>(null)
+  const [colorIndices, setColorIndices]     = useState<ColorIndices>(EMPTY_INDICES)
+  const [uploadResult, setUploadResult]     = useState<InferenceResult | null>(null)
+  const [uploadLoading, setUploadLoading]   = useState(false)
+  const [uploadError, setUploadError]       = useState<string | null>(null)
 
-  // Resolved user: Supabase takes priority, NextAuth as fallback
+  // Resolved user — Supabase first, NextAuth fallback
   const user = supabaseUser ?? (nextAuthSession?.user ? {
     id: nextAuthSession.user.id ?? nextAuthSession.user.email,
     email: nextAuthSession.user.email,
@@ -74,7 +80,7 @@ export default function AnalyzePage() {
   } : null)
 
   useEffect(() => {
-    if (nextAuthStatus === 'loading') return  // wait for NextAuth to resolve
+    if (nextAuthStatus === 'loading') return
     checkAuth()
   }, [nextAuthStatus])
 
@@ -93,18 +99,21 @@ export default function AnalyzePage() {
     if (supabaseUser) setQuota(await getUserQuota(supabaseUser.id))
   }
 
-  // ── TIC ID analysis ─────────────────────────────────────────────────────────
+  // ── TIC ID analysis ──────────────────────────────────────────────────────────
   const handleTicAnalyze = async (targetId?: string) => {
     const id = (targetId ?? ticId).trim()
     if (!id || !user) return
 
-    setTicLoading(true)
-    setTicError(null)
-    setTicResult(null)
-    setTicProgress(0)
-    setTicIdUsed(id)
+    setTicLoading(true); setTicError(null); setTicResult(null)
+    setTicProgress(0);   setTicStage(0);   setTicIdUsed(id)
 
-    const tick = setInterval(() => setTicProgress(p => Math.min(85, p + 5)), 1500)
+    const tick = setInterval(() => {
+      setTicProgress(p => {
+        const next = Math.min(92, p + 4)
+        setTicStage(Math.floor((next / 100) * PIPELINE_STAGES.length))
+        return next
+      })
+    }, 1200)
 
     try {
       const res = await fetch('/api/v1/analyze', {
@@ -112,22 +121,18 @@ export default function AnalyzePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tic_id: id,
-          // Only send user_id for Supabase users; NextAuth users are identified server-side via session
           ...(supabaseUser ? { user_id: supabaseUser.id } : {}),
         }),
       })
-
-      clearInterval(tick)
-      setTicProgress(100)
+      clearInterval(tick); setTicProgress(100); setTicStage(PIPELINE_STAGES.length)
 
       const text = await res.text()
       let data: any
       try { data = JSON.parse(text) } catch {
         throw new Error(res.status === 504
-          ? 'Analysis timed out fetching TESS data. Try again or pick a different target.'
+          ? 'Analysis timed out. TESS data can take up to 60 s — please try again.'
           : `Server error (${res.status}). Please try again.`)
       }
-
       if (!res.ok) throw new Error(data.error?.message || 'Analysis failed')
       if (data.status === 'failed') throw new Error(data.error || 'Detection failed')
 
@@ -136,23 +141,18 @@ export default function AnalyzePage() {
     } catch (err: any) {
       setTicError(err.message || 'An error occurred')
     } finally {
-      clearInterval(tick)
-      setTicLoading(false)
+      clearInterval(tick); setTicLoading(false)
     }
   }
 
-  // ── Upload / colour index analysis ─────────────────────────────────────────
-  const isSpectral = selectedModel === 'SPECTYPE-001'
+  // ── Upload analysis ──────────────────────────────────────────────────────────
+  const isSpectral   = selectedModel === 'SPECTYPE-001'
   const hasColorIndex = Object.values(colorIndices).some(v => v.trim() !== '' && !isNaN(Number(v)))
-  const canRunUpload = isSpectral ? hasColorIndex : !!file
+  const canRunUpload  = isSpectral ? hasColorIndex : !!file
 
   const handleUploadAnalyze = async () => {
     if (!user || !canRunUpload || isQuotaExceeded) return
-
-    setUploadLoading(true)
-    setUploadError(null)
-    setUploadResult(null)
-
+    setUploadLoading(true); setUploadError(null); setUploadResult(null)
     try {
       const uid = supabaseUser?.id ?? user.id
       let res: InferenceResult
@@ -175,32 +175,55 @@ export default function AnalyzePage() {
     }
   }
 
-  // ── Auth guard ──────────────────────────────────────────────────────────────
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (authLoading || nextAuthStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-larun-medium-gray" />
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-[#e5e7eb] border-t-[#202124] rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-[#6b7280]">Loading…</p>
+        </div>
       </div>
     )
   }
 
+  // ── Not logged in ────────────────────────────────────────────────────────────
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center">
-          <div className="card">
-            <div className="w-14 h-14 bg-larun-lighter-gray rounded-full flex items-center justify-center mx-auto mb-5">
-              <Search className="w-7 h-7 text-larun-medium-gray" />
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-6">
+        <div className="max-w-lg w-full">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-[#202124] rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <Telescope className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-2xl mb-2">Sign in to Analyze</h2>
-            <p className="text-larun-medium-gray text-sm mb-6">
-              Create a free account to run TIC ID lookups and upload data files. 5 analyses per month, no credit card required.
+            <h1 className="text-3xl font-semibold text-[#202124] mb-2">Analyze Astronomical Data</h1>
+            <p className="text-[#6b7280]">
+              Sign in to run TIC ID lookups and upload FITS files.
+              5 free analyses every month — no credit card required.
             </p>
+          </div>
+          <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-sm">
+            <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[#f3f4f6]">
+              {[
+                { icon: '🔭', label: 'TESS Lookup',    sub: 'BLS transit detection' },
+                { icon: '📁', label: 'File Upload',    sub: '8 TinyML models' },
+                { icon: '⚡', label: 'Instant results', sub: '<10 ms inference' },
+              ].map(f => (
+                <div key={f.label} className="text-center">
+                  <div className="text-2xl mb-1">{f.icon}</div>
+                  <p className="text-xs font-medium text-[#202124]">{f.label}</p>
+                  <p className="text-xs text-[#9ca3af]">{f.sub}</p>
+                </div>
+              ))}
+            </div>
             <div className="flex flex-col gap-3">
-              <Link href="/cloud/auth/login?redirect=/cloud/analyze" className="btn btn-primary w-full justify-center">
+              <Link href="/cloud/auth/login?redirect=/cloud/analyze"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-[#202124] hover:bg-[#374151] text-white text-sm font-medium rounded-xl transition-colors">
                 Sign In
+                <ChevronRight className="w-4 h-4" />
               </Link>
-              <Link href="/cloud/auth/signup?redirect=/cloud/analyze" className="btn btn-outline w-full justify-center">
+              <Link href="/cloud/auth/signup?redirect=/cloud/analyze"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-white hover:bg-[#f9fafb] text-[#202124] text-sm font-medium rounded-xl border border-[#e5e7eb] transition-colors">
                 Create Free Account
               </Link>
             </div>
@@ -213,165 +236,202 @@ export default function AnalyzePage() {
   const selectedModelMeta = getModelById(selectedModel)
 
   return (
-    <div className="pt-24 pb-16 px-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#fafafa]">
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl mb-3">Analyze</h1>
-          <p className="text-lg text-larun-medium-gray">
-            Look up a TESS target by ID, or upload your own data file.
-          </p>
-        </div>
-
-        {/* Quota */}
-        {quota && <QuotaIndicator quota={quota} className="mb-8" />}
-
-        {/* Quota exceeded */}
-        {isQuotaExceeded && (
-          <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-5 flex items-start gap-4">
-            <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+      {/* ── Page Header ──────────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-[#e5e7eb]">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="font-semibold text-amber-900 mb-1">Monthly quota reached</p>
-              <p className="text-sm text-amber-800 mb-3">
-                You have used all {quota?.quota_limit} analyses this month.
+              <h1 className="text-2xl font-semibold text-[#202124] mb-1">Analyze</h1>
+              <p className="text-sm text-[#6b7280]">
+                Look up a TESS target by ID, or upload your own data file for TinyML inference.
               </p>
-              <Link href="/cloud/pricing" className="btn btn-primary btn-sm">View Plans →</Link>
             </div>
+
+            {/* Quota badge */}
+            {quota && (
+              <div className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm ${
+                isQuotaExceeded
+                  ? 'bg-red-50 border-red-200 text-red-700'
+                  : quota.analyses_count >= (quota.quota_limit ?? 5) * 0.8
+                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  : 'bg-[#f0fdf4] border-[#bbf7d0] text-[#15803d]'
+              }`}>
+                <div className="text-right">
+                  <p className="font-semibold text-base leading-none">
+                    {quota.analyses_count} <span className="font-normal text-xs">/ {quota.quota_limit === -1 ? '∞' : quota.quota_limit}</span>
+                  </p>
+                  <p className="text-xs opacity-70 mt-0.5">analyses this month</p>
+                </div>
+                {isQuotaExceeded && (
+                  <Link href="/cloud/pricing" className="text-xs font-medium underline whitespace-nowrap">
+                    Upgrade →
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Mode toggle */}
-        <div className="flex gap-2 mb-8 p-1 bg-larun-lighter-gray rounded-xl w-fit">
-          <button
-            onClick={() => { setMode('tic'); setTicResult(null); setTicError(null) }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              mode === 'tic'
-                ? 'bg-white text-larun-black shadow-sm'
-                : 'text-larun-medium-gray hover:text-larun-black'
-            }`}
-          >
-            <Search className="w-4 h-4" />
-            TIC ID Lookup
-          </button>
-          <button
-            onClick={() => { setMode('upload'); setUploadResult(null); setUploadError(null) }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              mode === 'upload'
-                ? 'bg-white text-larun-black shadow-sm'
-                : 'text-larun-medium-gray hover:text-larun-black'
-            }`}
-          >
-            <Upload className="w-4 h-4" />
-            Upload File
-          </button>
+          {/* Mode tabs */}
+          <div className="flex gap-1 mt-6 border-b border-[#e5e7eb] -mb-px">
+            {([
+              { key: 'tic',    label: 'TIC ID Lookup', icon: Search, sub: 'TESS target by ID' },
+              { key: 'upload', label: 'Upload File',    icon: Upload, sub: 'FITS / photometry' },
+            ] as const).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setMode(tab.key)
+                  if (tab.key === 'tic') { setTicResult(null); setTicError(null) }
+                  else { setUploadResult(null); setUploadError(null) }
+                }}
+                className={`flex items-center gap-2.5 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  mode === tab.key
+                    ? 'border-[#202124] text-[#202124]'
+                    : 'border-transparent text-[#6b7280] hover:text-[#374151]'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+                <span className={`text-xs hidden sm:inline ${mode === tab.key ? 'text-[#9ca3af]' : 'text-[#d1d5db]'}`}>
+                  {tab.sub}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* ── TIC ID MODE ────────────────────────────────────────────────────── */}
+      {/* ── Quota exceeded banner ─────────────────────────────────────────────── */}
+      {isQuotaExceeded && (
+        <div className="max-w-6xl mx-auto px-6 pt-6">
+          <div className="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-900">Monthly quota reached</p>
+              <p className="text-xs text-amber-700">You have used all {quota?.quota_limit} analyses this month.</p>
+            </div>
+            <Link href="/cloud/pricing" className="text-xs font-semibold text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+              View Plans →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto px-6 py-8">
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* TIC ID MODE                                                        */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
         {mode === 'tic' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="card">
-                <h3 className="text-xl mb-1">TESS Target Lookup</h3>
-                <p className="text-sm text-larun-medium-gray mb-5">
-                  Enter a TESS Input Catalog ID. We'll fetch the light curve from NASA MAST and run BLS transit detection automatically.
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+            {/* Left column — input */}
+            <div className="lg:col-span-2 space-y-4">
+
+              {/* Search card */}
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <Telescope className="w-4 h-4 text-[#6b7280]" />
+                  <h2 className="text-sm font-semibold text-[#374151] uppercase tracking-wide">TESS Target Lookup</h2>
+                </div>
+                <p className="text-xs text-[#9ca3af] mb-5">
+                  Enter a TIC ID — we fetch the light curve from NASA MAST and run BLS transit detection.
                 </p>
 
-                {/* Input */}
-                <div className="flex gap-3 mb-4">
+                <div className="relative mb-4">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9ca3af]" />
                   <input
                     type="text"
-                    placeholder="TIC ID (e.g. 470710327)"
+                    placeholder="TIC ID — e.g. 470710327"
                     value={ticId}
                     onChange={e => setTicId(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !ticLoading && ticId.trim() && handleTicAnalyze()}
                     disabled={ticLoading || isQuotaExceeded}
-                    className="input flex-1 font-mono"
+                    className="w-full pl-10 pr-4 py-3 text-sm border border-[#e5e7eb] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#202124] focus:border-transparent font-mono bg-[#fafafa] disabled:opacity-50 transition"
                   />
-                  <button
-                    onClick={() => handleTicAnalyze()}
-                    disabled={!ticId.trim() || ticLoading || isQuotaExceeded}
-                    className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {ticLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Analyze'}
-                  </button>
                 </div>
 
-                {/* Popular targets */}
-                {!ticLoading && !ticResult && (
-                  <div>
-                    <p className="text-xs text-larun-medium-gray mb-2">Try a known target:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {POPULAR_TARGETS.map(t => (
-                        <button
-                          key={t.id}
-                          onClick={() => { setTicId(t.id); handleTicAnalyze(t.id) }}
-                          disabled={isQuotaExceeded}
-                          className="text-xs px-3 py-1.5 bg-larun-lighter-gray hover:bg-larun-light-gray rounded-full transition-colors disabled:opacity-50"
-                        >
-                          {t.name} <span className="text-larun-medium-gray">({t.description})</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <button
+                  onClick={() => handleTicAnalyze()}
+                  disabled={!ticId.trim() || ticLoading || isQuotaExceeded}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#202124] hover:bg-[#374151] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  {ticLoading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing…</>
+                    : <><Zap className="w-4 h-4" /> Run Analysis</>}
+                </button>
 
                 {ticError && (
-                  <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                  <div className="mt-4 flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl p-4">
                     <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-700">{ticError}</p>
+                    <p className="text-xs text-red-700">{ticError}</p>
                   </div>
                 )}
               </div>
 
-              {/* How it works */}
+              {/* Popular targets */}
               {!ticLoading && !ticResult && (
-                <div className="card">
-                  <h4 className="font-medium mb-4">How it works</h4>
-                  <ol className="space-y-3">
-                    {[
-                      ['Fetch', 'Light curve data retrieved from NASA TESS archives via MAST'],
-                      ['Detect', 'BLS periodogram searches for periodic transit-shaped dips'],
-                      ['Vet', 'Odd-even, V-shape, and secondary eclipse tests flag false positives'],
-                    ].map(([title, desc]) => (
-                      <li key={title} className="flex gap-3 text-sm">
-                        <span className="w-6 h-6 rounded-full bg-larun-black text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                          {['Fetch','Detect','Vet'].indexOf(title) + 1}
-                        </span>
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5 shadow-sm">
+                  <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wide mb-3">Known Targets</p>
+                  <div className="space-y-2">
+                    {POPULAR_TARGETS.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => { setTicId(t.id); handleTicAnalyze(t.id) }}
+                        disabled={isQuotaExceeded || ticLoading}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-[#f3f4f6] border border-transparent hover:border-[#e5e7eb] transition-all disabled:opacity-50 text-left"
+                      >
                         <div>
-                          <span className="font-medium text-larun-black">{title}</span>
-                          <span className="text-larun-medium-gray"> — {desc}</span>
+                          <p className="text-sm font-medium text-[#202124]">{t.name}</p>
+                          <p className="text-xs text-[#9ca3af]">{t.type} · {t.year}</p>
                         </div>
-                      </li>
+                        <div className="text-right">
+                          <p className="text-xs font-mono text-[#9ca3af]">{t.id}</p>
+                          <ChevronRight className="w-3.5 h-3.5 text-[#d1d5db] ml-auto mt-0.5" />
+                        </div>
+                      </button>
                     ))}
-                  </ol>
+                  </div>
+                </div>
+              )}
+
+              {/* Pipeline info */}
+              {!ticLoading && !ticResult && (
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5 shadow-sm">
+                  <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wide mb-4">How It Works</p>
+                  <div className="space-y-3">
+                    {PIPELINE_STAGES.map((s, i) => (
+                      <div key={s.label} className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#f3f4f6] flex items-center justify-center text-xs font-bold text-[#6b7280] shrink-0 mt-0.5">
+                          {i + 1}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-[#374151]">{s.label}</p>
+                          <p className="text-xs text-[#9ca3af]">{s.sub}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* TIC Results */}
-            <div>
+            {/* Right column — results */}
+            <div className="lg:col-span-3">
               {ticLoading ? (
-                <div className="card flex flex-col items-center justify-center min-h-[340px] text-center">
-                  <div className="w-16 h-16 relative mb-4">
-                    <div className="absolute inset-0 border-4 border-larun-lighter-gray rounded-full" />
-                    <div className="absolute inset-0 border-4 border-larun-black rounded-full border-t-transparent animate-spin" />
-                  </div>
-                  <p className="font-medium mb-1">Analyzing TIC {ticId_used}…</p>
-                  <p className="text-sm text-larun-medium-gray mb-4">Fetching TESS data and running transit detection</p>
-                  <div className="w-full max-w-xs bg-larun-lighter-gray rounded-full h-1.5">
-                    <div className="bg-larun-black h-1.5 rounded-full transition-all duration-500" style={{ width: `${ticProgress}%` }} />
-                  </div>
-                  <p className="text-xs text-larun-medium-gray mt-2">{ticProgress}%</p>
-                </div>
+                <TicLoadingCard ticId={ticId_used} progress={ticProgress} stage={ticStage} />
               ) : ticResult ? (
                 <TicResultCard result={ticResult} ticId={ticId_used} onReset={() => { setTicResult(null); setTicId('') }} />
               ) : (
-                <div className="card h-full flex items-center justify-center min-h-[340px]">
-                  <div className="text-center text-larun-medium-gray">
-                    <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Results will appear here</p>
-                    <p className="text-sm mt-1">Enter a TIC ID and run analysis</p>
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] h-full min-h-[420px] flex items-center justify-center shadow-sm">
+                  <div className="text-center p-8">
+                    <div className="w-16 h-16 bg-[#f3f4f6] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Telescope className="w-8 h-8 text-[#d1d5db]" />
+                    </div>
+                    <p className="text-sm font-medium text-[#374151] mb-1">Results will appear here</p>
+                    <p className="text-xs text-[#9ca3af]">Enter a TIC ID or pick a known target</p>
                   </div>
                 </div>
               )}
@@ -379,15 +439,21 @@ export default function AnalyzePage() {
           </div>
         )}
 
-        {/* ── UPLOAD MODE ────────────────────────────────────────────────────── */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* UPLOAD MODE                                                        */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
         {mode === 'upload' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="card">
-                <h3 className="text-xl mb-1">1. Choose a Model</h3>
-                <p className="text-sm text-larun-medium-gray mb-5">
-                  Pick the model that matches what you are looking for in your data.
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+            {/* Left column — configuration */}
+            <div className="lg:col-span-2 space-y-4">
+
+              {/* Step 1 — Model */}
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-6 h-6 rounded-full bg-[#202124] text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                  <h2 className="text-sm font-semibold text-[#374151]">Choose a Model</h2>
+                </div>
                 <ModelSelector
                   selectedModel={selectedModel}
                   onModelSelect={id => { setSelectedModel(id); setUploadResult(null); setUploadError(null) }}
@@ -395,23 +461,25 @@ export default function AnalyzePage() {
                 />
               </div>
 
-              <div className="card">
+              {/* Step 2 — Data input */}
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-6 h-6 rounded-full bg-[#202124] text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                  <h2 className="text-sm font-semibold text-[#374151]">
+                    {isSpectral ? 'Enter Colour Indices' : 'Upload Data File'}
+                  </h2>
+                </div>
                 {isSpectral ? (
-                  <>
-                    <h3 className="text-xl mb-1">2. Enter Colour Indices</h3>
-                    <ColorIndexInput
-                      values={colorIndices}
-                      onChange={setColorIndices}
-                      disabled={uploadLoading || isQuotaExceeded}
-                    />
-                  </>
+                  <ColorIndexInput
+                    values={colorIndices}
+                    onChange={setColorIndices}
+                    disabled={uploadLoading || isQuotaExceeded}
+                  />
                 ) : (
                   <>
-                    <h3 className="text-xl mb-1">2. Upload Data File</h3>
                     {selectedModelMeta && (
-                      <p className="text-sm text-larun-medium-gray mb-4">
-                        <span className="font-medium text-larun-black">Expected source:</span>{' '}
-                        {selectedModelMeta.data_source}
+                      <p className="text-xs text-[#9ca3af] mb-4">
+                        <span className="font-medium text-[#6b7280]">Expected:</span> {selectedModelMeta.data_source}
                       </p>
                     )}
                     <FileUpload
@@ -423,42 +491,69 @@ export default function AnalyzePage() {
                 )}
               </div>
 
-              <button
-                onClick={handleUploadAnalyze}
-                disabled={!canRunUpload || uploadLoading || isQuotaExceeded}
-                className="btn btn-primary w-full text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {uploadLoading ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Analyzing…</>
-                ) : '3. Run Analysis'}
-              </button>
-
-              {uploadError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-800 mb-1">Analysis Failed</p>
-                    <p className="text-sm text-red-700">{uploadError}</p>
-                    {uploadError.includes('quota') && (
-                      <Link href="/cloud/pricing" className="text-sm text-red-800 underline mt-2 inline-block">
-                        View Plans →
-                      </Link>
-                    )}
-                  </div>
+              {/* Step 3 — Run */}
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0 ${canRunUpload && !isQuotaExceeded ? 'bg-[#202124]' : 'bg-[#d1d5db]'}`}>3</span>
+                  <h2 className="text-sm font-semibold text-[#374151]">Run Analysis</h2>
                 </div>
-              )}
+                <button
+                  onClick={handleUploadAnalyze}
+                  disabled={!canRunUpload || uploadLoading || isQuotaExceeded}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#202124] hover:bg-[#374151] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  {uploadLoading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Running inference…</>
+                    : <><Zap className="w-4 h-4" /> Run Inference</>}
+                </button>
+
+                {!canRunUpload && !uploadLoading && (
+                  <p className="text-xs text-[#9ca3af] text-center mt-3">
+                    {isSpectral ? 'Enter at least one colour index above' : 'Upload a file to continue'}
+                  </p>
+                )}
+
+                {uploadError && (
+                  <div className="mt-4 flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl p-4">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-red-800 mb-0.5">Analysis failed</p>
+                      <p className="text-xs text-red-700">{uploadError}</p>
+                      {uploadError.includes('quota') && (
+                        <Link href="/cloud/pricing" className="text-xs text-red-800 underline mt-1 inline-block">View Plans →</Link>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div>
-              {uploadResult ? (
-                <ResultsDisplay result={uploadResult} modelId={selectedModel} />
+            {/* Right column — results */}
+            <div className="lg:col-span-3">
+              {uploadLoading ? (
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] h-full min-h-[420px] flex items-center justify-center shadow-sm">
+                  <div className="text-center p-8">
+                    <div className="w-14 h-14 relative mx-auto mb-5">
+                      <div className="absolute inset-0 border-4 border-[#f3f4f6] rounded-full" />
+                      <div className="absolute inset-0 border-4 border-[#202124] rounded-full border-t-transparent animate-spin" />
+                    </div>
+                    <p className="text-sm font-medium text-[#374151] mb-1">Running inference…</p>
+                    <p className="text-xs text-[#9ca3af]">{getModelById(selectedModel)?.name ?? selectedModel}</p>
+                  </div>
+                </div>
+              ) : uploadResult ? (
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] shadow-sm overflow-hidden">
+                  <ResultsDisplay result={uploadResult} modelId={selectedModel} />
+                </div>
               ) : (
-                <div className="card h-full flex items-center justify-center min-h-[400px]">
-                  <div className="text-center text-larun-medium-gray">
-                    <Upload className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Results will appear here</p>
-                    <p className="text-sm mt-1">
-                      {isSpectral ? 'Enter colour indices above' : 'Upload a file and run analysis'}
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] h-full min-h-[420px] flex items-center justify-center shadow-sm">
+                  <div className="text-center p-8">
+                    <div className="w-16 h-16 bg-[#f3f4f6] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Upload className="w-8 h-8 text-[#d1d5db]" />
+                    </div>
+                    <p className="text-sm font-medium text-[#374151] mb-1">Results will appear here</p>
+                    <p className="text-xs text-[#9ca3af]">
+                      {isSpectral ? 'Enter colour indices and run analysis' : 'Upload a file and run inference'}
                     </p>
                   </div>
                 </div>
@@ -471,98 +566,161 @@ export default function AnalyzePage() {
   )
 }
 
-// ── TIC Result Card ────────────────────────────────────────────────────────────
+// ── TIC Loading Card ───────────────────────────────────────────────────────────
+
+function TicLoadingCard({ ticId, progress, stage }: { ticId: string; progress: number; stage: number }) {
+  return (
+    <div className="bg-white rounded-2xl border border-[#e5e7eb] p-8 shadow-sm h-full min-h-[420px] flex flex-col justify-center">
+      <div className="max-w-sm mx-auto w-full">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 relative shrink-0">
+            <div className="absolute inset-0 border-[3px] border-[#f3f4f6] rounded-full" />
+            <div className="absolute inset-0 border-[3px] border-[#202124] rounded-full border-t-transparent animate-spin" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[#202124]">Analyzing TIC {ticId}</p>
+            <p className="text-xs text-[#9ca3af]">This may take 20–60 seconds</p>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-[#f3f4f6] rounded-full h-1.5 mb-6 overflow-hidden">
+          <div
+            className="bg-[#202124] h-1.5 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Pipeline stages */}
+        <div className="space-y-3">
+          {PIPELINE_STAGES.map((s, i) => {
+            const done    = i < stage
+            const active  = i === stage
+            return (
+              <div key={s.label} className={`flex items-center gap-3 transition-opacity ${active ? 'opacity-100' : done ? 'opacity-60' : 'opacity-25'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                  done ? 'bg-[#f0fdf4]' : active ? 'bg-[#f3f4f6]' : 'bg-[#f9fafb]'
+                }`}>
+                  {done
+                    ? <CheckCircle2 className="w-4 h-4 text-[#16a34a]" />
+                    : active
+                    ? <Loader2 className="w-3 h-3 text-[#6b7280] animate-spin" />
+                    : <div className="w-1.5 h-1.5 rounded-full bg-[#d1d5db]" />}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-[#374151]">{s.label}</p>
+                  <p className="text-xs text-[#9ca3af]">{s.sub}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Vetting Row ────────────────────────────────────────────────────────────────
 
 function VettingRow({ label, test }: { label: string; test: VettingTest }) {
-  const colors = {
-    PASS:    'bg-green-100 text-green-700',
-    FAIL:    'bg-red-100 text-red-700',
-    WARNING: 'bg-amber-100 text-amber-700',
-  }
+  const cfg = {
+    PASS:    { icon: CheckCircle2,   cls: 'text-[#16a34a]', bg: 'bg-[#f0fdf4]', badge: 'bg-[#dcfce7] text-[#166534]' },
+    FAIL:    { icon: XCircle,        cls: 'text-[#dc2626]', bg: 'bg-[#fef2f2]', badge: 'bg-[#fee2e2] text-[#991b1b]' },
+    WARNING: { icon: AlertTriangle,  cls: 'text-[#d97706]', bg: 'bg-[#fffbeb]', badge: 'bg-[#fef3c7] text-[#92400e]' },
+  }[test.flag]
+  const Icon = cfg.icon
   return (
-    <div className="flex items-center justify-between p-3 bg-larun-lighter-gray rounded-lg">
-      <div>
-        <p className="text-sm font-medium text-larun-black">{label}</p>
-        <p className="text-xs text-larun-medium-gray">{test.message}</p>
+    <div className={`flex items-center gap-3 p-3 rounded-xl ${cfg.bg}`}>
+      <Icon className={`w-4 h-4 shrink-0 ${cfg.cls}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-[#374151]">{label}</p>
+        <p className="text-xs text-[#6b7280] truncate">{test.message}</p>
       </div>
-      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ml-3 ${colors[test.flag]}`}>
+      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 ${cfg.badge}`}>
         {test.flag}
       </span>
     </div>
   )
 }
 
-function TicResultCard({
-  result, ticId, onReset
-}: { result: TicResult; ticId: string; onReset: () => void }) {
+// ── TIC Result Card ────────────────────────────────────────────────────────────
+
+function TicResultCard({ result, ticId, onReset }: { result: TicResult; ticId: string; onReset: () => void }) {
+  const detected = result.detection
+  const conf = (result.confidence * 100).toFixed(1)
+
   return (
     <div className="space-y-4">
-      {/* Detection summary */}
-      <div className={`card ${result.detection ? 'border-green-300 bg-green-50' : ''}`}>
-        <div className="flex items-center gap-4 mb-4">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-            result.detection ? 'bg-green-100' : 'bg-larun-lighter-gray'
+      {/* Detection hero */}
+      <div className={`rounded-2xl border p-6 shadow-sm ${
+        detected ? 'bg-[#f0fdf4] border-[#bbf7d0]' : 'bg-white border-[#e5e7eb]'
+      }`}>
+        <div className="flex items-start gap-4 mb-5">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+            detected ? 'bg-[#dcfce7]' : 'bg-[#f3f4f6]'
           }`}>
-            {result.detection ? (
-              <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-7 h-7 text-larun-medium-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            )}
+            {detected
+              ? <CheckCircle2 className="w-7 h-7 text-[#16a34a]" />
+              : <XCircle      className="w-7 h-7 text-[#9ca3af]" />}
           </div>
-          <div>
-            <h3 className={`text-xl font-semibold ${result.detection ? 'text-green-700' : 'text-larun-black'}`}>
-              {result.detection ? 'Planet Candidate Detected' : 'No Transit Signal Detected'}
+          <div className="flex-1">
+            <h3 className={`text-xl font-semibold ${detected ? 'text-[#166534]' : 'text-[#374151]'}`}>
+              {detected ? 'Planet Candidate Detected' : 'No Transit Signal'}
             </h3>
-            <p className="text-sm text-larun-medium-gray">TIC {ticId}</p>
+            <p className="text-sm text-[#6b7280]">TIC {ticId}</p>
           </div>
+          {detected && (
+            <div className="text-right">
+              <p className="text-3xl font-bold text-[#166534]">{conf}%</p>
+              <p className="text-xs text-[#6b7280]">confidence</p>
+            </div>
+          )}
         </div>
 
-        {result.detection && (
-          <div className="grid grid-cols-2 gap-3">
+        {detected && (
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Confidence', value: `${(result.confidence * 100).toFixed(1)}%` },
-              { label: 'Period', value: result.period_days ? `${result.period_days.toFixed(2)} days` : '—' },
-              { label: 'Depth', value: result.depth_ppm ? `${result.depth_ppm.toFixed(0)} ppm` : '—' },
-              { label: 'Duration', value: result.duration_hours ? `${result.duration_hours.toFixed(1)} hrs` : '—' },
+              { label: 'Orbital Period',   value: result.period_days    ? `${result.period_days.toFixed(3)} d`   : '—' },
+              { label: 'Transit Depth',    value: result.depth_ppm      ? `${result.depth_ppm.toFixed(0)} ppm`  : '—' },
+              { label: 'Transit Duration', value: result.duration_hours ? `${result.duration_hours.toFixed(2)} h` : '—' },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-white rounded-lg p-3 border border-green-200">
-                <p className="text-xs text-larun-medium-gray uppercase tracking-wide mb-1">{label}</p>
-                <p className="text-lg font-bold text-larun-black">{value}</p>
+              <div key={label} className="bg-white rounded-xl p-3 border border-[#d1fae5] text-center">
+                <p className="text-xs text-[#6b7280] mb-1">{label}</p>
+                <p className="text-base font-bold text-[#202124] font-mono">{value}</p>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Vetting */}
+      {/* Vetting tests */}
       {result.vetting && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold">Vetting Tests</h4>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              result.vetting.disposition === 'PLANET_CANDIDATE'    ? 'bg-green-100 text-green-700' :
-              result.vetting.disposition === 'LIKELY_FALSE_POSITIVE' ? 'bg-red-100 text-red-700' :
-              'bg-amber-100 text-amber-700'
+        <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-semibold text-[#374151]">Vetting Tests</p>
+            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+              result.vetting.disposition === 'PLANET_CANDIDATE'
+                ? 'bg-[#dcfce7] text-[#166534]'
+                : result.vetting.disposition === 'LIKELY_FALSE_POSITIVE'
+                ? 'bg-[#fee2e2] text-[#991b1b]'
+                : 'bg-[#fef3c7] text-[#92400e]'
             }`}>
               {result.vetting.disposition.replace(/_/g, ' ')}
             </span>
           </div>
           <div className="space-y-2">
-            <VettingRow label="Odd-Even Depth Test"    test={result.vetting.odd_even} />
-            <VettingRow label="V-Shape Analysis"       test={result.vetting.v_shape} />
-            <VettingRow label="Secondary Eclipse Check" test={result.vetting.secondary_eclipse} />
+            <VettingRow label="Odd-Even Depth"       test={result.vetting.odd_even} />
+            <VettingRow label="V-Shape Analysis"     test={result.vetting.v_shape} />
+            <VettingRow label="Secondary Eclipse"    test={result.vetting.secondary_eclipse} />
           </div>
         </div>
       )}
 
       <button
         onClick={onReset}
-        className="btn btn-outline w-full"
+        className="w-full flex items-center justify-center gap-2 py-3 bg-white hover:bg-[#f9fafb] text-[#374151] text-sm font-medium rounded-xl border border-[#e5e7eb] transition-colors"
       >
+        <RotateCcw className="w-4 h-4" />
         Analyze Another Target
       </button>
     </div>
