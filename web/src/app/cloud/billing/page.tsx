@@ -86,7 +86,7 @@ export default function SubscriptionPage() {
     <div className="min-h-screen bg-white">
       <main className="pt-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="mb-8">
-          <Link href="/cloud/dashboard" className="text-[#1a73e8] hover:underline text-sm mb-2 inline-flex items-center gap-1">
+          <Link href="/dashboard" className="text-[#1a73e8] hover:underline text-sm mb-2 inline-flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>

@@ -141,6 +141,56 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const downloadJSON = () => {
+    if (!analysis?.result) return;
+    const payload = {
+      analysis_id: analysis.id,
+      tic_id: analysis.tic_id,
+      created_at: analysis.created_at,
+      status: analysis.status,
+      result: analysis.result,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `TIC-${analysis.tic_id}-analysis.json`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadCSV = () => {
+    if (!analysis?.result) return;
+    const r = analysis.result;
+    const rows = [
+      ['Field', 'Value'],
+      ['TIC ID', analysis.tic_id],
+      ['Analysis ID', analysis.id],
+      ['Date', analysis.created_at],
+      ['Detection', String(r.detection)],
+      ['Confidence', r.confidence != null ? (r.confidence * 100).toFixed(2) + '%' : ''],
+      ['Period (days)', r.period_days ?? ''],
+      ['Depth (ppm)', r.depth_ppm ?? ''],
+      ['Duration (hours)', r.duration_hours ?? ''],
+      ['SNR', r.snr ?? ''],
+      ['Epoch BTJD', r.epoch_btjd ?? ''],
+      ['Sectors used', r.sectors_used?.join(';') ?? ''],
+      ['Vetting disposition', r.vetting?.disposition ?? ''],
+      ['Vetting confidence', r.vetting?.confidence != null ? (r.vetting.confidence * 100).toFixed(2) + '%' : ''],
+      ['Odd-even', r.vetting?.odd_even?.flag ?? ''],
+      ['V-shape', r.vetting?.v_shape?.flag ?? ''],
+      ['Secondary eclipse', r.vetting?.secondary_eclipse?.flag ?? ''],
+      ['Star Teff (K)', r.tic_info?.teff ?? ''],
+      ['Star radius (R☉)', r.tic_info?.radius ?? ''],
+      ['Star mass (M☉)', r.tic_info?.mass ?? ''],
+      ['Star Tmag', r.tic_info?.tmag ?? ''],
+    ];
+    const csv = rows.map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `TIC-${analysis.tic_id}-analysis.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -215,7 +265,7 @@ export default function ResultsPage() {
           <div className="mb-6 flex items-center gap-2 text-sm text-[#5f6368]">
             <Link href="/dashboard" className="hover:text-[#1a73e8] transition-colors">Dashboard</Link>
             <span>/</span>
-            <Link href="/analyze" className="hover:text-[#1a73e8] transition-colors">Analyze</Link>
+            <Link href="/cloud/analyze" className="hover:text-[#1a73e8] transition-colors">Analyze</Link>
             <span>/</span>
             <span className="text-[#202124] font-medium">TIC {analysis.tic_id}</span>
           </div>
@@ -235,7 +285,7 @@ export default function ResultsPage() {
               <h3 className="text-lg font-semibold text-red-700 mb-2">Analysis Failed</h3>
               <p className="text-[#5f6368] text-sm">{analysis.error ?? `Unable to analyze TIC ${analysis.tic_id}.`}</p>
               <div className="mt-4">
-                <Link href="/analyze"
+                <Link href="/cloud/analyze"
                   className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-sm font-medium rounded-lg transition-colors">
                   Try Again
                 </Link>
@@ -617,15 +667,29 @@ export default function ResultsPage() {
               )}
 
               {/* Actions */}
-              <div className="flex gap-4 pt-2">
-                <Link href="/analyze"
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link href="/cloud/analyze"
                   className="px-5 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] font-medium rounded-lg transition-colors text-sm">
                   Analyze Another
                 </Link>
                 <Link href="/dashboard"
                   className="px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium rounded-lg transition-colors text-sm">
-                  View Dashboard
+                  Dashboard
                 </Link>
+                <button onClick={downloadCSV}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#dadce0] hover:bg-[#f1f3f4] text-[#202124] font-medium rounded-lg transition-colors text-sm">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  CSV
+                </button>
+                <button onClick={downloadJSON}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#dadce0] hover:bg-[#f1f3f4] text-[#202124] font-medium rounded-lg transition-colors text-sm">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  JSON
+                </button>
               </div>
             </div>
           )}

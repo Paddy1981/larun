@@ -358,25 +358,6 @@ probs = mv_detector.forward(global_view, local_view, secondary_view)`}
           </div>
         </div>
 
-        {/* Coming Soon */}
-        <h2 className="text-2xl font-semibold text-[#202124] mb-4">Coming Soon</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-white p-6 rounded-xl border-2 border-dashed border-[#dadce0] opacity-70">
-            <h4 className="text-base font-semibold mb-2 font-mono text-[#5f6368]">BINARY-001</h4>
-            <p className="text-sm text-[#5f6368] mb-3">Eclipsing binary detection. Identifies binary star systems that can mimic planetary transits.</p>
-            <span className="inline-block px-3 py-1 bg-[#f1f3f4] text-xs text-[#5f6368] rounded-full">In Development</span>
-          </div>
-          <div className="bg-white p-6 rounded-xl border-2 border-dashed border-[#dadce0] opacity-70">
-            <h4 className="text-base font-semibold mb-2 font-mono text-[#5f6368]">MULTI-001</h4>
-            <p className="text-sm text-[#5f6368] mb-3">Multi-planet detection. Identifies systems with multiple transiting planets.</p>
-            <span className="inline-block px-3 py-1 bg-[#f1f3f4] text-xs text-[#5f6368] rounded-full">In Development</span>
-          </div>
-          <div className="bg-white p-6 rounded-xl border-2 border-dashed border-[#dadce0] opacity-70">
-            <h4 className="text-base font-semibold mb-2 font-mono text-[#5f6368]">HABIT-001</h4>
-            <p className="text-sm text-[#5f6368] mb-3">Habitability scoring. Estimates potential for habitable conditions.</p>
-            <span className="inline-block px-3 py-1 bg-[#f1f3f4] text-xs text-[#5f6368] rounded-full">In Development</span>
-          </div>
-        </div>
       </main>
 
       {/* Footer */}
