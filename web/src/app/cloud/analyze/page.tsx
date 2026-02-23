@@ -41,6 +41,7 @@ const EMPTY_INDICES: ColorIndices = { bv: '', vr: '', bp_rp: '', jh: '', hk: '' 
 
 export default function AnalyzePage() {
   const [user, setUser] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [quota, setQuota] = useState<UsageQuota | null>(null)
 
   // Mode: 'tic' = TIC ID lookup, 'upload' = FITS/colour index
@@ -66,12 +67,9 @@ export default function AnalyzePage() {
 
   const checkAuth = async () => {
     const { user } = await getCurrentUser()
-    if (!user) {
-      window.location.href = '/cloud/auth/login?redirect=/cloud/analyze'
-      return
-    }
     setUser(user)
-    setQuota(await getUserQuota(user.id))
+    if (user) setQuota(await getUserQuota(user.id))
+    setAuthLoading(false)
   }
 
   const isQuotaExceeded =
@@ -159,11 +157,37 @@ export default function AnalyzePage() {
     }
   }
 
-  // ── Loading guard ───────────────────────────────────────────────────────────
-  if (!user) {
+  // ── Auth guard ──────────────────────────────────────────────────────────────
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-larun-medium-gray" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="max-w-md w-full text-center">
+          <div className="card">
+            <div className="w-14 h-14 bg-larun-lighter-gray rounded-full flex items-center justify-center mx-auto mb-5">
+              <Search className="w-7 h-7 text-larun-medium-gray" />
+            </div>
+            <h2 className="text-2xl mb-2">Sign in to Analyze</h2>
+            <p className="text-larun-medium-gray text-sm mb-6">
+              Create a free account to run TIC ID lookups and upload data files. 5 analyses per month, no credit card required.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link href="/cloud/auth/login?redirect=/cloud/analyze" className="btn btn-primary w-full justify-center">
+                Sign In
+              </Link>
+              <Link href="/cloud/auth/signup?redirect=/cloud/analyze" className="btn btn-outline w-full justify-center">
+                Create Free Account
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
