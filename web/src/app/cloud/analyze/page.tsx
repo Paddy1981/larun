@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { FileUpload } from '@/components/FileUpload'
 import { ModelSelector } from '@/components/ModelSelector'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
@@ -40,7 +41,8 @@ const EMPTY_INDICES: ColorIndices = { bv: '', vr: '', bp_rp: '', jh: '', hk: '' 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AnalyzePage() {
-  const [user, setUser] = useState<any>(null)
+  const { data: nextAuthSession, status: nextAuthStatus } = useSession()
+  const [supabaseUser, setSupabaseUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [quota, setQuota] = useState<UsageQuota | null>(null)
 
@@ -63,12 +65,23 @@ export default function AnalyzePage() {
   const [uploadLoading, setUploadLoading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
-  useEffect(() => { checkAuth() }, [])
+  // Resolved user: Supabase takes priority, NextAuth as fallback
+  const user = supabaseUser ?? (nextAuthSession?.user ? {
+    id: nextAuthSession.user.id ?? nextAuthSession.user.email,
+    email: nextAuthSession.user.email,
+    name: nextAuthSession.user.name,
+    _source: 'nextauth',
+  } : null)
+
+  useEffect(() => {
+    if (nextAuthStatus === 'loading') return  // wait for NextAuth to resolve
+    checkAuth()
+  }, [nextAuthStatus])
 
   const checkAuth = async () => {
-    const { user } = await getCurrentUser()
-    setUser(user)
-    if (user) setQuota(await getUserQuota(user.id))
+    const { user: sbUser } = await getCurrentUser()
+    setSupabaseUser(sbUser)
+    if (sbUser) setQuota(await getUserQuota(sbUser.id))
     setAuthLoading(false)
   }
 
@@ -77,7 +90,7 @@ export default function AnalyzePage() {
     quota.quota_limit !== -1 && quota.analyses_count >= quota.quota_limit
 
   const refreshQuota = async () => {
-    if (user) setQuota(await getUserQuota(user.id))
+    if (supabaseUser) setQuota(await getUserQuota(supabaseUser.id))
   }
 
   // ── TIC ID analysis ─────────────────────────────────────────────────────────
@@ -97,7 +110,11 @@ export default function AnalyzePage() {
       const res = await fetch('/api/v1/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tic_id: id, user_id: user.id }),
+        body: JSON.stringify({
+          tic_id: id,
+          // Only send user_id for Supabase users; NextAuth users are identified server-side via session
+          ...(supabaseUser ? { user_id: supabaseUser.id } : {}),
+        }),
       })
 
       clearInterval(tick)
@@ -137,16 +154,17 @@ export default function AnalyzePage() {
     setUploadResult(null)
 
     try {
+      const uid = supabaseUser?.id ?? user.id
       let res: InferenceResult
       if (isSpectral) {
         const parse = (v: string) => v.trim() === '' ? undefined : Number(v)
         res = await apiClient.analyzeSpectralType(
           { bv: parse(colorIndices.bv), vr: parse(colorIndices.vr),
             bp_rp: parse(colorIndices.bp_rp), jh: parse(colorIndices.jh), hk: parse(colorIndices.hk) },
-          user.id
+          uid
         )
       } else {
-        res = await apiClient.analyzeTinyML(file!, selectedModel, user.id)
+        res = await apiClient.analyzeTinyML(file!, selectedModel, uid)
       }
       setUploadResult(res)
       await refreshQuota()
@@ -158,7 +176,7 @@ export default function AnalyzePage() {
   }
 
   // ── Auth guard ──────────────────────────────────────────────────────────────
-  if (authLoading) {
+  if (authLoading || nextAuthStatus === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-larun-medium-gray" />
