@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { FileUpload } from '@/components/FileUpload'
 import { ModelSelector } from '@/components/ModelSelector'
@@ -48,6 +48,8 @@ const EMPTY_INDICES: ColorIndices = { bv: '', vr: '', bp_rp: '', jh: '', hk: '' 
 
 export default function AnalyzePage() {
   const { data: nextAuthSession, status: nextAuthStatus } = useSession()
+  const autoTicRef = useRef(false)
+
   const [supabaseUser, setSupabaseUser] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [quota, setQuota] = useState<UsageQuota | null>(null)
@@ -62,6 +64,16 @@ export default function AnalyzePage() {
   const [ticResult, setTicResult]   = useState<TicResult | null>(null)
   const [ticError, setTicError]     = useState<string | null>(null)
   const [ticId_used, setTicIdUsed]  = useState('')
+
+  // Past analyses history
+  const [pastAnalyses, setPastAnalyses] = useState<Array<{
+    id: string
+    tic_id: string
+    status: string
+    created_at: string
+    result?: TicResult
+  }>>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
 
   // Upload state
   const [selectedModel, setSelectedModel]   = useState('EXOPLANET-001')
@@ -91,12 +103,53 @@ export default function AnalyzePage() {
     setAuthLoading(false)
   }
 
+  // Pre-fill TIC ID from ?tic= query param and auto-trigger once auth resolves
+  useEffect(() => {
+    if (authLoading || autoTicRef.current) return
+    const tic = new URLSearchParams(window.location.search).get('tic')
+    if (!tic) return
+    autoTicRef.current = true
+    setMode('tic')
+    setTicId(tic)
+    // Small delay so the input renders before analysis fires
+    setTimeout(() => handleTicAnalyze(tic), 300)
+  }, [authLoading])
+
   const isQuotaExceeded =
     quota !== null && quota.quota_limit !== null &&
     quota.quota_limit !== -1 && quota.analyses_count >= quota.quota_limit
 
   const refreshQuota = async () => {
     if (supabaseUser) setQuota(await getUserQuota(supabaseUser.id))
+  }
+
+  const fetchHistory = async () => {
+    setHistoryLoading(true)
+    try {
+      const res = await fetch('/api/v1/analyses')
+      if (res.ok) {
+        const d = await res.json()
+        setPastAnalyses(
+          (d.analyses || [])
+            .filter((a: any) => a.tic_id && a.status === 'completed')
+            .slice(0, 30)
+        )
+      }
+    } catch { /* silent */ } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!authLoading && user) fetchHistory()
+  }, [authLoading])
+
+  const loadPastResult = (a: typeof pastAnalyses[0]) => {
+    setMode('tic')
+    setTicId(a.tic_id)
+    setTicIdUsed(a.tic_id)
+    setTicResult(a.result ?? null)
+    setTicError(null)
   }
 
   // ── TIC ID analysis ──────────────────────────────────────────────────────────
@@ -138,6 +191,7 @@ export default function AnalyzePage() {
 
       setTicResult(data.result)
       await refreshQuota()
+      fetchHistory()
     } catch (err: any) {
       setTicError(err.message || 'An error occurred')
     } finally {
@@ -393,6 +447,63 @@ export default function AnalyzePage() {
                         </div>
                       </button>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Past analyses */}
+              {!ticLoading && pastAnalyses.length > 0 && (
+                <div className="bg-white rounded-2xl border border-[#e5e7eb] p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wide">History</p>
+                    <button onClick={fetchHistory} disabled={historyLoading}
+                      className="text-xs text-[#9ca3af] hover:text-[#6b7280] transition-colors disabled:opacity-40">
+                      {historyLoading ? '…' : 'Refresh'}
+                    </button>
+                  </div>
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                    {pastAnalyses.map(a => {
+                      const detected = a.result?.detection
+                      const conf = a.result?.confidence != null ? `${(a.result.confidence * 100).toFixed(0)}%` : null
+                      const age = (() => {
+                        const d = Date.now() - new Date(a.created_at).getTime()
+                        const m = Math.floor(d / 60000)
+                        if (m < 60) return `${m}m ago`
+                        const h = Math.floor(m / 60)
+                        if (h < 24) return `${h}h ago`
+                        return `${Math.floor(h / 24)}d ago`
+                      })()
+                      const isActive = ticId_used === a.tic_id && ticResult != null
+                      return (
+                        <button
+                          key={a.id}
+                          onClick={() => loadPastResult(a)}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all ${
+                            isActive
+                              ? 'bg-[#202124] border border-[#202124]'
+                              : 'hover:bg-[#f9fafb] border border-transparent hover:border-[#e5e7eb]'
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <p className={`text-xs font-mono font-medium truncate ${isActive ? 'text-white' : 'text-[#374151]'}`}>
+                              TIC {a.tic_id}
+                            </p>
+                            <p className={`text-xs mt-0.5 ${isActive ? 'text-[#9ca3af]' : 'text-[#9ca3af]'}`}>{age}</p>
+                          </div>
+                          <div className="shrink-0 ml-2 text-right">
+                            {detected != null && (
+                              <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                                detected
+                                  ? isActive ? 'bg-green-900 text-green-300' : 'bg-[#dcfce7] text-[#166534]'
+                                  : isActive ? 'bg-gray-700 text-gray-300'  : 'bg-[#f3f4f6] text-[#6b7280]'
+                              }`}>
+                                {detected ? (conf ?? '✓') : 'None'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}

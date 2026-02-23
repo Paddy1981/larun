@@ -1,107 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { createClient } from '@supabase/supabase-js';
 import { authOptions } from '@/lib/auth';
-import { listAnalyses, type AnalysisStatus } from '@/lib/analysis-store';
 
 /**
  * GET /api/v1/analyses
  *
- * List user's analyses with pagination.
- * Fetches from Supabase for serverless compatibility.
+ * Returns the authenticated user's analysis history from Supabase.
+ * Supports both Supabase-auth users (by user_id) and NextAuth users (by email).
  */
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
-
     if (!session?.user) {
       return NextResponse.json(
-        {
-          error: {
-            code: 'unauthorized',
-            message: 'Authentication required',
-          },
-        },
+        { error: { code: 'unauthorized', message: 'Authentication required' } },
         { status: 401 }
       );
     }
 
-    // Parse query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const perPage = Math.min(100, Math.max(1, parseInt(searchParams.get('per_page') || '10', 10)));
-    const statusFilter = searchParams.get('status') as AnalysisStatus | null;
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
+    );
 
-    // Validate status filter
-    const validStatuses = ['pending', 'processing', 'completed', 'failed'];
-    if (statusFilter && !validStatuses.includes(statusFilter)) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'invalid_status',
-            message: `Invalid status filter. Valid values: ${validStatuses.join(', ')}`,
-          },
-        },
-        { status: 400 }
-      );
-    }
+    const email = session.user.email;
 
-    // Get analyses from in-memory store
-    const { analyses, total } = listAnalyses(session.user.id, {
-      status: statusFilter || undefined,
-      limit: perPage,
-      offset: (page - 1) * perPage,
-    });
+    // Look up Supabase user_id by email (may not exist for pure NextAuth users)
+    const { data: userRow } = await sb
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    const supabaseUserId = userRow?.id ?? null;
 
-    // Build response
-    const formattedAnalyses = analyses.map(analysis => {
-      const item: Record<string, unknown> = {
-        id: analysis.id,
-        tic_id: analysis.tic_id,
-        status: analysis.status,
-        created_at: analysis.created_at,
+    // Query analyses by user_email OR user_id — whichever is set
+    const { data: rows, error: dbErr } = await sb
+      .from('analyses')
+      .select('id, created_at, confidence, result, classification')
+      .eq('classification', 'tic_analysis')
+      .or(
+        [
+          email         ? `user_email.eq.${email}` : null,
+          supabaseUserId ? `user_id.eq.${supabaseUserId}` : null,
+        ].filter(Boolean).join(',')
+      )
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (dbErr) throw dbErr;
+
+    const analyses = (rows ?? []).map(row => {
+      const r = row.result ?? {};
+      return {
+        id:         row.id,
+        tic_id:     r.tic_id ?? '',
+        status:     r.status ?? 'completed',
+        created_at: row.created_at,
+        result: r.status === 'completed' ? {
+          detection:     r.detection,
+          confidence:    r.confidence ?? row.confidence,
+          period_days:   r.period_days ?? null,
+          depth_ppm:     r.depth_ppm ?? null,
+          duration_hours: r.duration_hours ?? null,
+          vetting:       r.vetting ? { disposition: r.vetting.disposition } : undefined,
+        } : undefined,
       };
-
-      if (analysis.completed_at) {
-        item.completed_at = analysis.completed_at;
-      }
-
-      if (analysis.status === 'completed' && analysis.result) {
-        item.result = {
-          detection: analysis.result.detection,
-          confidence: analysis.result.confidence,
-          period_days: analysis.result.period_days,
-          depth_ppm: analysis.result.depth_ppm,
-          duration_hours: analysis.result.duration_hours,
-          vetting: analysis.result.vetting
-            ? { disposition: analysis.result.vetting.disposition }
-            : undefined,
-        };
-      }
-
-      if (analysis.status === 'failed') {
-        item.error = analysis.error;
-      }
-
-      return item;
     });
 
-    return NextResponse.json({
-      analyses: formattedAnalyses,
-      total,
-      page,
-      per_page: perPage,
-      total_pages: Math.ceil(total / perPage),
-    });
+    return NextResponse.json({ analyses, total: analyses.length });
   } catch (error) {
     console.error('Error listing analyses:', error);
     return NextResponse.json(
-      {
-        error: {
-          code: 'internal_error',
-          message: 'Failed to list analyses',
-        },
-      },
+      { error: { code: 'internal_error', message: 'Failed to list analyses' } },
       { status: 500 }
     );
   }

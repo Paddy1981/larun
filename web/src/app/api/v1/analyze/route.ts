@@ -13,6 +13,8 @@ export const maxDuration = 60;
  * Accepts either:
  *   - Supabase auth: pass user_id in the request body (cloud platform)
  *   - NextAuth session: legacy path (old /analyze page)
+ *
+ * Saves completed results persistently to Supabase `analyses` table.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -24,40 +26,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { tic_id, user_id: supabaseUserId } = body;
 
-    // ── Auth: Supabase user_id (cloud platform) ──────────────────────────────
+    // ── Auth resolution ───────────────────────────────────────────────────────
     let resolvedUserId: string;
+    let resolvedEmail: string | null = null;
     let quotaCheckFn: () => Promise<{ allowed: boolean; limit: number; used: number }>;
     let quotaIncrFn: () => Promise<void>;
 
     if (supabaseUserId) {
-      // Verify the user exists in Supabase
+      // Supabase user_id path (cloud platform)
       const { data: userRow } = await sb
         .from('users')
-        .select('analyses_this_month, analyses_limit')
+        .select('email, analyses_this_month, analyses_limit')
         .eq('id', supabaseUserId)
         .maybeSingle();
 
-      resolvedUserId = supabaseUserId;
+      resolvedUserId  = supabaseUserId;
+      resolvedEmail   = userRow?.email ?? null;
       const limit: number = userRow?.analyses_limit ?? 5;
-      const used: number = userRow?.analyses_this_month ?? 0;
+      const used: number  = userRow?.analyses_this_month ?? 0;
 
       quotaCheckFn = async () => ({ allowed: limit === -1 || used < limit, limit, used });
-      quotaIncrFn = async () => {
-        await sb
-          .from('users')
-          .update({ analyses_this_month: used + 1 })
-          .eq('id', supabaseUserId);
-        await sb.from('analyses').insert({
-          user_id: supabaseUserId,
-          model_id: 'EXOPLANET-BLS',
-          classification: 'transit_detection',
-          confidence: 0,
-          inference_time_ms: 0,
-          result: {},
-        });
+      quotaIncrFn  = async () => {
+        await sb.from('users').update({ analyses_this_month: used + 1 }).eq('id', supabaseUserId);
       };
     } else {
-      // ── Auth: NextAuth session (legacy) ──────────────────────────────────
+      // NextAuth session path (legacy)
       const session = await getServerSession(authOptions);
       if (!session?.user?.email) {
         return NextResponse.json(
@@ -66,17 +59,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const email = session.user.email;
+      const email        = session.user.email;
       const currentMonth = new Date().toISOString().slice(0, 7);
 
       const { data: userData } = await sb
         .from('users')
-        .select('analyses_limit')
+        .select('id, analyses_limit')
         .eq('email', email)
         .maybeSingle();
       const analysesLimit = userData?.analyses_limit ?? 5;
 
-      resolvedUserId = session.user.id;
+      resolvedUserId = userData?.id ?? session.user.id;
+      resolvedEmail  = email;
+
       quotaCheckFn = async () => {
         if (analysesLimit === -1) return { allowed: true, limit: -1, used: 0 };
         const { data: quotaData } = await sb
@@ -103,7 +98,7 @@ export async function POST(request: NextRequest) {
     const normalizedTicId = tic_id.replace(/\D/g, '');
     if (!normalizedTicId) {
       return NextResponse.json(
-        { error: { code: 'invalid_tic_id', message: 'Invalid TIC ID format. Please enter a numeric TIC ID.' } },
+        { error: { code: 'invalid_tic_id', message: 'Invalid TIC ID format.' } },
         { status: 400 }
       );
     }
@@ -112,25 +107,59 @@ export async function POST(request: NextRequest) {
     const { allowed, limit } = await quotaCheckFn();
     if (!allowed) {
       return NextResponse.json(
-        { error: { code: 'usage_limit_exceeded', message: `Monthly analysis limit reached (${limit}). Upgrade to analyze more targets.` } },
+        { error: { code: 'usage_limit_exceeded', message: `Monthly analysis limit reached (${limit}).` } },
         { status: 429 }
       );
     }
 
-    // ── Run detection ─────────────────────────────────────────────────────────
+    // ── Run detection (in-memory pipeline) ────────────────────────────────────
     const analysis = createAnalysis(resolvedUserId, normalizedTicId);
     await processAnalysis(analysis.id);
     const completed = getAnalysis(analysis.id);
+
+    // ── Persist to Supabase ───────────────────────────────────────────────────
+    if (completed?.status === 'completed' && completed.result) {
+      const r = completed.result;
+      try {
+        await sb.from('analyses').insert({
+          user_id:          supabaseUserId || null,
+          user_email:       resolvedEmail,
+          model_id:         'EXOPLANET-BLS',
+          classification:   'tic_analysis',
+          confidence:       Math.max(0, Math.min(1, r.confidence ?? 0)),
+          inference_time_ms: (r.processing_time_seconds ?? 0) * 1000,
+          result: {
+            tic_id:             normalizedTicId,
+            status:             'completed',
+            detection:          r.detection,
+            confidence:         r.confidence,
+            period_days:        r.period_days,
+            depth_ppm:          r.depth_ppm,
+            duration_hours:     r.duration_hours,
+            epoch_btjd:         r.epoch_btjd,
+            snr:                r.snr,
+            sectors_used:       r.sectors_used,
+            processing_time_seconds: r.processing_time_seconds,
+            vetting:            r.vetting,
+            tic_info:           r.tic_info,
+            folded_curve:       r.folded_curve,
+          },
+        });
+      } catch (dbErr) {
+        // Non-fatal — analysis still returns successfully to the client
+        console.error('[analyze] Supabase persist error:', dbErr);
+      }
+    }
 
     // Increment quota (non-fatal)
     try { await quotaIncrFn(); } catch (e) { console.error('[analyze] quota increment failed:', e); }
 
     return NextResponse.json({
       analysis_id: analysis.id,
-      tic_id: normalizedTicId,
-      status: completed?.status ?? 'failed',
-      result: completed?.result ?? null,
-      error: completed?.error ?? null,
+      tic_id:      normalizedTicId,
+      status:      completed?.status ?? 'failed',
+      result:      completed?.result ?? null,
+      error:       completed?.error ?? null,
     });
   } catch (error) {
     console.error('Error submitting analysis:', error);
