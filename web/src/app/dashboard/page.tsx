@@ -65,7 +65,7 @@ const products = [
     description: 'Automated data pipeline for MAST, TESS, and Kepler archives. Ingest FITS files and light curves with built-in preprocessing.',
     icon: 'folder',
     filled: true,
-    href: '/analyze',
+    href: '/cloud/analyze',
     stats: [{ value: '3', label: 'Sources' }, { value: '15K', label: 'Files/day' }, { value: '99.9%', label: 'Uptime' }],
   },
   {
@@ -74,7 +74,7 @@ const products = [
     description: 'Self-calibrating system using NASA Exoplanet Archive confirmed discoveries. Automatic drift detection and model validation.',
     icon: 'check',
     filled: false,
-    href: '/analyze',
+    href: '/cloud/analyze',
     stats: [{ value: '5,500+', label: 'References' }, { value: '100%', label: 'Accuracy' }, { value: '2h', label: 'Last Run' }],
   },
   {
@@ -83,7 +83,7 @@ const products = [
     description: 'Advanced anomaly detection with transit analysis. BLS periodogram, SNR calculation, and significance testing.',
     icon: 'eye',
     filled: true,
-    href: '/analyze',
+    href: '/cloud/analyze',
     stats: [{ value: '6', label: 'Classes' }, { value: '<10ms', label: 'Inference' }, { value: '7.0', label: 'Min SNR' }],
   },
   {
@@ -110,7 +110,7 @@ const products = [
     description: 'Transit candidate vetting suite. Odd/even depth test, secondary eclipse search, V-shape analysis, and duration checks.',
     icon: 'shield',
     filled: false,
-    href: '/analyze',
+    href: '/cloud/analyze',
     stats: [{ value: '4', label: 'Tests' }, { value: '95%', label: 'Accuracy' }, { value: '<1s', label: 'Analysis' }],
   },
 ];
@@ -287,7 +287,7 @@ export default function DashboardPage() {
   };
 
   const handleAnalyzeTarget = (ticId: string) => {
-    router.push(`/analyze?tic=${ticId}`);
+    router.push('/cloud/analyze');
   };
 
   const recentActivity = [
@@ -419,25 +419,25 @@ export default function DashboardPage() {
           {/* Products Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Products</p>
           <div className="px-3">
-            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
               </svg>
               <span className="text-sm">Pipeline</span>
             </Link>
-            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
               </svg>
               <span className="text-sm">Calibration</span>
             </Link>
-            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
               </svg>
               <span className="text-sm">Detector</span>
             </Link>
-            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
               </svg>
@@ -462,7 +462,7 @@ export default function DashboardPage() {
           {/* Interactive Section */}
           <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider px-6 py-4">Interactive</p>
           <div className="px-3">
-            <Link href="/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
+            <Link href="/cloud/analyze" className="flex items-center gap-4 px-6 h-12 text-[#3c4043] hover:bg-[#f1f3f4] rounded-r-full transition-colors">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-9-6l-4 4 1.4 1.4L11 10.8l2.6 2.6L15 12l-4-4z" />
               </svg>
@@ -547,7 +547,7 @@ export default function DashboardPage() {
               Process NASA data, detect exoplanets, and generate submission-ready reports.
             </p>
             <div className="flex justify-center gap-2.5">
-              <Link href="/analyze" className="bg-[#202124] hover:bg-[#3c4043] text-white text-xs font-medium px-5 py-1.5 rounded transition-colors">
+              <Link href="/cloud/analyze" className="bg-[#202124] hover:bg-[#3c4043] text-white text-xs font-medium px-5 py-1.5 rounded transition-colors">
                 Run Analysis
               </Link>
               <Link href="/#features" className="bg-white hover:bg-[#f1f3f4] text-[#202124] text-xs font-medium px-5 py-1.5 rounded border border-[#dadce0] transition-colors">
