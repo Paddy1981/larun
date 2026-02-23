@@ -34,6 +34,18 @@ class APIClient {
     delete this.client.defaults.headers.common['Authorization']
   }
 
+  // Spectral type classification from colour indices (SPECTYPE-001)
+  async analyzeSpectralType(
+    indices: { bv?: number | null; vr?: number | null; bp_rp?: number | null; jh?: number | null; hk?: number | null },
+    userId: string
+  ): Promise<InferenceResult> {
+    const response = await axios.post('/api/tinyml/analyze-spectype', {
+      ...indices,
+      user_id: userId,
+    });
+    return response.data;
+  }
+
   // TinyML Analysis — always routes to Next.js API (relative URL)
   async analyzeTinyML(
     file: File,
@@ -143,7 +155,10 @@ export const TINYML_MODELS = [
   {
     id: 'EXOPLANET-001',
     name: 'Exoplanet Transit Detector',
-    description: 'Detects planetary transits in light curves',
+    description: 'Detects and classifies transit-shaped dips in photometric light curves — distinguishes true planetary transits from eclipsing binaries, stellar signals, and instrument artefacts.',
+    use_case: 'Find exoplanet candidates in TESS / Kepler photometry',
+    data_source: 'Photometry — TESS, Kepler, K2',
+    category: 'exoplanet',
     input_length: 1024,
     classes: ['noise', 'stellar_signal', 'planetary_transit', 'eclipsing_binary', 'instrument_artifact', 'unknown_anomaly'],
     accuracy: 0.818,
@@ -152,7 +167,10 @@ export const TINYML_MODELS = [
   {
     id: 'VSTAR-001',
     name: 'Variable Star Classifier',
-    description: 'Classifies variable star types',
+    description: 'Identifies the pulsation type of variable stars from their light-curve shape and variability — covering Cepheids, RR Lyrae, Delta Scuti, eclipsing binaries, rotational modulators, and irregular variables.',
+    use_case: 'Classify what type of variable star you are observing',
+    data_source: 'Photometry — TESS, ASAS-SN, ZTF, OGLE',
+    category: 'stellar',
     input_length: 512,
     classes: ['cepheid', 'rr_lyrae', 'delta_scuti', 'eclipsing_binary', 'rotational', 'irregular', 'constant'],
     accuracy: 0.952,
@@ -161,7 +179,10 @@ export const TINYML_MODELS = [
   {
     id: 'FLARE-001',
     name: 'Stellar Flare Detector',
-    description: 'Detects and classifies stellar flares',
+    description: 'Detects impulsive brightening events caused by magnetic reconnection on stellar surfaces and grades them from weak micro-flares to extreme superflares.',
+    use_case: 'Detect and grade flare events in high-cadence light curves',
+    data_source: 'Photometry — TESS (2-min cadence), Kepler SC',
+    category: 'stellar',
     input_length: 256,
     classes: ['no_flare', 'weak_flare', 'moderate_flare', 'strong_flare', 'superflare'],
     accuracy: 0.976,
@@ -170,7 +191,10 @@ export const TINYML_MODELS = [
   {
     id: 'ASTERO-001',
     name: 'Asteroseismology Analyzer',
-    description: 'Analyzes stellar oscillations',
+    description: 'Characterises stellar oscillation regimes from photometric variability — separates solar-like stochastic oscillators from classical heat-engine pulsators and hybrid stars.',
+    use_case: 'Identify stellar oscillation type for seismic analysis',
+    data_source: 'Photometry — Kepler, TESS (2-min or FFI)',
+    category: 'stellar',
     input_length: 512,
     classes: ['solar_like', 'classical_pulsator', 'hybrid', 'non_pulsating'],
     accuracy: 0.937,
@@ -178,17 +202,35 @@ export const TINYML_MODELS = [
   },
   {
     id: 'SUPERNOVA-001',
-    name: 'Supernova Detector',
-    description: 'Detects supernova and transient events',
+    name: 'Supernova & Transient Detector',
+    description: 'Identifies extragalactic transient events in multi-epoch photometry — classifies Type Ia and core-collapse supernovae, tidal disruption events (TDEs), and active galactic nuclei variability.',
+    use_case: 'Detect and type supernovae or other transient events',
+    data_source: 'Photometry — ZTF, ATLAS, Rubin/LSST alerts',
+    category: 'transient',
     input_length: 128,
     classes: ['no_transient', 'supernova_ia', 'supernova_ii', 'tde', 'agn'],
     accuracy: 0.944,
     size_kb: 24,
   },
   {
+    id: 'MICROLENS-001',
+    name: 'Microlensing Detector',
+    description: 'Finds gravitational microlensing events — smooth single-lens Paczyński curves, caustic-crossing binary-lens events, and short-duration planetary anomalies on top of a stellar lens.',
+    use_case: 'Search for microlensing events in Galactic bulge surveys',
+    data_source: 'Photometry — OGLE, KMTNet, MOA, Roman (future)',
+    category: 'transient',
+    input_length: 512,
+    classes: ['no_event', 'single_lens', 'binary_lens', 'planetary'],
+    accuracy: 0.891,
+    size_kb: 26,
+  },
+  {
     id: 'GALAXY-001',
     name: 'Galaxy Morphology Classifier',
-    description: 'Classifies galaxy morphologies',
+    description: 'Classifies galaxy morphology from photometric light-profile features — ellipticals, spirals, irregulars, and ongoing mergers.',
+    use_case: 'Classify galaxy morphology from photometric data',
+    data_source: 'Photometry — SDSS, HST, Euclid, JWST',
+    category: 'galactic',
     input_length: 4096,
     classes: ['elliptical', 'spiral', 'irregular', 'merger'],
     accuracy: 0.963,
@@ -197,20 +239,14 @@ export const TINYML_MODELS = [
   {
     id: 'SPECTYPE-001',
     name: 'Spectral Type Classifier',
-    description: 'Classifies stellar spectral types',
+    description: 'Assigns an MK spectral type (O through M) to a star from a compact set of photometric colour indices or low-resolution spectral features.',
+    use_case: 'Determine stellar spectral type from colours or spectra',
+    data_source: 'Photometry / Spectra — Gaia DR3, 2MASS, SDSS',
+    category: 'stellar',
     input_length: 8,
     classes: ['O', 'B', 'A', 'F', 'G', 'K', 'M'],
     accuracy: 0.981,
     size_kb: 5,
-  },
-  {
-    id: 'MICROLENS-001',
-    name: 'Microlensing Detector',
-    description: 'Detects gravitational microlensing events',
-    input_length: 512,
-    classes: ['no_event', 'single_lens', 'binary_lens', 'planetary'],
-    accuracy: 0.891,
-    size_kb: 26,
   },
 ]
 

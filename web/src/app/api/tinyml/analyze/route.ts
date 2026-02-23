@@ -424,36 +424,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ detail: 'File too large (max 50 MB)' }, { status: 413 });
     }
 
-    // 3. For web-UI requests: check subscription + quota BEFORE running inference
+    // 3. For web-UI requests: enforce quota (no subscription required for free tier)
     let userRow: { analyses_this_month: number; analyses_limit: number } | null = null;
     if (authResult.type === 'web' && userId && SUPABASE_URL && SUPABASE_SERVICE_KEY) {
       const service = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-      // 3a. Subscription gate — user must have an active subscription
-      const { data: subData } = await service
-        .from('subscriptions')
-        .select('id, status')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle();
-
-      if (!subData) {
-        return NextResponse.json(
-          {
-            detail: 'An active subscription is required to run cloud models. Please subscribe at larun.space/pricing.',
-            code: 'SUBSCRIPTION_REQUIRED',
-          },
-          { status: 402 }
-        );
-      }
-
-      // 3b. Quota check
       const { data } = await service
         .from('users')
         .select('analyses_this_month, analyses_limit')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (data) {
         userRow = data as { analyses_this_month: number; analyses_limit: number };

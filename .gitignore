@@ -66,8 +66,8 @@ src/submission/
 supabase/.temp/
 web/supabase/.temp/
 
-# Stale cloud prototype
-cloud/
+# Stale cloud prototype (root-level only, not web/src/app/cloud)
+/cloud/
 
 # Misc generated files
 AUTOMATED_TRAINING_GUIDE.md

@@ -152,21 +152,30 @@ export const getUserAnalyses = async (userId: string): Promise<Analysis[]> => {
 }
 
 export const getUserQuota = async (userId: string): Promise<UsageQuota | null> => {
-  const currentMonth = new Date().toISOString().slice(0, 7) // '2026-02'
+  const currentMonth = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
 
+  // Read from users table where the analyze route actually tracks usage
   const { data, error } = await supabase
-    .from('usage_quotas')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('month', currentMonth)
-    .single()
+    .from('users')
+    .select('analyses_this_month, analyses_limit')
+    .eq('id', userId)
+    .maybeSingle()
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+  if (error) {
     console.error('Error fetching quota:', error)
     return null
   }
 
-  return data
+  // Synthesise a UsageQuota shape from the users row (or defaults for new users)
+  return {
+    id: userId,
+    user_id: userId,
+    month: currentMonth,
+    analyses_count: data?.analyses_this_month ?? 0,
+    quota_limit: data?.analyses_limit ?? 5,
+    created_at: new Date().toISOString(),
+  }
+
 }
 
 export const getUserSubscription = async (userId: string): Promise<Subscription | null> => {
