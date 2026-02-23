@@ -26,6 +26,11 @@ export async function GET(request: NextRequest) {
 
     const email = session.user.email;
 
+    // No email → can't look up analyses
+    if (!email) {
+      return NextResponse.json({ analyses: [], total: 0 });
+    }
+
     // Look up Supabase user_id by email (may not exist for pure NextAuth users)
     const { data: userRow } = await sb
       .from('users')
@@ -34,17 +39,17 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
     const supabaseUserId = userRow?.id ?? null;
 
-    // Query analyses by user_email OR user_id — whichever is set
-    const { data: rows, error: dbErr } = await sb
+    // Build query — avoid .or('') which throws when only one identifier is known
+    let baseQuery = sb
       .from('analyses')
       .select('id, created_at, confidence, result, classification')
-      .eq('classification', 'tic_analysis')
-      .or(
-        [
-          email         ? `user_email.eq.${email}` : null,
-          supabaseUserId ? `user_id.eq.${supabaseUserId}` : null,
-        ].filter(Boolean).join(',')
-      )
+      .eq('classification', 'tic_analysis');
+
+    const filteredQuery = supabaseUserId
+      ? baseQuery.or(`user_email.eq.${email},user_id.eq.${supabaseUserId}`)
+      : baseQuery.eq('user_email', email);
+
+    const { data: rows, error: dbErr } = await filteredQuery
       .order('created_at', { ascending: false })
       .limit(50);
 
