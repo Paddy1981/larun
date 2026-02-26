@@ -54,7 +54,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <p className="text-xs text-[#9ca3af]">submitted</p>
         </div>
         <div className="text-center bg-[#f8f9fa] rounded-xl py-3">
-          <p className="text-lg font-semibold text-[#f59e0b]">{stats.points.toLocaleString()}</p>
+          <p className="text-lg font-semibold text-[#f59e0b]">{(stats.points ?? 0).toLocaleString()}</p>
           <p className="text-xs text-[#9ca3af]">points</p>
         </div>
       </div>

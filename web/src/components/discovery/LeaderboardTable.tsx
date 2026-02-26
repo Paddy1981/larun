@@ -86,7 +86,7 @@ function EntryRow({ entry, isCurrentUser }: { entry: LeaderboardEntry; isCurrent
           <p className="text-xs text-[#9ca3af]">verified</p>
         </div>
         <div className="text-right">
-          <p className="text-sm font-semibold text-[#1a73e8]">{entry.points.toLocaleString()}</p>
+          <p className="text-sm font-semibold text-[#1a73e8]">{(entry.points ?? 0).toLocaleString()}</p>
           <p className="text-xs text-[#9ca3af]">pts</p>
         </div>
       </div>
@@ -105,8 +105,8 @@ export function LeaderboardTable({ data, currentUserId }: LeaderboardTableProps)
             <h3 className="font-medium text-[#202124] text-sm">Discovery Leaderboard</h3>
           </div>
           <div className="flex gap-4 text-xs text-[#5f6368]">
-            <span>{data.total_users.toLocaleString()} explorers</span>
-            <span>{data.total_discoveries.toLocaleString()} discoveries</span>
+            <span>{(data.total_users ?? 0).toLocaleString()} explorers</span>
+            <span>{(data.total_discoveries ?? 0).toLocaleString()} discoveries</span>
           </div>
         </div>
       </div>
