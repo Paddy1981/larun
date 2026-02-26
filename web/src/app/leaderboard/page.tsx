@@ -151,13 +151,6 @@ export default function LeaderboardPage() {
               <div className="bg-white rounded-2xl border border-[#e5e7eb] shadow-sm p-12 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-[#1a73e8] animate-spin" />
               </div>
-            ) : error ? (
-              <div className="bg-white rounded-2xl border border-[#e5e7eb] shadow-sm p-12 text-center">
-                <p className="text-sm text-[#dc2626]">{error}</p>
-                <button onClick={loadLeaderboard} className="btn btn-outline mt-4 text-sm py-2 px-4">
-                  Retry
-                </button>
-              </div>
             ) : (
               <LeaderboardTable data={leaderboard} currentUserId={currentUserId} />
             )}
