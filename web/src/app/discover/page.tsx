@@ -357,10 +357,10 @@ export default function DiscoverPage() {
             {/* Stats bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'Analyzed', value: report.stats.analyzed, color: '#202124' },
-                { label: 'Candidates', value: report.stats.candidates, color: '#1a73e8' },
-                { label: 'Known', value: report.stats.known, color: '#5f6368' },
-                { label: 'Time', value: `${report.stats.elapsed_seconds.toFixed(1)}s`, color: '#16a34a' },
+                { label: 'Analyzed',   value: report.stats?.analyzed   ?? 0,                                              color: '#202124' },
+                { label: 'Candidates', value: report.stats?.candidates ?? 0,                                              color: '#1a73e8' },
+                { label: 'Known',      value: report.stats?.known      ?? 0,                                              color: '#5f6368' },
+                { label: 'Time',       value: `${(report.stats?.elapsed_seconds ?? 0).toFixed(1)}s`,                      color: '#16a34a' },
               ].map(s => (
                 <div key={s.label} className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm px-5 py-4 text-center">
                   <p className="text-2xl font-semibold" style={{ color: s.color }}>{s.value}</p>
@@ -372,9 +372,9 @@ export default function DiscoverPage() {
             {/* Tabs */}
             <div className="flex items-center gap-1 bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-1 w-fit">
               {([
-                ['candidates', `Candidates (${report.candidates.length})`],
-                ['anomalies',  `Anomalies (${report.anomalies.length})`],
-                ['known',      `Known (${report.known.length})`],
+                ['candidates', `Candidates (${(report.candidates ?? []).length})`],
+                ['anomalies',  `Anomalies (${(report.anomalies ?? []).length})`],
+                ['known',      `Known (${(report.known ?? []).length})`],
                 ['report',     'Full Report'],
               ] as const).map(([tab, label]) => (
                 <button
@@ -445,12 +445,12 @@ export default function DiscoverPage() {
             {/* Anomalies grid */}
             {activeTab === 'anomalies' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {report.anomalies.length === 0 ? (
+                {(report.anomalies ?? []).length === 0 ? (
                   <div className="col-span-full bg-white rounded-2xl border border-[#e5e7eb] shadow-sm p-12 text-center">
                     <p className="text-sm text-[#5f6368]">No anomalies detected in this region</p>
                   </div>
                 ) : (
-                  report.anomalies.map((c, i) => (
+                  (report.anomalies ?? []).map((c, i) => (
                     <CandidateCard key={i} candidate={c} rank={i + 1} onViewDetails={viewDetail} />
                   ))
                 )}
@@ -460,10 +460,10 @@ export default function DiscoverPage() {
             {/* Known objects list */}
             {activeTab === 'known' && (
               <div className="bg-white rounded-2xl border border-[#e5e7eb] shadow-sm divide-y divide-[#f1f3f4]">
-                {report.known.length === 0 ? (
+                {(report.known ?? []).length === 0 ? (
                   <div className="p-12 text-center text-sm text-[#5f6368]">No known objects found</div>
                 ) : (
-                  report.known.slice(0, 50).map((c, i) => (
+                  (report.known ?? []).slice(0, 50).map((c, i) => (
                     <div key={i} className="px-5 py-3 flex items-center justify-between hover:bg-[#fafafa]">
                       <div>
                         <p className="text-sm font-medium text-[#202124]">
