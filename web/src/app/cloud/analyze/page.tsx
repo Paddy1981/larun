@@ -301,6 +301,12 @@ export default function AnalyzePage() {
               <p className="text-sm text-[#6b7280]">
                 Look up a TESS target by ID, or upload your own data file for TinyML inference.
               </p>
+              <p className="text-xs text-[#9ca3af] mt-1">
+                Want to scan a region of sky?{' '}
+                <Link href="/discover" className="text-[#1a73e8] hover:underline">
+                  Open Sky Discovery →
+                </Link>
+              </p>
             </div>
 
             {/* Quota badge */}
@@ -827,13 +833,22 @@ function TicResultCard({ result, ticId, onReset }: { result: TicResult; ticId: s
         </div>
       )}
 
-      <button
-        onClick={onReset}
-        className="w-full flex items-center justify-center gap-2 py-3 bg-white hover:bg-[#f9fafb] text-[#374151] text-sm font-medium rounded-xl border border-[#e5e7eb] transition-colors"
-      >
-        <RotateCcw className="w-4 h-4" />
-        Analyze Another Target
-      </button>
+      <div className="flex gap-3">
+        <button
+          onClick={onReset}
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-white hover:bg-[#f9fafb] text-[#374151] text-sm font-medium rounded-xl border border-[#e5e7eb] transition-colors"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Another Target
+        </button>
+        <Link
+          href="/discover"
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] text-sm font-medium rounded-xl border border-[#e5e7eb] transition-colors"
+        >
+          <Telescope className="w-4 h-4" />
+          Sky Discover →
+        </Link>
+      </div>
     </div>
   )
 }

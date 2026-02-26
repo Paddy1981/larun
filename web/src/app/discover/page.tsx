@@ -155,6 +155,12 @@ export default function DiscoverPage() {
               <p className="text-sm text-[#5f6368]">
                 Find new objects in NASA archives using 12 specialized TinyML models — no PhD required.
               </p>
+              <p className="text-xs text-[#9ca3af] mt-1">
+                Have a specific TESS target or FITS file?{' '}
+                <Link href="/cloud/analyze" className="text-[#1a73e8] hover:underline">
+                  Open Cloud Analyze →
+                </Link>
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <StepIndicator current={step} />
