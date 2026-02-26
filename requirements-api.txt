@@ -1,14 +1,14 @@
 # FastAPI & Server
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+fastapi==0.133.1
+uvicorn[standard]==0.41.0
+python-multipart==0.0.22
 
 # Astronomical Data
 astropy==5.3.4
 numpy==1.24.3
 
 # Core ML (minimal) - Use TensorFlow 2.15 (compatible with FastAPI)
-tensorflow==2.15.0
+tensorflow==2.20.0
 
 # Utilities
-python-dotenv==1.0.0
+python-dotenv==1.2.1
