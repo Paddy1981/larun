@@ -1,5 +1,4 @@
-# Minimal requirements for Railway API deployment
-# This file installs ONLY what's needed to run the FastAPI server with TinyML models
+# Requirements for Railway API deployment — LARUN v1 + v2
 
 # FastAPI & Server
 fastapi>=0.109.0
@@ -10,16 +9,27 @@ python-multipart>=0.0.6
 tflite-runtime>=2.14.0; platform_machine != 'x86_64'
 tensorflow>=2.13.0,<2.16.0; platform_machine == 'x86_64'
 
-# Core Data Processing (minimal)
+# Core Data Processing
 numpy>=1.24.0,<2.0.0
 pydantic>=2.5.0
+pandas>=2.0.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+
+# v2: Wavelet feature extraction (VARDET-001)
+PyWavelets>=1.5.0
+
+# v2: Claude API orchestration
+anthropic>=0.18.0
 
 # Database & Cloud
 supabase>=2.3.0
 python-dotenv>=1.0.0
 
-# Astronomical (for FITS file parsing)
+# Astronomical data
 astropy>=5.3
+astroquery>=0.4.6
+lightkurve>=2.4.0
 
 # Configuration
 pyyaml>=6.0

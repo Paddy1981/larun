@@ -42,6 +42,7 @@ ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
 COPY src/ ./src/
+COPY larun/ ./larun/
 COPY skills/ ./skills/
 COPY config/ ./config/
 COPY models/ ./models/

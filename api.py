@@ -613,3 +613,38 @@ async def get_tinyml_models():
             }
         ]
     }
+
+
+# ============================================================================
+# Mount LARUN v2 API routes (/api/v2/*)
+# ============================================================================
+try:
+    from larun.api.routes import classify as v2_classify
+    from larun.api.routes import pipeline as v2_pipeline
+    from larun.api.routes import discover as v2_discover
+    from larun.api.routes import catalog as v2_catalog
+    from larun.api.routes import leaderboard as v2_leaderboard
+
+    app.include_router(v2_classify.router,    prefix="/api/v2", tags=["v2-Classification"])
+    app.include_router(v2_pipeline.router,    prefix="/api/v2", tags=["v2-Pipelines"])
+    app.include_router(v2_discover.router,    prefix="/api/v2", tags=["v2-Discovery"])
+    app.include_router(v2_catalog.router,     prefix="/api/v2", tags=["v2-Catalog"])
+    app.include_router(v2_leaderboard.router, prefix="/api/v2", tags=["v2-Leaderboard"])
+
+    @app.get("/api/v2/health")
+    async def v2_health():
+        return {"status": "ok", "version": "2.0.0", "platform": "larun.space"}
+
+    @app.get("/api/v2/models")
+    async def v2_list_models():
+        import json
+        from pathlib import Path
+        registry_path = Path(__file__).parent / "models" / "MODEL_REGISTRY.json"
+        if registry_path.exists():
+            with open(registry_path) as f:
+                return json.load(f)
+        return {"models": []}
+
+    logger.info("LARUN v2 API routes mounted at /api/v2/*")
+except Exception as _v2_err:
+    logger.warning(f"v2 routes not loaded (non-fatal): {_v2_err}")
