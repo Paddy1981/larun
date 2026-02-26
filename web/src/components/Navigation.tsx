@@ -59,6 +59,28 @@ export function Navigation() {
             </Link>
 
             <Link
+              href="/discover"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/discover')
+                  ? 'text-larun-black'
+                  : 'text-larun-medium-gray hover:text-larun-black'
+              }`}
+            >
+              Discover
+            </Link>
+
+            <Link
+              href="/leaderboard"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/leaderboard')
+                  ? 'text-larun-black'
+                  : 'text-larun-medium-gray hover:text-larun-black'
+              }`}
+            >
+              Leaderboard
+            </Link>
+
+            <Link
               href="/dashboard"
               className={`text-sm font-medium transition-colors ${
                 isActive('/dashboard')
