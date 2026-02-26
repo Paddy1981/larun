@@ -6,9 +6,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Navigation } from '@/components/Navigation'
+import { useSession } from 'next-auth/react'
+import Header from '@/components/Header'
 import { LeaderboardTable, RankLegend } from '@/components/discovery/LeaderboardTable'
-import { discoveryClient, Leaderboard, UserStats } from '@/lib/discovery-client'
+import { discoveryClient, Leaderboard } from '@/lib/discovery-client'
 import { Trophy, User, Telescope, Loader2, RefreshCw } from 'lucide-react'
 
 function StatCard({ label, value, icon: Icon, color }: {
@@ -61,27 +62,21 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
   )
 }
 
-// Demo leaderboard data used when backend is unreachable
-const DEMO_DATA: Leaderboard = {
-  rankings: [
-    { rank: 1, user_id: 'cosmicmatteo',  verified_discoveries: 47, points: 4700, title: 'Discoverer',        last_discovery: '2026-02-24' },
-    { rank: 2, user_id: 'stargazer_77',  verified_discoveries: 31, points: 3100, title: 'Discoverer',        last_discovery: '2026-02-22' },
-    { rank: 3, user_id: 'paddy1981',     verified_discoveries: 18, points: 1800, title: 'Explorer',          last_discovery: '2026-02-25' },
-    { rank: 4, user_id: 'neowise_hunter',verified_discoveries: 12, points: 1200, title: 'Explorer',          last_discovery: '2026-02-20' },
-    { rank: 5, user_id: 'tess_citizen',  verified_discoveries: 7,  points: 700,  title: 'Explorer',          last_discovery: '2026-02-18' },
-    { rank: 6, user_id: 'kepler_fan',    verified_discoveries: 3,  points: 300,  title: 'Observer',          last_discovery: '2026-02-15' },
-    { rank: 7, user_id: 'you',           verified_discoveries: 0,  points: 0,    title: 'Stargazer',         last_discovery: undefined },
-  ],
-  total_users: 7,
-  total_discoveries: 118,
+// Empty state used when backend is unreachable
+const EMPTY_DATA: Leaderboard = {
+  rankings: [],
+  total_users: 0,
+  total_discoveries: 0,
   period: 'All time',
 }
 
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState<Leaderboard>(DEMO_DATA)
+  const { data: session } = useSession()
+  const [leaderboard, setLeaderboard] = useState<Leaderboard>(EMPTY_DATA)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isDemo, setIsDemo] = useState(false)
+  const [backendOffline, setBackendOffline] = useState(false)
+
+  const currentUserId = session?.user?.email ?? session?.user?.name ?? undefined
 
   useEffect(() => {
     loadLeaderboard()
@@ -90,15 +85,13 @@ export default function LeaderboardPage() {
 
   async function loadLeaderboard() {
     setLoading(true)
-    setError(null)
+    setBackendOffline(false)
     try {
       const data = await discoveryClient.getLeaderboard()
       setLeaderboard(data)
-      setIsDemo(false)
     } catch {
-      // Show demo data when backend is offline
-      setLeaderboard(DEMO_DATA)
-      setIsDemo(true)
+      setLeaderboard(EMPTY_DATA)
+      setBackendOffline(true)
     } finally {
       setLoading(false)
     }
@@ -106,7 +99,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      <Navigation />
+      <Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         {/* Page header */}
@@ -119,9 +112,9 @@ export default function LeaderboardPage() {
             <p className="text-sm text-[#5f6368]">
               Top citizen astronomers ranked by verified space object discoveries.
             </p>
-            {isDemo && (
+            {backendOffline && (
               <p className="text-xs text-[#d97706] mt-1">
-                Showing demo data — backend offline. Connect the API to see live rankings.
+                Backend offline — rankings will appear here once the discovery API is connected.
               </p>
             )}
           </div>
@@ -144,10 +137,10 @@ export default function LeaderboardPage() {
 
         {/* Global stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Explorers"     value={leaderboard.total_users.toLocaleString()} icon={User}     color="#1a73e8" />
-          <StatCard label="Total Discoveries"   value={leaderboard.total_discoveries.toLocaleString()} icon={Trophy}  color="#f59e0b" />
-          <StatCard label="Top Discoverer"      value={leaderboard.rankings[0]?.user_id ?? '—'}  icon={Trophy}  color="#7c3aed" />
-          <StatCard label="Period"              value={leaderboard.period}                        icon={Telescope} color="#16a34a" />
+          <StatCard label="Total Explorers"   value={leaderboard.total_users > 0 ? leaderboard.total_users.toLocaleString() : '—'}         icon={User}      color="#1a73e8" />
+          <StatCard label="Total Discoveries" value={leaderboard.total_discoveries > 0 ? leaderboard.total_discoveries.toLocaleString() : '—'} icon={Trophy}    color="#f59e0b" />
+          <StatCard label="Top Discoverer"    value={leaderboard.rankings[0]?.user_id ?? '—'}                                                   icon={Trophy}    color="#7c3aed" />
+          <StatCard label="Period"            value={leaderboard.period}                                                                          icon={Telescope} color="#16a34a" />
         </div>
 
         {/* Main content grid */}
@@ -166,7 +159,7 @@ export default function LeaderboardPage() {
                 </button>
               </div>
             ) : (
-              <LeaderboardTable data={leaderboard} currentUserId="you" />
+              <LeaderboardTable data={leaderboard} currentUserId={currentUserId} />
             )}
           </div>
 

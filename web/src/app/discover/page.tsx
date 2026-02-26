@@ -11,7 +11,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Navigation } from '@/components/Navigation'
+import { useSession } from 'next-auth/react'
+import Header from '@/components/Header'
 import { SkyMap } from '@/components/discovery/SkyMap'
 import { CandidateCard } from '@/components/discovery/CandidateCard'
 import { ModelResultsPanel } from '@/components/discovery/ModelResultsPanel'
@@ -62,6 +63,9 @@ function StepIndicator({ current }: { current: Step }) {
 }
 
 export default function DiscoverPage() {
+  const { data: session } = useSession()
+  const currentUserId = session?.user?.email ?? session?.user?.name ?? 'anonymous'
+
   // Step state
   const [step, setStep] = useState<Step>('select')
 
@@ -137,7 +141,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      <Navigation />
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         {/* Page header */}
@@ -523,7 +527,7 @@ export default function DiscoverPage() {
                 <VerificationUI
                   candidate={selectedCandidate}
                   discoveryId={`disc-${selectedCandidate.target.ra}-${selectedCandidate.target.dec}`}
-                  currentUserId="anonymous"
+                  currentUserId={currentUserId}
                 />
               </div>
 
