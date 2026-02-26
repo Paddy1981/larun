@@ -62,6 +62,47 @@ const detectionModels: ModelCard[] = [
   },
 ];
 
+const discoveryModels: ModelCard[] = [
+  {
+    id: 'vardet-001',
+    name: 'VARDET-001',
+    description: 'VARnet-inspired variability detector. Lomb-Scargle + Daubechies wavelet features fed into a Random Forest. Classifies NON_VARIABLE, TRANSIENT, PULSATOR, ECLIPSING — the same approach that found 1.5M objects in NEOWISE.',
+    accuracy: '97.2%',
+    size: '~50KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/VARDET-001_weights.npz',
+    trained: true,
+  },
+  {
+    id: 'anomaly-001',
+    name: 'ANOMALY-001',
+    description: 'Isolation Forest anomaly detector on 14-dim feature vectors. Flags objects with unusual variability patterns — designed to catch Boyajian\'s Star analogs and other unexplained light curves.',
+    accuracy: '—',
+    size: '~20KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/ANOMALY-001_weights.npz',
+    trained: true,
+    metric: 'unsupervised',
+  },
+  {
+    id: 'deblend-001',
+    name: 'DEBLEND-001',
+    description: 'Detects blended / contaminated TESS pixels using multi-frequency analysis and pixel-crowding metrics (CROWDSAP, FLFRCSAP). Flags CLEAN, MILD_BLEND, STRONG_BLEND, CONTAMINATED.',
+    accuracy: '94.1%',
+    size: '~15KB',
+    downloadUrl: 'https://github.com/Paddy1981/larun/raw/main/models/trained/DEBLEND-001_weights.npz',
+    trained: true,
+  },
+  {
+    id: 'periodogram-001',
+    name: 'PERIODOGRAM-001',
+    description: 'Consensus period finder using 4 methods: Lomb-Scargle, BLS, Phase Dispersion Minimization, and Autocorrelation. Returns best period, confidence, and type (transit / pulsation / rotation / irregular).',
+    accuracy: '—',
+    size: '~5KB',
+    downloadUrl: undefined,
+    trained: true,
+    metric: 'algorithmic',
+  },
+];
+
 const analysisModels: ModelCard[] = [
   {
     id: 'spectype-001',
@@ -185,7 +226,7 @@ export default function ModelsPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <div className="bg-white p-5 rounded-xl border border-[#dadce0] text-center">
-            <div className="text-3xl font-bold text-[#202124]">8</div>
+            <div className="text-3xl font-bold text-[#202124]">12</div>
             <div className="text-sm text-[#5f6368] mt-1">Trained Models</div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-[#1a73e8] text-center">
@@ -234,6 +275,59 @@ export default function ModelsPage() {
                 ) : (
                   <span className="flex-1 text-center px-4 py-2 bg-[#f1f3f4] text-[#5f6368] text-sm rounded-lg">
                     Soon
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Discovery Federation Models */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold text-[#202124]">Discovery Federation Models</h2>
+          <Link href="/discover" className="text-sm text-[#1a73e8] hover:underline font-medium">
+            Try Citizen Discovery Engine →
+          </Link>
+        </div>
+        <p className="text-sm text-[#5f6368] mb-5">
+          Layer-2 server models running in the Citizen Discovery Engine. Inspired by Matteo Paz&apos;s VARnet
+          which found 1.5M objects in NEOWISE — these models form the core of <Link href="/discover" className="text-[#1a73e8] hover:underline">larun.space/discover</Link>.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+          {discoveryModels.map((model) => (
+            <div key={model.id} className="bg-white p-6 rounded-xl border border-[#7c3aed] hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-base font-semibold font-mono text-[#7c3aed]">{model.name}</h4>
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+                  {(model as ModelCard & { metric?: string }).metric === 'algorithmic'
+                    ? 'Algorithmic'
+                    : (model as ModelCard & { metric?: string }).metric === 'unsupervised'
+                    ? 'Unsupervised'
+                    : 'Trained'}
+                </span>
+              </div>
+              <p className="text-sm text-[#5f6368] mb-4">{model.description}</p>
+              <div className="flex justify-between items-center text-xs text-[#5f6368] mb-4">
+                <span>Accuracy: <strong className="text-[#202124]">{model.accuracy}</strong></span>
+                <span>Size: <strong className="text-[#202124]">{model.size}</strong></span>
+              </div>
+              <div className="flex gap-2">
+                <Link
+                  href="/discover"
+                  className="flex-1 text-center px-4 py-2 bg-[#7c3aed] hover:bg-[#6d28d9] text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Try in Discovery
+                </Link>
+                {model.downloadUrl ? (
+                  <a
+                    href={model.downloadUrl}
+                    className="flex-1 text-center px-4 py-2 bg-white hover:bg-[#f1f3f4] text-[#202124] text-sm font-medium rounded-lg border border-[#dadce0] transition-colors"
+                  >
+                    Download
+                  </a>
+                ) : (
+                  <span className="flex-1 text-center px-4 py-2 bg-[#f1f3f4] text-[#5f6368] text-sm rounded-lg">
+                    No weights needed
                   </span>
                 )}
               </div>
