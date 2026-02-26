@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import Header from '@/components/Header'
 import { LeaderboardTable, RankLegend } from '@/components/discovery/LeaderboardTable'
-import { discoveryClient, Leaderboard } from '@/lib/discovery-client'
+import { discoveryClient, Leaderboard, UserStats } from '@/lib/discovery-client'
 import { Trophy, User, Telescope, Loader2, RefreshCw } from 'lucide-react'
 
 function StatCard({ label, value, icon: Icon, color }: {
