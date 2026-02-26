@@ -50,20 +50,27 @@ export function SkyMap({ onSelect, initialRA = 56.75, initialDec = 24.12, radius
   const [manualDec, setManualDec] = useState(String(initialDec))
 
   useEffect(() => {
+    // Timeout — show fallback if Aladin doesn't load within 8 seconds
+    const timeout = setTimeout(() => {
+      if (!loaded) setLoaded(false) // triggers fallback UI
+    }, 8000)
+
     // Load Aladin Lite v3 script
     const scriptId = 'aladin-lite-script'
     if (document.getElementById(scriptId)) {
       initAladin()
+      clearTimeout(timeout)
       return
     }
     const script = document.createElement('script')
     script.id = scriptId
     script.src = 'https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js'
     script.charset = 'utf-8'
-    script.onload = initAladin
+    script.onload = () => { clearTimeout(timeout); initAladin() }
+    script.onerror = () => clearTimeout(timeout)
     document.head.appendChild(script)
 
-    return () => { /* script stays cached */ }
+    return () => clearTimeout(timeout)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -140,8 +147,9 @@ export function SkyMap({ onSelect, initialRA = 56.75, initialDec = 24.12, radius
 
         {!loaded && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#f8f9fa] gap-3">
-            <Loader2 className="w-8 h-8 text-[#1a73e8] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#1a73e8] animate-spin" />
             <span className="text-sm text-[#5f6368]">Loading sky map…</span>
+            <span className="text-xs text-[#9ca3af]">Use the coordinate inputs below while it loads</span>
           </div>
         )}
       </div>
