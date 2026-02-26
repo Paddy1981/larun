@@ -484,18 +484,30 @@ export default function HomePage() {
 
             {/* Links */}
             <div className="flex flex-wrap items-center gap-6 text-sm text-[#5f6368]">
-              <a href="https://laruneng.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#202124] transition-colors">
-                Larun Engineering
-              </a>
-              <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="hover:text-[#202124] transition-colors">
-                GitHub
-              </a>
+              <Link href="/discover" className="hover:text-[#202124] transition-colors">
+                Discover
+              </Link>
+              <Link href="/leaderboard" className="hover:text-[#202124] transition-colors">
+                Leaderboard
+              </Link>
+              <Link href="/models" className="hover:text-[#202124] transition-colors">
+                Models
+              </Link>
+              <Link href="/cloud/analyze" className="hover:text-[#202124] transition-colors">
+                Cloud Analyze
+              </Link>
               <Link href="/ecss" className="hover:text-[#202124] transition-colors">
                 ECSS Standards
               </Link>
               <Link href="/nasa" className="hover:text-[#202124] transition-colors">
                 NASA Standards
               </Link>
+              <a href="https://laruneng.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#202124] transition-colors">
+                Larun Engineering
+              </a>
+              <a href="https://github.com/Paddy1981/larun" target="_blank" rel="noopener noreferrer" className="hover:text-[#202124] transition-colors">
+                GitHub
+              </a>
               <Link href="#" className="hover:text-[#202124] transition-colors">
                 Privacy
               </Link>

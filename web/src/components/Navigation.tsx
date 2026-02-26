@@ -48,6 +48,17 @@ export function Navigation() {
             </Link>
 
             <Link
+              href="/models"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/models')
+                  ? 'text-larun-black'
+                  : 'text-larun-medium-gray hover:text-larun-black'
+              }`}
+            >
+              Models
+            </Link>
+
+            <Link
               href="/analyze"
               className={`text-sm font-medium transition-colors ${
                 isActive('/analyze')

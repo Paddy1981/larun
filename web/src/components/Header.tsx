@@ -37,6 +37,16 @@ export default function Header() {
                 Models
               </Link>
 
+              <Link href="/discover"
+                className="px-3 py-2 text-sm text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] rounded-lg font-medium transition-colors">
+                Discover
+              </Link>
+
+              <Link href="/leaderboard"
+                className="px-3 py-2 text-sm text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] rounded-lg font-medium transition-colors">
+                Leaderboard
+              </Link>
+
               <a href="https://sattrack.larun.space" target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-2 text-sm text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] rounded-lg font-medium transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -202,6 +212,8 @@ export default function Header() {
         {showMobile && (
           <div className="md:hidden border-t border-[#dadce0] bg-white px-4 py-3 space-y-1">
             <MobileLink href="/cloud/analyze" onClick={() => setShowMobile(false)} primary>Cloud Analyze</MobileLink>
+            <MobileLink href="/discover"      onClick={() => setShowMobile(false)}>Discover</MobileLink>
+            <MobileLink href="/leaderboard"   onClick={() => setShowMobile(false)}>Leaderboard</MobileLink>
             <MobileLink href="/models"        onClick={() => setShowMobile(false)}>Models</MobileLink>
             <a href="https://sattrack.larun.space" target="_blank" rel="noopener noreferrer"
               onClick={() => setShowMobile(false)}
