@@ -4,7 +4,7 @@ uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 
 # Astronomical Data
-astropy==5.3.4
+astropy==6.1.7
 numpy==1.24.3
 
 # Core ML (minimal) - Use TensorFlow 2.15 (compatible with FastAPI)
