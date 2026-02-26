@@ -5,7 +5,7 @@ python-multipart==0.0.6
 
 # Astronomical Data
 astropy==5.3.4
-numpy==1.24.3
+numpy==2.2.6
 
 # Core ML (minimal) - Use TensorFlow 2.15 (compatible with FastAPI)
 tensorflow==2.15.0
