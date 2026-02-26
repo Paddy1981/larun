@@ -7,6 +7,11 @@ astropy>=5.3
 astroquery>=0.4.6
 lightkurve>=2.4.0
 
+# LARUN v2 — New dependencies
+PyWavelets>=1.5.0       # Wavelet feature extraction for VARDET-001
+anthropic>=0.18.0       # Claude API for orchestration layer
+onnxruntime>=1.17.0     # ONNX inference for converted models
+
 # Data Processing
 numpy>=1.24.0
 pandas>=2.0.0
