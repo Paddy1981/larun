@@ -252,21 +252,39 @@ export default function DiscoverPage() {
 
               {/* Coords summary */}
               <div className="bg-[#f8f9fa] rounded-xl p-4 mb-5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#5f6368]">RA</span>
-                  <span className="font-mono text-[#202124]">{ra.toFixed(4)}°</span>
+                <p className="text-xs font-medium text-[#9ca3af] mb-2 uppercase tracking-wide">Selected region centre</p>
+                <div className="flex justify-between items-baseline">
+                  <span className="text-[#5f6368]">Right Ascension</span>
+                  <span className="font-mono text-[#202124] text-right">
+                    <span className="text-xs text-[#9ca3af] mr-2">{ra.toFixed(4)}°</span>
+                    {`${Math.floor(ra/15)}h ${String(Math.floor((ra/15 - Math.floor(ra/15))*60)).padStart(2,'0')}m`}
+                  </span>
                 </div>
-                <div className="flex justify-between mt-1">
-                  <span className="text-[#5f6368]">Dec</span>
-                  <span className="font-mono text-[#202124]">{dec > 0 ? '+' : ''}{dec.toFixed(4)}°</span>
+                <div className="flex justify-between items-baseline mt-1.5">
+                  <span className="text-[#5f6368]">Declination</span>
+                  <span className="font-mono text-[#202124] text-right">
+                    <span className="text-xs text-[#9ca3af] mr-2">{dec > 0 ? '+' : ''}{dec.toFixed(4)}°</span>
+                    {dec > 0 ? '+' : ''}{Math.floor(Math.abs(dec))}° {String(Math.floor((Math.abs(dec) - Math.floor(Math.abs(dec)))*60)).padStart(2,'0')}′
+                  </span>
                 </div>
+                <p className="text-xs text-[#9ca3af] mt-2">
+                  Sky longitude (RA) and latitude (Dec) — the &apos;address&apos; of your target in the sky.
+                </p>
               </div>
 
               {/* Radius */}
               <div className="mb-5">
-                <label className="text-sm font-medium text-[#202124] block mb-2">
-                  Search radius: {radiusDeg} deg
+                <label className="text-sm font-medium text-[#202124] block mb-1">
+                  Search radius: <span className="text-[#1a73e8]">{radiusDeg}°</span>
+                  <span className="text-[#9ca3af] font-normal ml-2 text-xs">
+                    = {Math.round(radiusDeg * 60)} arcmin
+                    {radiusDeg <= 1 && ` ≈ ${(radiusDeg * 60 / 30).toFixed(1)}× full Moon`}
+                    {radiusDeg > 1 && radiusDeg <= 3 && ` ≈ ${(radiusDeg * 2).toFixed(0)}° patch`}
+                  </span>
                 </label>
+                <p className="text-xs text-[#9ca3af] mb-2">
+                  Larger radius = more objects found but slower. 0.5°–1° is ideal for most targets.
+                </p>
                 <input
                   type="range" min={0.1} max={5} step={0.1}
                   value={radiusDeg}
@@ -274,8 +292,9 @@ export default function DiscoverPage() {
                   className="w-full accent-[#1a73e8]"
                 />
                 <div className="flex justify-between text-xs text-[#9ca3af] mt-1">
-                  <span>0.1°</span>
-                  <span>5°</span>
+                  <span>0.1° (6′ tiny)</span>
+                  <span>2.5° (wide)</span>
+                  <span>5° (very wide)</span>
                 </div>
               </div>
 
