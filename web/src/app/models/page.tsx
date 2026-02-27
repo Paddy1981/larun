@@ -4,6 +4,8 @@ import Header from '@/components/Header';
 interface ModelCard {
   id: string;
   name: string;
+  productName: string;
+  tagline: string;
   description: string;
   accuracy: string;
   size: string;
@@ -18,6 +20,8 @@ const detectionModels: ModelCard[] = [
   {
     id: 'exoplanet-001',
     name: 'EXOPLANET-001',
+    productName: 'Orbis',
+    tagline: 'Transit detection, planet by planet',
     description: 'Primary exoplanet transit detection trained on real Kepler/TESS light curves. Feature-based classifier distinguishing transits, eclipsing binaries, and noise.',
     accuracy: '98.0%',
     size: '43KB',
@@ -27,6 +31,8 @@ const detectionModels: ModelCard[] = [
   {
     id: 'vstar-001',
     name: 'VSTAR-001',
+    productName: 'Lumina',
+    tagline: 'Every star has a rhythm',
     description: 'Variable star classification. Distinguishes Cepheids, RR Lyrae, Delta Scuti, and other variable star types.',
     accuracy: '99.8%',
     size: '27KB',
@@ -36,6 +42,8 @@ const detectionModels: ModelCard[] = [
   {
     id: 'flare-001',
     name: 'FLARE-001',
+    productName: 'Helios',
+    tagline: 'Catch the star\'s outburst',
     description: 'Stellar flare detection. Feature-based classifier for quiescent, flare, and strong flare states.',
     accuracy: '96.7%',
     size: '5KB',
@@ -45,6 +53,8 @@ const detectionModels: ModelCard[] = [
   {
     id: 'microlens-001',
     name: 'MICROLENS-001',
+    productName: 'Gravitas',
+    tagline: 'Gravity bends light. We find it.',
     description: 'Microlensing event detection. Feature-based classifier for no event, simple lens, and complex events.',
     accuracy: '99.4%',
     size: '5KB',
@@ -54,6 +64,8 @@ const detectionModels: ModelCard[] = [
   {
     id: 'supernova-001',
     name: 'SUPERNOVA-001',
+    productName: 'Nova',
+    tagline: 'First to see the burst',
     description: 'Supernova and transient detection. Feature-based classifier for Type I, II supernovae, kilonovae, and TDEs.',
     accuracy: '100.0%',
     size: '3KB',
@@ -66,6 +78,8 @@ const discoveryModels: ModelCard[] = [
   {
     id: 'vardet-001',
     name: 'VARDET-001',
+    productName: 'Ripple',
+    tagline: 'Wavelet-powered variability detection',
     description: 'VARnet-inspired variability detector. Lomb-Scargle + Daubechies wavelet features fed into a Random Forest. Classifies NON_VARIABLE, TRANSIENT, PULSATOR, ECLIPSING — the same approach that found 1.5M objects in NEOWISE.',
     accuracy: '97.2%',
     size: '~50KB',
@@ -75,6 +89,8 @@ const discoveryModels: ModelCard[] = [
   {
     id: 'anomaly-001',
     name: 'ANOMALY-001',
+    productName: 'Sentinel',
+    tagline: 'Nothing unusual escapes it',
     description: 'Isolation Forest anomaly detector on 14-dim feature vectors. Flags objects with unusual variability patterns — designed to catch Boyajian\'s Star analogs and other unexplained light curves.',
     accuracy: '—',
     size: '~20KB',
@@ -85,6 +101,8 @@ const discoveryModels: ModelCard[] = [
   {
     id: 'deblend-001',
     name: 'DEBLEND-001',
+    productName: 'Clarity',
+    tagline: 'Separate what the sky mixed together',
     description: 'Detects blended / contaminated TESS pixels using multi-frequency analysis and pixel-crowding metrics (CROWDSAP, FLFRCSAP). Flags CLEAN, MILD_BLEND, STRONG_BLEND, CONTAMINATED.',
     accuracy: '94.1%',
     size: '~15KB',
@@ -94,6 +112,8 @@ const discoveryModels: ModelCard[] = [
   {
     id: 'periodogram-001',
     name: 'PERIODOGRAM-001',
+    productName: 'Tempo',
+    tagline: 'Find the beat in the noise',
     description: 'Consensus period finder using 4 methods: Lomb-Scargle, BLS, Phase Dispersion Minimization, and Autocorrelation. Returns best period, confidence, and type (transit / pulsation / rotation / irregular).',
     accuracy: '—',
     size: '~5KB',
@@ -107,6 +127,8 @@ const analysisModels: ModelCard[] = [
   {
     id: 'spectype-001',
     name: 'SPECTYPE-001',
+    productName: 'Spectra',
+    tagline: "A star's fingerprint, classified",
     description: 'Stellar spectral classification. Classifies O, B, A, F, G, K, M, L type stars from photometric features.',
     accuracy: '95.0%',
     size: '5KB',
@@ -116,6 +138,8 @@ const analysisModels: ModelCard[] = [
   {
     id: 'astero-001',
     name: 'ASTERO-001',
+    productName: 'Resonance',
+    tagline: 'Hear what stars are made of',
     description: 'Asteroseismology analysis. Detects solar-like, red giant, delta Scuti, and gamma Dor oscillations.',
     accuracy: '99.8%',
     size: '21KB',
@@ -125,6 +149,8 @@ const analysisModels: ModelCard[] = [
   {
     id: 'galaxy-001',
     name: 'GALAXY-001',
+    productName: 'Forma',
+    tagline: 'Shape tells the story',
     description: 'Galaxy morphology classification. Feature-based classifier for elliptical, spiral, barred spiral, irregular, and merger galaxies.',
     accuracy: '99.9%',
     size: '4KB',
@@ -155,7 +181,7 @@ export default function ModelsPage() {
                 <span>NEW: Cloud Platform</span>
               </div>
               <h2 className="text-xl font-semibold mb-2">Try These Models Online</h2>
-              <p className="text-white/90 text-sm mb-2">Upload FITS files and run instant inference with any of these 8 models in the cloud.</p>
+              <p className="text-white/90 text-sm mb-2">Upload FITS files and run instant inference with any of these 12 models in the cloud.</p>
               <p className="text-white/75 text-xs">5 free analyses per month • No setup required • Results in &lt;100ms</p>
             </div>
             <div className="flex gap-3">
@@ -248,11 +274,13 @@ export default function ModelsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
           {detectionModels.map((model) => (
             <div key={model.id} className={`bg-white p-6 rounded-xl border ${model.trained ? 'border-[#1a73e8]' : 'border-[#dadce0]'} hover:shadow-md transition-shadow`}>
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="text-base font-semibold font-mono text-[#1a73e8]">{model.name}</h4>
-                {model.trained && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Trained</span>}
-                {!model.trained && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">Target</span>}
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h4 className="text-xl font-bold text-[#202124]">{model.productName}</h4>
+                {model.trained && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full shrink-0 mt-1">Trained</span>}
+                {!model.trained && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full shrink-0 mt-1">Target</span>}
               </div>
+              <p className="text-xs font-mono text-[#1a73e8] mb-1">{model.name}</p>
+              <p className="text-xs italic text-[#5f6368] mb-3">{model.tagline}</p>
               <p className="text-sm text-[#5f6368] mb-4">{model.description}</p>
               <div className="flex justify-between items-center text-xs text-[#5f6368] mb-4">
                 <span>Accuracy: <strong className="text-[#202124]">{model.accuracy}</strong></span>
@@ -296,9 +324,9 @@ export default function ModelsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
           {discoveryModels.map((model) => (
             <div key={model.id} className="bg-white p-6 rounded-xl border border-[#7c3aed] hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="text-base font-semibold font-mono text-[#7c3aed]">{model.name}</h4>
-                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h4 className="text-xl font-bold text-[#202124]">{model.productName}</h4>
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full shrink-0 mt-1">
                   {(model as ModelCard & { metric?: string }).metric === 'algorithmic'
                     ? 'Algorithmic'
                     : (model as ModelCard & { metric?: string }).metric === 'unsupervised'
@@ -306,6 +334,8 @@ export default function ModelsPage() {
                     : 'Trained'}
                 </span>
               </div>
+              <p className="text-xs font-mono text-[#7c3aed] mb-1">{model.name}</p>
+              <p className="text-xs italic text-[#5f6368] mb-3">{model.tagline}</p>
               <p className="text-sm text-[#5f6368] mb-4">{model.description}</p>
               <div className="flex justify-between items-center text-xs text-[#5f6368] mb-4">
                 <span>Accuracy: <strong className="text-[#202124]">{model.accuracy}</strong></span>
@@ -340,11 +370,13 @@ export default function ModelsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
           {analysisModels.map((model) => (
             <div key={model.id} className={`bg-white p-6 rounded-xl border ${model.trained ? 'border-[#1a73e8]' : 'border-[#dadce0]'} hover:shadow-md transition-shadow`}>
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="text-base font-semibold font-mono text-[#1a73e8]">{model.name}</h4>
-                {model.trained && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Trained</span>}
-                {!model.trained && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">Target</span>}
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h4 className="text-xl font-bold text-[#202124]">{model.productName}</h4>
+                {model.trained && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full shrink-0 mt-1">Trained</span>}
+                {!model.trained && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full shrink-0 mt-1">Target</span>}
               </div>
+              <p className="text-xs font-mono text-[#1a73e8] mb-1">{model.name}</p>
+              <p className="text-xs italic text-[#5f6368] mb-3">{model.tagline}</p>
               <p className="text-sm text-[#5f6368] mb-4">{model.description}</p>
               <div className="flex justify-between items-center text-xs text-[#5f6368] mb-4">
                 <span>Accuracy: <strong className="text-[#202124]">{model.accuracy}</strong></span>
