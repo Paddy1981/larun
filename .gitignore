@@ -106,3 +106,4 @@ docs/CLAUDE.md
 docs/ANTIGRAVITY.md
 training_output.log
 .vercel
+.env*.local
