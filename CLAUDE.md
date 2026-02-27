@@ -22,7 +22,7 @@ LARUN is a specialized AI assistant for astronomical data analysis, designed to 
 
 ## 🔴 CRITICAL: Multi-AI Coordination
 
-> **IMPORTANT**: LARUN is developed by both **Claude Code** and **Antigravity (Gemini)**. 
+> **IMPORTANT**: LARUN is developed by both **Claude Code** and **Antigravity (Gemini)**.
 > Before doing ANY work, follow the coordination protocol!
 
 ### Session Start Checklist
@@ -74,21 +74,22 @@ For detailed step-by-step coordination protocol, see:
 ```
 larun/
 ├── CLAUDE.md                    # This file - Claude Code instructions
-├── research/                    # Research documentation
-│   ├── NASA_DATA_SOURCES.md     # NASA APIs and data access
-│   ├── EXOPLANET_DETECTION.md   # Transit detection methods
-│   ├── GALAXY_CLASSIFICATION.md # Galaxy morphology ML
-│   ├── TINYML_OPTIMIZATION.md   # Edge deployment strategies
-│   ├── IMAGE_PROCESSING.md      # Astronomical image analysis
-│   └── STELLAR_PHYSICS.md       # Stellar classification science
-├── skills/                      # Skill definitions
-│   ├── skills.yaml              # Core skill definitions
-│   ├── image_skills.yaml        # Image analysis skills
-│   └── SKILL_DEVELOPMENT.md     # How to create new skills
-├── integrations/                # Integration guides
-│   ├── MAST_INTEGRATION.md      # MAST archive integration
-│   ├── GAIA_INTEGRATION.md      # Gaia DR3 integration
-│   └── JWST_INTEGRATION.md      # JWST data integration
+├── docs/                        # Documentation
+│   ├── research/                # Research documentation
+│   │   ├── NASA_DATA_SOURCES.md     # NASA APIs and data access
+│   │   ├── EXOPLANET_DETECTION.md   # Transit detection methods
+│   │   ├── GALAXY_CLASSIFICATION.md # Galaxy morphology ML
+│   │   ├── TINYML_OPTIMIZATION.md   # Edge deployment strategies
+│   │   ├── IMAGE_PROCESSING.md      # Astronomical image analysis
+│   │   └── STELLAR_PHYSICS.md       # Stellar classification science
+│   ├── skills/                  # Skill definitions
+│   │   ├── skills.yaml              # Core skill definitions
+│   │   ├── image_skills.yaml        # Image analysis skills
+│   │   └── SKILL_DEVELOPMENT.md     # How to create new skills
+│   └── integrations/            # Integration guides
+│       ├── MAST_INTEGRATION.md      # MAST archive integration
+│       ├── GAIA_INTEGRATION.md      # Gaia DR3 integration
+│       └── JWST_INTEGRATION.md      # JWST data integration
 ├── src/                         # Source code
 ├── models/                      # Trained models
 ├── data/                        # Data cache
@@ -134,16 +135,16 @@ def detect_transit(
 ) -> List[TransitCandidate]:
     """
     Detect planetary transits in light curve data.
-    
+
     Args:
         flux: Normalized flux values
         time: Time array (BJD)
         min_depth: Minimum transit depth (default: 100 ppm)
         min_snr: Minimum signal-to-noise ratio
-        
+
     Returns:
         List of TransitCandidate objects
-        
+
     Example:
         >>> candidates = detect_transit(flux, time, min_depth=0.001)
         >>> for c in candidates:
@@ -203,12 +204,12 @@ photutils>=1.5        # Photometry
 
 | Document | Purpose |
 |----------|---------|
-| [NASA_DATA_SOURCES.md](research/NASA_DATA_SOURCES.md) | How to access NASA data |
-| [EXOPLANET_DETECTION.md](research/EXOPLANET_DETECTION.md) | Transit detection science |
-| [GALAXY_CLASSIFICATION.md](research/GALAXY_CLASSIFICATION.md) | Galaxy morphology ML |
-| [TINYML_OPTIMIZATION.md](research/TINYML_OPTIMIZATION.md) | Edge deployment |
-| [IMAGE_PROCESSING.md](research/IMAGE_PROCESSING.md) | Astronomical imaging |
-| [STELLAR_PHYSICS.md](research/STELLAR_PHYSICS.md) | Star classification |
+| [NASA_DATA_SOURCES.md](docs/research/NASA_DATA_SOURCES.md) | How to access NASA data |
+| [EXOPLANET_DETECTION.md](docs/research/EXOPLANET_DETECTION.md) | Transit detection science |
+| [GALAXY_CLASSIFICATION.md](docs/research/GALAXY_CLASSIFICATION.md) | Galaxy morphology ML |
+| [TINYML_OPTIMIZATION.md](docs/research/TINYML_OPTIMIZATION.md) | Edge deployment |
+| [IMAGE_PROCESSING.md](docs/research/IMAGE_PROCESSING.md) | Astronomical imaging |
+| [STELLAR_PHYSICS.md](docs/research/STELLAR_PHYSICS.md) | Star classification |
 
 ## Contact & Attribution
 
